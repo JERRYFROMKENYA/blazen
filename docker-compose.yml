@@ -1,0 +1,26 @@
+services:
+  pocketbase:
+    build: ./pb # place your image here
+    restart: unless-stopped
+    container_name: pocketbase_blazen
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./pb/pb_data:/pb/pb_data
+      - ./pb/pb_public:/pb/pb_public #optional
+      - ./pb/pb_hooks:/pb/pb_hooks #optional
+    healthcheck: #optional (recommended) since v0.10.0
+      test: wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  did_creator:
+    build: ./did_creator
+    container_name: DID-Creator
+    ports:
+      - "3000:3000"
+    depends_on:
+      - "pocketbase"
+
+
+
