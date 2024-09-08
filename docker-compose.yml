@@ -1,3 +1,8 @@
+version: '3.8'
+
+networks:
+  blazen_network:
+    driver: bridge
 
 services:
   pocketbase:
@@ -15,6 +20,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - blazen_network
 
   did_creator:
     build: ./tbdex_comm_server
@@ -22,9 +29,12 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - pocketbase
+      pocketbase:
+        condition: service_healthy
     environment:
       - POCKETBASE_URL=http://pocketbase:8090
+    networks:
+      - blazen_network
 
 
 
