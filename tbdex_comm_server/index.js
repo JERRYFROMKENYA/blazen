@@ -62,6 +62,7 @@ app.use(express.json());
     try {
       const allOfferings = [];
       const mockDids = await fetchMockDids();
+      console.log('Mock DIDs:', mockDids);
       for (const pfi of Object.values(mockDids)) {
         const pfiUri = pfi.did;
         // Fetch offerings from PFIs
