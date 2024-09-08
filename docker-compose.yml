@@ -15,7 +15,7 @@ services:
       timeout: 5s
       retries: 5
   did_creator:
-    build: tbdex_comm_server
+    build: ./tbdex_comm_server
     container_name: tbdex_comm_server
     env_file:
       - .env

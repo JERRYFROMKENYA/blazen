@@ -1,5 +1,4 @@
-// Load environment variables
-require('dotenv').config();
+
 
 // Import necessary modules
 const express = require('express');
@@ -7,7 +6,7 @@ const { DidJwk, DidDht } = require('@web5/dids');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -18,7 +17,7 @@ app.use(express.json());
   const PocketBase = (await import('pocketbase')).default;
   const { TbdexHttpClient } = await import('@tbdex/http-client'); // Use dynamic import for ES module
 
-  const pb = new PocketBase(process.env.POCKETBASE_URL); // Use environment variable
+  const pb = new PocketBase("http://138.197.89.72:8090/"); // Use environment variable
 
   // Function to create a DID JWK document
   async function createDidJwkDocument() {
