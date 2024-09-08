@@ -17,7 +17,7 @@ app.use(express.json());
   const PocketBase = (await import('pocketbase')).default;
   const { TbdexHttpClient } = await import('@tbdex/http-client'); // Use dynamic import for ES module
 
-  const pb = new PocketBase("http://138.197.89.72:8090/"); // Use environment variable
+  const pb = new PocketBase("http://138.197.89.72:8090"); // Use environment variable
 
   // Function to create a DID JWK document
   async function createDidJwkDocument() {
