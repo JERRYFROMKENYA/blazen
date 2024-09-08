@@ -73,9 +73,10 @@ app.use(express.json());
         allOfferings.push(...offerings);
       }
 
-      return { offerings: allOfferings };
+      return allOfferings; // Return the array of offerings directly
     } catch (error) {
       console.error('Failed to fetch offerings:', error);
+      throw error;
     }
   };
 
@@ -117,7 +118,7 @@ app.use(express.json());
   // Endpoint to select PFI based on user's offering selection
   app.post('/select-pfi', async (req, res) => {
     const { offering } = req.body;
-    console.log('Offering:', offering);
+    // console.log('Offering:', offering);
     if (!offering) {
       return res.status(400).json({ error: 'Offering is required' });
     }
@@ -125,9 +126,10 @@ app.use(express.json());
     try {
       const offerings = await fetchOfferings();
       const [payinCurrency, payoutCurrency] = offering.split(':');
-      const filteredOfferings = offerings.offerings.filter(offering =>
-        offering.data.payin.currencyCode === payinCurrency &&
-        offering.data.payout.currencyCode === payoutCurrency
+      console.log('Selected currencies:', payinCurrency, payoutCurrency);
+      const filteredOfferings = offerings.filter(offering =>
+          offering.data.payin.currencyCode === payinCurrency &&
+          offering.data.payout.currencyCode === payoutCurrency
       ).map(offering => ({
         // Extract relevant data from the offering
         from: offering.metadata.from,
@@ -141,7 +143,7 @@ app.use(express.json());
         requiredClaims: offering.data.requiredClaims
       }));
 
-      res.status(200).json(offerings);
+      res.status(200).json(filteredOfferings); // Return the filtered offerings
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
