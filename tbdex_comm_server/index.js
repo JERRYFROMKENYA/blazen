@@ -127,6 +127,7 @@ app.use(express.json());
         offering.data.payin.currencyCode === payinCurrency &&
         offering.data.payout.currencyCode === payoutCurrency
       ).map(offering => ({
+        // Extract relevant data from the offering
         from: offering.metadata.from,
         oferingId: offering.metadata.id,
         description: offering.data.description,
