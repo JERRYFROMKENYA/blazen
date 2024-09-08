@@ -124,22 +124,22 @@ app.use(express.json());
 
     try {
       const offerings = await fetchOfferings();
-      // const [payinCurrency, payoutCurrency] = offering.split(':');
-      // const filteredOfferings = offerings.filter(offering =>
-      //   offering.data.payin.currencyCode === payinCurrency &&
-      //   offering.data.payout.currencyCode === payoutCurrency
-      // ).map(offering => ({
-      //   // Extract relevant data from the offering
-      //   from: offering.metadata.from,
-      //   offeringId: offering.metadata.id,
-      //   description: offering.data.description,
-      //   payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
-      //   payinCurrency: offering.data.payin.currencyCode,
-      //   payoutCurrency: offering.data.payout.currencyCode,
-      //   payinMethods: offering.data.payin.methods,
-      //   payoutMethods: offering.data.payout.methods,
-      //   requiredClaims: offering.data.requiredClaims
-      // }));
+      const [payinCurrency, payoutCurrency] = offering.split(':');
+      const filteredOfferings = offerings.filter(offering =>
+        offering.data.payin.currencyCode === payinCurrency &&
+        offering.data.payout.currencyCode === payoutCurrency
+      ).map(offering => ({
+        // Extract relevant data from the offering
+        from: offering.metadata.from,
+        offeringId: offering.metadata.id,
+        description: offering.data.description,
+        payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
+        payinCurrency: offering.data.payin.currencyCode,
+        payoutCurrency: offering.data.payout.currencyCode,
+        payinMethods: offering.data.payin.methods,
+        payoutMethods: offering.data.payout.methods,
+        requiredClaims: offering.data.requiredClaims
+      }));
 
       res.status(200).json(offerings);
     } catch (err) {
