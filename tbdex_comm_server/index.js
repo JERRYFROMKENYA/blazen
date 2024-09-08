@@ -1,5 +1,4 @@
-// Load environment variables
-require('dotenv').config();
+
 
 // Import necessary modules
 const express = require('express');
@@ -7,7 +6,7 @@ const { DidJwk, DidDht } = require('@web5/dids');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -18,7 +17,7 @@ app.use(express.json());
   const PocketBase = (await import('pocketbase')).default;
   const { TbdexHttpClient } = await import('@tbdex/http-client'); // Use dynamic import for ES module
 
-  const pb = new PocketBase(process.env.POCKETBASE_URL); // Use environment variable
+  const pb = new PocketBase("http://138.197.89.72:8090"); // Use environment variable
 
   // Function to create a DID JWK document
   async function createDidJwkDocument() {
@@ -128,6 +127,8 @@ app.use(express.json());
         offering.data.payin.currencyCode === payinCurrency &&
         offering.data.payout.currencyCode === payoutCurrency
       ).map(offering => ({
+        from: offering.metadata.from,
+        oferingId: offering.metadata.id,
         description: offering.data.description,
         payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
         payinCurrency: offering.data.payin.currencyCode,
@@ -137,7 +138,7 @@ app.use(express.json());
         requiredClaims: offering.data.requiredClaims
       }));
 
-      res.status(200).json(filteredOfferings);
+      res.status(200).json(offerings);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

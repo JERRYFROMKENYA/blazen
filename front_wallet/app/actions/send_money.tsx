@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar, Keyboard } from 'expo-status-bar';
 import { Platform, StyleSheet, Alert, ScrollView, Animated } from 'react-native';
-import { TextInput, Button, Menu, Provider } from 'react-native-paper';
+import { TextInput, Button, Menu, Provider, Card } from 'react-native-paper';
 import { Text, View } from '@/components/Themed';
 import { useAuth } from "@/app/(auth)/auth";
 import { usePocketBase } from "@/components/Services/Pocketbase";
@@ -101,16 +101,14 @@ export default function SendMoney() {
 
     // Fetch PFIs based on the selected offering
     try {
-      const response = await fetch('http://138.197.89.72:3000/select-pfi', {
+      const response = await fetch('http://localhost:3000/select-pfi', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ "offering":`${walletInUse.currency}:${offering}` }),
+        body: JSON.stringify({ offering }),
       });
-
-      const data = await response;
-      console.log('response:', data);
+      const data = await response.json();
       setPfis(data);
     } catch (error) {
       console.error('Error fetching PFIs:', error);
@@ -172,13 +170,26 @@ export default function SendMoney() {
           onDismiss={closeMenu}
           anchor={<Button onPress={openMenu}>{selectedPfi ? selectedPfi.name : 'Select PFI'}</Button>}>
           {pfis.map(pfi => (
-            <Menu.Item
-              key={pfi.id}
-              onPress={() => handlePfiSelect(pfi)}
-              title={pfi.name}
-            />
+              <Card>
+                <Card.Content>
+                  <Text >Card title</Text>
+                  <Text >Card content</Text>
+                </Card.Content>
+              </Card>
           ))}
         </Menu>}
+
+        {/* Display Selected PFI Details */}
+        {selectedPfi && (
+          <View style={styles.pfiDetails}>
+            <Text>Description: {selectedPfi.description}</Text>
+            <Text>Payout Units Per Payin Unit: {selectedPfi.payoutUnitsPerPayinUnit}</Text>
+            <Text>Payin Currency: {selectedPfi.payinCurrency}</Text>
+            <Text>Payout Currency: {selectedPfi.payoutCurrency}</Text>
+            <Text>Payin Methods: {selectedPfi.payinMethods.map(method => method.kind).join(', ')}</Text>
+            <Text>Payout Methods: {selectedPfi.payoutMethods.map(method => method.kind).join(', ')}</Text>
+          </View>
+        )}
 
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
         {(walletInUse != undefined && selectedOffering && selectedPfi && walletInUse.balance > 0) && <>
@@ -253,6 +264,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 20,
     paddingHorizontal: 10,
+    width: '100%',
+  },
+  pfiDetails: {
+    marginVertical: 20,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 5,
     width: '100%',
   },
 });
