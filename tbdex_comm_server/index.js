@@ -42,6 +42,7 @@ app.use(express.json());
   // Function to fetch mock DIDs from PocketBase
   const fetchMockDids = async () => {
     try {
+      console.log(process.env.POCKETBASE_URL)
       const records = await pb.collection('pfi').getFullList(); // Replace 'mock_dids' with your collection name
       return records.reduce((acc, record) => {
         acc[record.id] = {
