@@ -1,28 +1,30 @@
+
 services:
   pocketbase:
-    build: ./pb # place your image here
+    build: ./pb
     restart: unless-stopped
     container_name: pocketbase_blazen
     ports:
       - "8090:8090"
     volumes:
       - ./pb/pb_data:/pb/pb_data
-      - ./pb/pb_public:/pb/pb_public #optional
-      - ./pb/pb_hooks:/pb/pb_hooks #optional
-    healthcheck: #optional (recommended) since v0.10.0
+      - ./pb/pb_public:/pb/pb_public
+      - ./pb/pb_hooks:/pb/pb_hooks
+    healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
       interval: 5s
       timeout: 5s
       retries: 5
+
   did_creator:
     build: ./tbdex_comm_server
     container_name: tbdex_comm_server
-    env_file:
-      - .env
     ports:
       - "3000:3000"
     depends_on:
-      - "pocketbase"
+      - pocketbase
+    environment:
+      - POCKETBASE_URL=http://pocketbase:8090
 
 
 
