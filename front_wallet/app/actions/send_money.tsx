@@ -1,7 +1,5 @@
-//Action:Send Money
 import React, { useEffect, useState } from 'react';
-import { StatusBar, Keyboard } from 'expo-status-bar';
-import { Platform, StyleSheet, Alert, ScrollView, Animated } from 'react-native';
+import { StatusBar, Keyboard, Alert, ScrollView, Animated, Platform, StyleSheet } from 'react-native';
 import { TextInput, Button, Menu, Provider, Card } from 'react-native-paper';
 import { Text, View } from '@/components/Themed';
 import { useAuth } from "@/app/(auth)/auth";
@@ -22,6 +20,7 @@ export default function SendMoney() {
   const [availableCurrencies, setAvailableCurrencies] = useState([]);
   const [allAvailableOfferings, setAllAvailableOfferings] = useState([]);
   const [pfis, setPfis] = useState([]);
+  const [filteredPfis, setFilteredPfis] = useState([]);
   const [selectedPfi, setSelectedPfi] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const showModal = () => setModalVisible(true);
@@ -109,6 +108,7 @@ export default function SendMoney() {
       console.log(offering)
       const data = await response.json();
       console.log(data);
+      setFilteredPfis(data); // Store the filtered PFIs in the new state
     } catch (error) {
       console.error('Error fetching PFIs:', error);
     }
@@ -165,13 +165,13 @@ export default function SendMoney() {
         </Menu></>}
 
         {/*Load The PFIs*/}
-        {selectedOffering && pfis.length > 0 && (
+        {!selectedPfi && selectedOffering && filteredPfis.length > 0 && (
           <ScrollView>
-            {pfis.map(pfi => (
+            {filteredPfis.map(pfi => (
               <Card key={pfi.id} style={styles.card} onPress={() => handlePfiSelect(pfi)}>
                 <Card.Content>
                   <Text>{pfi.description}</Text>
-                  <Text>1 {walletInUse.currency} = {pfi.payoutUnitsPerPayinUnit}</Text>
+                  <Text>1 {walletInUse.currency} = {pfi.payoutUnitsPerPayinUnit} {selectedOffering.split(":")[1]}</Text>
                 </Card.Content>
               </Card>
             ))}
@@ -181,17 +181,16 @@ export default function SendMoney() {
         {/* Display Selected PFI Details */}
         {selectedPfi && (
           <View style={styles.pfiDetails}>
-            <Text>Description: {selectedPfi.description}</Text>
-            <Text>Payout Units Per Payin Unit: {selectedPfi.payoutUnitsPerPayinUnit}</Text>
-            <Text>Payin Currency: {selectedPfi.payinCurrency}</Text>
-            <Text>Payout Currency: {selectedPfi.payoutCurrency}</Text>
+            <Text>{selectedPfi.description}</Text>
+            <Text>1 {selectedPfi.payoutCurrency} ={Math.round(1/selectedPfi.payoutUnitsPerPayinUnit)} {selectedPfi.payinCurrency}</Text>
             <Text>Payin Methods: {selectedPfi.payinMethods.map(method => method.kind).join(', ')}</Text>
             <Text>Payout Methods: {selectedPfi.payoutMethods.map(method => method.kind).join(', ')}</Text>
           </View>
         )}
 
-        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+
         {(walletInUse != undefined && selectedOffering && selectedPfi && walletInUse.balance > 0) && <>
+          <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
           <TextInput
             style={styles.input}
             placeholder="Recipient"
@@ -234,17 +233,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingTop:60,
+    paddingTop: 60,
     padding: 20,
-  },
-  banner: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  bannerText: {
-    marginHorizontal: 10,
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   title: {
     fontSize: 15,

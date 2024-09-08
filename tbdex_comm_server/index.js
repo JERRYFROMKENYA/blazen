@@ -1,6 +1,5 @@
-
-
 // Import necessary modules
+require('dotenv').config();
 const express = require('express');
 const { DidJwk, DidDht } = require('@web5/dids');
 
@@ -15,8 +14,8 @@ app.use(express.json());
 (async () => {
   // Import PocketBase dynamically
   const PocketBase = (await import('pocketbase')).default;
-  const { TbdexHttpClient } = await import('@tbdex/http-client'); // Use dynamic import for ES module
-
+  const {Close, Order, Rfq, TbDexHttpClient } = await import('@tbdex/http-client'); // Use dynamic import for ES module
+const { Jwt, PresentationExchange  } = await import('@web5/credentials'); // Use dynamic import for ES module
   const pb = new PocketBase(process.env.POCKETBASE_URL); // Use environment variable
 
   // Function to create a DID JWK document
@@ -84,6 +83,77 @@ app.use(express.json());
   const updateCurrencies = () => {
     // Update currencies logic here
   };
+  //Create Exchange
+  const CreateExchange = async (offering, amount, payoutPaymentDetails,customerCredentials,customerDid) => {
+    // TODO 3: Choose only needed credentials to present using PresentationExchange.selectCredentials
+  const selectedCredentials= PresentationExchange.selectCredentials({
+    vcJwts:customerCredentials,//KCC
+    requiredClaims: offering.requiredClaims//required claims
+
+  })
+
+    // TODO 4: Create RFQ message to Request for a Quote
+    const rfq = Rfq.create({
+      metadata:{
+        from:customerDid.uri,
+        to:offering.from,
+        protocol:'1.0'
+      },
+      data:{
+        offeringId:offering.offeringId,
+        payin:{
+            amount:amount.toString(),
+            currencyCode:offering.payinCurrency,
+            kind:offering.payinMethods[0].kind,
+            paymentDetails:offering.payinMethods[0].paymentDetails
+            },
+        payout:{
+          kind:offering.payoutMethods[0].kind,
+          paymentDetails:payoutPaymentDetails,
+        },
+        claims:selectedCredentials
+
+
+        }
+
+
+    });
+
+    try{
+      // TODO 5: Verify offering requirements with RFQ -
+       await rfq.verifyOfferingRequirements(offering.offering)
+
+    } catch (e) {
+      // handle failed verification
+      console.log('Offering requirements not met', e)
+    }
+
+    // TODO 6: Sign RFQ message
+    await rfq.sign(customerDid)
+
+    console.log('RFQ:', rfq)
+
+    try {
+      // TODO 7: Submit RFQ message to the PFI .createExchange(rfq)
+      await TbDexHttpClient.createExchange(rfq)
+    }
+    catch (error) {
+      console.error('Failed to create exchange:', error);
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Endpoint to handle requests and return DID JWK document
   app.get('/jwk', async (req, res) => {
@@ -140,7 +210,8 @@ app.use(express.json());
         payoutCurrency: offering.data.payout.currencyCode,
         payinMethods: offering.data.payin.methods,
         payoutMethods: offering.data.payout.methods,
-        requiredClaims: offering.data.requiredClaims
+        requiredClaims: offering.data.requiredClaims,
+        offering
       }));
 
       res.status(200).json(filteredOfferings); // Return the filtered offerings
@@ -151,13 +222,22 @@ app.use(express.json());
 
   // Endpoint to fetch offerings
   app.get('/offerings', async (req, res) => {
+    const { offering, amount, payoutPaymentDetails, customerCredentials, customerDid } = req.body;
+
     try {
-      const offerings = await fetchOfferings();
+      await CreateExchange(offering, amount, payoutPaymentDetails,customerCredentials,customerDid);
       res.status(200).json(offerings);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
+  //Get A Quote
+
+
+
+
+
+
 
   // Start the server
   app.listen(PORT, (error) => {
@@ -165,6 +245,6 @@ app.use(express.json());
       console.log('Error starting the server');
       return;
     }
-    console.log(`Server is running on port ${PORT} 🚀`+"\n pocket base:"+process.env.POCKETBASE_URL);
+    console.log(`Server is running on port ${PORT} 🚀`+"\n pocket base:"+process.env.POCKETBASE_URL)
   });
 })();
