@@ -1,0 +1,60 @@
+{
+  "name": "kimera",
+  "main": "expo-router/entry",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "expo start --clear",
+    "dev-offline": "expo start --offline --clear",
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "test": "jest --watchAll"
+  },
+  "jest": {
+    "preset": "jest-expo"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^14.0.2",
+    "@react-native-async-storage/async-storage": "1.23.1",
+    "@react-navigation/native": "^6.0.2",
+    "@react-navigation/stack": "^6.4.1",
+    "@tbdex/http-client": "^1.1.0",
+    "@tbdex/protocol": "^2.2.1",
+    "@web5/common": "1.0.0",
+    "@web5/credentials": "^1.0.3",
+    "@web5/crypto": "^1.0.0",
+    "@web5/dids": "^1.1.2",
+    "eventsource": "^2.0.2",
+    "expo": "~51.0.28",
+    "expo-barcode-scanner": "^13.0.1",
+    "expo-font": "~12.0.9",
+    "expo-linking": "~6.3.1",
+    "expo-router": "~3.5.23",
+    "expo-splash-screen": "~0.27.5",
+    "expo-status-bar": "~1.12.1",
+    "expo-system-ui": "~3.0.7",
+    "expo-web-browser": "~13.0.3",
+    "pocketbase": "^0.21.5",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.74.5",
+    "react-native-dotenv": "^3.4.11",
+    "react-native-paper": "^5.12.5",
+    "react-native-qrcode-svg": "^6.3.2",
+    "react-native-reanimated": "~3.10.1",
+    "react-native-safe-area-context": "^4.10.5",
+    "react-native-screens": "3.31.1",
+    "react-native-web": "~0.19.10"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@types/react": "~18.2.45",
+    "jest": "^29.2.1",
+    "jest-expo": "~51.0.3",
+    "react-test-renderer": "18.2.0",
+    "typescript": "~5.3.3"
+  },
+  "private": true,
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

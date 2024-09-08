@@ -15,8 +15,8 @@ services:
       timeout: 5s
       retries: 5
   did_creator:
-    build: ./did_creator
-    container_name: DID-Creator
+    build: tbdex_comm_server
+    container_name: tbdex_comm_server
     ports:
       - "3000:3000"
     depends_on:
