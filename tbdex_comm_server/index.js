@@ -17,7 +17,7 @@ app.use(express.json());
   const PocketBase = (await import('pocketbase')).default;
   const { TbdexHttpClient } = await import('@tbdex/http-client'); // Use dynamic import for ES module
 
-  const pb = new PocketBase("http://138.197.89.72:8090"); // Use environment variable
+  const pb = new PocketBase(process.env.POCKETBASE_URL); // Use environment variable
 
   // Function to create a DID JWK document
   async function createDidJwkDocument() {
@@ -122,24 +122,24 @@ app.use(express.json());
 
     try {
       const offerings = await fetchOfferings();
-      const [payinCurrency, payoutCurrency] = offering.split(':');
-      const filteredOfferings = offerings.offerings.filter(offering =>
-        offering.data.payin.currencyCode === payinCurrency &&
-        offering.data.payout.currencyCode === payoutCurrency
-      ).map(offering => ({
-        // Extract relevant data from the offering
-        from: offering.metadata.from,
-        offeringId: offering.metadata.id,
-        description: offering.data.description,
-        payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
-        payinCurrency: offering.data.payin.currencyCode,
-        payoutCurrency: offering.data.payout.currencyCode,
-        payinMethods: offering.data.payin.methods,
-        payoutMethods: offering.data.payout.methods,
-        requiredClaims: offering.data.requiredClaims
-      }));
+      // const [payinCurrency, payoutCurrency] = offering.split(':');
+      // const filteredOfferings = offerings.filter(offering =>
+      //   offering.data.payin.currencyCode === payinCurrency &&
+      //   offering.data.payout.currencyCode === payoutCurrency
+      // ).map(offering => ({
+      //   // Extract relevant data from the offering
+      //   from: offering.metadata.from,
+      //   offeringId: offering.metadata.id,
+      //   description: offering.data.description,
+      //   payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
+      //   payinCurrency: offering.data.payin.currencyCode,
+      //   payoutCurrency: offering.data.payout.currencyCode,
+      //   payinMethods: offering.data.payin.methods,
+      //   payoutMethods: offering.data.payout.methods,
+      //   requiredClaims: offering.data.requiredClaims
+      // }));
 
-      res.status(200).json(filteredOfferings);
+      res.status(200).json(offerings);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
