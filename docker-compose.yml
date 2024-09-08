@@ -8,7 +8,7 @@ services:
   pocketbase:
     build: ./pb
     restart: unless-stopped
-    container_name: pocketbase_blazen
+    container_name: pocketbase
     ports:
       - "8090:8090"
     volumes:
@@ -32,7 +32,7 @@ services:
       pocketbase:
         condition: service_healthy
     environment:
-      - POCKETBASE_URL=http://138.197.89.72:8090/
+      - POCKETBASE_URL=pocketbase:8090
     networks:
       - blazen_network
 
