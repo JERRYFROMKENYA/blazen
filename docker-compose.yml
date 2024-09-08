@@ -17,6 +17,8 @@ services:
   did_creator:
     build: tbdex_comm_server
     container_name: tbdex_comm_server
+    env_file:
+      - .env
     ports:
       - "3000:3000"
     depends_on:

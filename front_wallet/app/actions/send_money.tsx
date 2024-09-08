@@ -22,9 +22,12 @@ export default function SendMoney() {
   const [availableCurrencies, setAvailableCurrencies] = useState([]);
   const [allAvailableOfferings, setAllAvailableOfferings] = useState([]);
   const [pfis, setPfis] = useState([]);
+  const [selectedPfi, setSelectedPfi] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const showModal = () => setModalVisible(true);
   const hideModal = () => setModalVisible(false);
+
+  const [tbdOffertings, setTbdOfferings] = useState([]);
 
   const { user } = useAuth();
   const { pb } = usePocketBase();
@@ -92,13 +95,34 @@ export default function SendMoney() {
     closeMenu();
   };
 
-  const handleOfferingSelect = (offering) => {
+  const handleOfferingSelect = async (offering) => {
     setSelectedOffering(offering);
     closeOfferingsMenu();
+
+    // Fetch PFIs based on the selected offering
+    try {
+      const response = await fetch('http://138.197.89.72:3000/select-pfi', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ "offering":`${walletInUse.currency}:${offering}` }),
+      });
+
+      const data = await response;
+      console.log('response:', data);
+      setPfis(data);
+    } catch (error) {
+      console.error('Error fetching PFIs:', error);
+    }
+  };
+
+  const handlePfiSelect = (pfi) => {
+    setSelectedPfi(pfi);
   };
 
   const handleSendMoney = () => {
-    if (recipient && amount && walletInUse && selectedOffering) {
+    if (recipient && amount && walletInUse && selectedOffering && selectedPfi) {
       if(walletInUse.balance < amount){Alert.alert('Error', 'Insufficient funds'); return;}
       Alert.alert('Success', `Sent ${amount} ${selectedOffering.split(':')[1]} from ${walletInUse.address} to ${recipient}`);
       showModal();
@@ -112,6 +136,8 @@ export default function SendMoney() {
     <Provider>
       <View style={styles.container}>
         <Text style={styles.title}>Send Money</Text>
+
+        {/*Select Wallet To Use*/}
         <Menu
           visible={visible}
           onDismiss={closeMenu}
@@ -124,8 +150,38 @@ export default function SendMoney() {
             />
           ))}
         </Menu>
+
+        {/*Select Offering PayOut Currency Available*/}
+        {walletInUse && <><Menu
+            visible={offeringsVisible}
+            onDismiss={closeOfferingsMenu}
+            anchor={<Button
+                onPress={openOfferingsMenu}>{selectedOffering ? `to ${selectedOffering.split(':')[1]}` : 'Select Currency'}</Button>}>
+          {availableOfferings.map((offering, index) => (
+              <Menu.Item
+                  key={index}
+                  onPress={() => handleOfferingSelect(offering)}
+                  title={offering.replace(':', ' to ')}
+              />
+          ))}
+        </Menu></>}
+
+        {/*Load The PFIs*/}
+        {selectedOffering && <Menu
+          visible={visible}
+          onDismiss={closeMenu}
+          anchor={<Button onPress={openMenu}>{selectedPfi ? selectedPfi.name : 'Select PFI'}</Button>}>
+          {pfis.map(pfi => (
+            <Menu.Item
+              key={pfi.id}
+              onPress={() => handlePfiSelect(pfi)}
+              title={pfi.name}
+            />
+          ))}
+        </Menu>}
+
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-        {(walletInUse != undefined && walletInUse.balance > 0) && <>
+        {(walletInUse != undefined && selectedOffering && selectedPfi && walletInUse.balance > 0) && <>
           <TextInput
             style={styles.input}
             placeholder="Recipient"
@@ -141,18 +197,6 @@ export default function SendMoney() {
               onChangeText={setAmount}
               keyboardType="numeric"
             />
-            <Menu
-              visible={offeringsVisible}
-              onDismiss={closeOfferingsMenu}
-              anchor={<Button onPress={openOfferingsMenu}>{selectedOffering ?`to ${selectedOffering.split(':')[1]}` : 'Select Currency'}</Button>}>
-              {availableOfferings.map((offering, index) => (
-                <Menu.Item
-                  key={index}
-                  onPress={() => handleOfferingSelect(offering)}
-                  title={offering.replace(':', ' to ')}
-                />
-              ))}
-            </Menu>
           </View>
           <Button mode={"outlined"} children="Send" onPress={handleSendMoney} />
         </>}
