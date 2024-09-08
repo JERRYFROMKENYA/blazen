@@ -32,7 +32,7 @@ services:
       pocketbase:
         condition: service_healthy
     environment:
-      - POCKETBASE_URL=http://pocketbase:8090
+      - POCKETBASE_URL=http://138.197.89.72:8090/
     networks:
       - blazen_network
 
