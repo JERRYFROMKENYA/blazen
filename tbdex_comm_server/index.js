@@ -129,7 +129,7 @@ app.use(express.json());
       ).map(offering => ({
         // Extract relevant data from the offering
         from: offering.metadata.from,
-        oferingId: offering.metadata.id,
+        offeringId: offering.metadata.id,
         description: offering.data.description,
         payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
         payinCurrency: offering.data.payin.currencyCode,
@@ -139,7 +139,7 @@ app.use(express.json());
         requiredClaims: offering.data.requiredClaims
       }));
 
-      res.status(200).json(offerings);
+      res.status(200).json(filteredOfferings);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

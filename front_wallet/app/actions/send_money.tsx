@@ -27,8 +27,6 @@ export default function SendMoney() {
   const showModal = () => setModalVisible(true);
   const hideModal = () => setModalVisible(false);
 
-  const [tbdOffertings, setTbdOfferings] = useState([]);
-
   const { user } = useAuth();
   const { pb } = usePocketBase();
   const scrollX = new Animated.Value(0);
@@ -101,21 +99,23 @@ export default function SendMoney() {
 
     // Fetch PFIs based on the selected offering
     try {
-      const response = await fetch('http://localhost:3000/select-pfi', {
+      const response = await fetch('http://138.197.89.72:3000/select-pfi', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ offering }),
+        body: JSON.stringify({ 'offering':`${offering}` }),
       });
+      console.log(offering)
       const data = await response.json();
-      setPfis(data);
+      console.log(data);
     } catch (error) {
       console.error('Error fetching PFIs:', error);
     }
   };
 
   const handlePfiSelect = (pfi) => {
+    console.log('Selected PFI:', pfi);
     setSelectedPfi(pfi);
   };
 
@@ -165,19 +165,18 @@ export default function SendMoney() {
         </Menu></>}
 
         {/*Load The PFIs*/}
-        {selectedOffering && <Menu
-          visible={visible}
-          onDismiss={closeMenu}
-          anchor={<Button onPress={openMenu}>{selectedPfi ? selectedPfi.name : 'Select PFI'}</Button>}>
-          {pfis.map(pfi => (
-              <Card>
+        {selectedOffering && pfis.length > 0 && (
+          <ScrollView>
+            {pfis.map(pfi => (
+              <Card key={pfi.id} style={styles.card} onPress={() => handlePfiSelect(pfi)}>
                 <Card.Content>
-                  <Text >Card title</Text>
-                  <Text >Card content</Text>
+                  <Text>{pfi.description}</Text>
+                  <Text>1 {walletInUse.currency} = {pfi.payoutUnitsPerPayinUnit}</Text>
                 </Card.Content>
               </Card>
-          ))}
-        </Menu>}
+            ))}
+          </ScrollView>
+        )}
 
         {/* Display Selected PFI Details */}
         {selectedPfi && (
@@ -272,6 +271,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 5,
+    width: '100%',
+  },
+  card: {
+    marginVertical: 10,
     width: '100%',
   },
 });
