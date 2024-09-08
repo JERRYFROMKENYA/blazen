@@ -125,7 +125,7 @@ app.use(express.json());
     try {
       const offerings = await fetchOfferings();
       const [payinCurrency, payoutCurrency] = offering.split(':');
-      const filteredOfferings = offerings.filter(offering =>
+      const filteredOfferings = offerings.offerings.filter(offering =>
         offering.data.payin.currencyCode === payinCurrency &&
         offering.data.payout.currencyCode === payoutCurrency
       ).map(offering => ({
