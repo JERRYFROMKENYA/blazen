@@ -14,8 +14,8 @@ app.use(express.json());
 (async () => {
   // Import PocketBase dynamically
   const PocketBase = (await import('pocketbase')).default;
-  const {Close, Order, Rfq, TbDexHttpClient } = await import('@tbdex/http-client'); // Use dynamic import for ES module
-const { Jwt, PresentationExchange  } = await import('@web5/credentials'); // Use dynamic import for ES module
+  const { Close, Order, Rfq, TbdexHttpClient } = await import('@tbdex/http-client');// Use dynamic import for ES module
+  const { Jwt, PresentationExchange } = await import('@web5/credentials'); // Use dynamic import for ES module
   const pb = new PocketBase(process.env.POCKETBASE_URL); // Use environment variable
 
   // Function to create a DID JWK document
@@ -41,7 +41,6 @@ const { Jwt, PresentationExchange  } = await import('@web5/credentials'); // Use
   // Function to fetch mock DIDs from PocketBase
   const fetchMockDids = async () => {
     try {
-
       const records = await pb.collection('pfi').getFullList(); // Replace 'mock_dids' with your collection name
       return records.reduce((acc, record) => {
         acc[record.id] = {
@@ -83,77 +82,58 @@ const { Jwt, PresentationExchange  } = await import('@web5/credentials'); // Use
   const updateCurrencies = () => {
     // Update currencies logic here
   };
-  //Create Exchange
-  const CreateExchange = async (offering, amount, payoutPaymentDetails,customerCredentials,customerDid) => {
-    // TODO 3: Choose only needed credentials to present using PresentationExchange.selectCredentials
-  const selectedCredentials= PresentationExchange.selectCredentials({
-    vcJwts:customerCredentials,//KCC
-    requiredClaims: offering.requiredClaims//required claims
 
-  })
+  // Create Exchange
+  const CreateExchange = async (offering, amount, payoutPaymentDetails, customerCredentials, customerDid) => {
+    // TODO 3: Choose only needed credentials to present using PresentationExchange.selectCredentials
+    const selectedCredentials = PresentationExchange.selectCredentials({
+      vcJwts: customerCredentials, // KCC
+      requiredClaims: offering.requiredClaims // required claims
+    });
 
     // TODO 4: Create RFQ message to Request for a Quote
     const rfq = Rfq.create({
-      metadata:{
-        from:customerDid.uri,
-        to:offering.from,
-        protocol:'1.0'
+      metadata: {
+        from: customerDid.uri,
+        to: offering.from,
+        protocol: '1.0'
       },
-      data:{
-        offeringId:offering.offeringId,
-        payin:{
-            amount:amount.toString(),
-            currencyCode:offering.payinCurrency,
-            kind:offering.payinMethods[0].kind,
-            paymentDetails:offering.payinMethods[0].paymentDetails
-            },
-        payout:{
-          kind:offering.payoutMethods[0].kind,
-          paymentDetails:payoutPaymentDetails,
+      data: {
+        offeringId: offering.offeringId,
+        payin: {
+          amount: amount.toString(),
+          currencyCode: offering.payinCurrency,
+          kind: offering.payinMethods[0].kind,
+          paymentDetails: offering.payinMethods[0].paymentDetails
         },
-        claims:selectedCredentials
-
-
-        }
-
-
+        payout: {
+          kind: offering.payoutMethods[0].kind,
+          paymentDetails: payoutPaymentDetails,
+        },
+        claims: selectedCredentials
+      }
     });
 
-    try{
+    try {
       // TODO 5: Verify offering requirements with RFQ -
-       await rfq.verifyOfferingRequirements(offering.offering)
-
+      await rfq.verifyOfferingRequirements(offering.offering);
     } catch (e) {
       // handle failed verification
-      console.log('Offering requirements not met', e)
+      console.log('Offering requirements not met', e);
     }
 
     // TODO 6: Sign RFQ message
-    await rfq.sign(customerDid)
+    await rfq.sign(customerDid);
 
-    console.log('RFQ:', rfq)
+    console.log('RFQ:', rfq);
 
     try {
       // TODO 7: Submit RFQ message to the PFI .createExchange(rfq)
-      await TbDexHttpClient.createExchange(rfq)
-    }
-    catch (error) {
+      await TbdexHttpClient.createExchange(rfq);
+    } catch (error) {
       console.error('Failed to create exchange:', error);
     }
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
+  };
 
   // Endpoint to handle requests and return DID JWK document
   app.get('/jwk', async (req, res) => {
@@ -198,8 +178,8 @@ const { Jwt, PresentationExchange  } = await import('@web5/credentials'); // Use
       const [payinCurrency, payoutCurrency] = offering.split(':');
       console.log('Selected currencies:', payinCurrency, payoutCurrency);
       const filteredOfferings = offerings.filter(offering =>
-          offering.data.payin.currencyCode === payinCurrency &&
-          offering.data.payout.currencyCode === payoutCurrency
+        offering.data.payin.currencyCode === payinCurrency &&
+        offering.data.payout.currencyCode === payoutCurrency
       ).map(offering => ({
         // Extract relevant data from the offering
         from: offering.metadata.from,
@@ -225,19 +205,12 @@ const { Jwt, PresentationExchange  } = await import('@web5/credentials'); // Use
     const { offering, amount, payoutPaymentDetails, customerCredentials, customerDid } = req.body;
 
     try {
-      await CreateExchange(offering, amount, payoutPaymentDetails,customerCredentials,customerDid);
+      await CreateExchange(offering, amount, payoutPaymentDetails, customerCredentials, customerDid);
       res.status(200).json(offerings);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
-  //Get A Quote
-
-
-
-
-
-
 
   // Start the server
   app.listen(PORT, (error) => {
@@ -245,6 +218,6 @@ const { Jwt, PresentationExchange  } = await import('@web5/credentials'); // Use
       console.log('Error starting the server');
       return;
     }
-    console.log(`Server is running on port ${PORT} 🚀`+"\n pocket base:"+process.env.POCKETBASE_URL)
+    console.log(`Server is running on port ${PORT} 🚀` + "\n pocket base:" + process.env.POCKETBASE_URL);
   });
 })();
