@@ -14,9 +14,9 @@ app.use(express.json());
 (async () => {
   // Import PocketBase dynamically
   const PocketBase = (await import('pocketbase')).default;
-  const { Close, Order, Rfq, TbdexHttpClient } = await import('@tbdex/http-client');// Use dynamic import for ES module
-  const { Jwt, PresentationExchange } = await import('@web5/credentials'); // Use dynamic import for ES module
-  const pb = new PocketBase(process.env.POCKETBASE_URL); // Use environment variable
+  const { Close, Order, Rfq, TbdexHttpClient } = await import('@tbdex/http-client');
+  const { Jwt, PresentationExchange } = await import('@web5/credentials');
+  const pb = new PocketBase(process.env.POCKETBASE_URL);
 
   // Function to create a DID JWK document
   async function createDidJwkDocument() {
@@ -31,7 +31,7 @@ app.use(express.json());
   // Function to create a DID DHT document
   async function createDidDhtDocument() {
     try {
-      const didDht = await DidDht.create();
+      const didDht = await DidDht.create({publish:true});
       return didDht.export();
     } catch (err) {
       throw new Error('Error creating DID: ' + err.message);
@@ -41,7 +41,7 @@ app.use(express.json());
   // Function to fetch mock DIDs from PocketBase
   const fetchMockDids = async () => {
     try {
-      const records = await pb.collection('pfi').getFullList(); // Replace 'mock_dids' with your collection name
+      const records = await pb.collection('pfi').getFullList();
       return records.reduce((acc, record) => {
         acc[record.id] = {
           did: record.did,
@@ -64,14 +64,10 @@ app.use(express.json());
       console.log('Mock DIDs:', mockDids);
       for (const pfi of Object.values(mockDids)) {
         const pfiUri = pfi.did;
-        // Fetch offerings from PFIs
-        const offerings = await TbdexHttpClient.getOfferings({
-          pfiDid: pfiUri
-        });
+        const offerings = await TbdexHttpClient.getOfferings({ pfiDid: pfiUri });
         allOfferings.push(...offerings);
       }
-
-      return allOfferings; // Return the array of offerings directly
+      return allOfferings;
     } catch (error) {
       console.error('Failed to fetch offerings:', error);
       throw error;
@@ -84,54 +80,53 @@ app.use(express.json());
   };
 
   // Create Exchange
-  const CreateExchange = async (offering, amount, payoutPaymentDetails, customerCredentials, customerDid) => {
-    // TODO 3: Choose only needed credentials to present using PresentationExchange.selectCredentials
+  const CreateExchange = async (offering, amount, payoutPaymentDetails, customerCredentials, customerDid, payinPaymentDetails) => {
+    console.log(customerDid)
     const selectedCredentials = PresentationExchange.selectCredentials({
-      vcJwts: customerCredentials, // KCC
-      requiredClaims: offering.requiredClaims // required claims
+      vcJwts: customerCredentials,
+      requiredClaims: offering.data.requiredClaims,
+      presentationDefinition: offering.data.requiredClaims
     });
 
-    // TODO 4: Create RFQ message to Request for a Quote
     const rfq = Rfq.create({
       metadata: {
         from: customerDid.uri,
-        to: offering.from,
+        to: offering.metadata.from,
         protocol: '1.0'
+
       },
       data: {
-        offeringId: offering.offeringId,
+        offeringId: offering.metadata.id,
         payin: {
           amount: amount.toString(),
-          currencyCode: offering.payinCurrency,
-          kind: offering.payinMethods[0].kind,
-          paymentDetails: offering.payinMethods[0].paymentDetails
+          currencyCode: offering.data.payin.currencyCode,
+          kind: offering.data.payin.methods[0].kind,
+          paymentDetails: payinPaymentDetails,
         },
         payout: {
-          kind: offering.payoutMethods[0].kind,
+          kind: offering.data.payout.methods[0].kind,
           paymentDetails: payoutPaymentDetails,
         },
+
         claims: selectedCredentials
       }
     });
 
     try {
-      // TODO 5: Verify offering requirements with RFQ -
-      await rfq.verifyOfferingRequirements(offering.offering);
+      await rfq.verifyOfferingRequirements(offering);
     } catch (e) {
-      // handle failed verification
       console.log('Offering requirements not met', e);
     }
 
-    // TODO 6: Sign RFQ message
     await rfq.sign(customerDid);
 
     console.log('RFQ:', rfq);
 
     try {
-      // TODO 7: Submit RFQ message to the PFI .createExchange(rfq)
       await TbdexHttpClient.createExchange(rfq);
     } catch (error) {
       console.error('Failed to create exchange:', error);
+      throw new Error('Failed to create exchange: ' + error.message);
     }
   };
 
@@ -168,7 +163,6 @@ app.use(express.json());
   // Endpoint to select PFI based on user's offering selection
   app.post('/select-pfi', async (req, res) => {
     const { offering } = req.body;
-    // console.log('Offering:', offering);
     if (!offering) {
       return res.status(400).json({ error: 'Offering is required' });
     }
@@ -181,7 +175,6 @@ app.use(express.json());
         offering.data.payin.currencyCode === payinCurrency &&
         offering.data.payout.currencyCode === payoutCurrency
       ).map(offering => ({
-        // Extract relevant data from the offering
         from: offering.metadata.from,
         offeringId: offering.metadata.id,
         description: offering.data.description,
@@ -194,21 +187,27 @@ app.use(express.json());
         offering
       }));
 
-      res.status(200).json(filteredOfferings); // Return the filtered offerings
+      res.status(200).json(filteredOfferings);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
 
   // Endpoint to fetch offerings
-  app.get('/offerings', async (req, res) => {
-    const { offering, amount, payoutPaymentDetails, customerCredentials, customerDid } = req.body;
+  app.post('/offerings', async (req, res) => {
+    const { offering, amount, payoutPaymentDetails, customerCredentials, customerDid, payinPaymentDetails } = req.body;
+
+    if (!offering || !amount || !payoutPaymentDetails || !customerCredentials || !customerDid) {
+      return res.status(400).json({ error: 'All fields (offering, amount, payoutPaymentDetails, customerCredentials, customerDid) are required' });
+    }
 
     try {
-      await CreateExchange(offering, amount, payoutPaymentDetails, customerCredentials, customerDid);
-      res.status(200).json(offerings);
+      const exchange = await CreateExchange(offering, amount, payoutPaymentDetails, customerCredentials, customerDid, payinPaymentDetails);
+      console.log('Exchange:', exchange);
+      res.status(200).json(exchange);
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.log(err)
+      res.status(500).json({ "error-offerings": err });
     }
   });
 
@@ -218,6 +217,6 @@ app.use(express.json());
       console.log('Error starting the server');
       return;
     }
-    console.log(`Server is running on port ${PORT} 🚀` + "\n pocket base:" + process.env.POCKETBASE_URL);
+    console.log(`Server is running on port ${PORT} 🚀\nPocketBase: ${process.env.POCKETBASE_URL}`);
   });
 })();
