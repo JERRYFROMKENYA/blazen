@@ -1,7 +1,7 @@
 // Import necessary modules
 require('dotenv').config();
 const express = require('express');
-const { DidJwk, DidDht } = require('@web5/dids');
+const { DidJwk, DidDht, BearerDid } = require('@web5/dids');
 
 // Initialize Express app
 const app = express();
@@ -80,7 +80,8 @@ app.use(express.json());
   };
 
   // Create Exchange
-  const CreateExchange = async (offering, amount, payoutPaymentDetails, customerCredentials, customerDid, payinPaymentDetails) => {
+  const CreateExchange = async (offering, amount, payoutPaymentDetails, customerCredentials, cDid, payinPaymentDetails) => {
+    const customerDid = await DidDht.import({ portableDid: cDid })
     console.log(customerDid)
     const selectedCredentials = PresentationExchange.selectCredentials({
       vcJwts: customerCredentials,
