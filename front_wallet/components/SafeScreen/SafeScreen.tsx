@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Platform, ScrollView, SafeAreaView, RefreshControl } from 'react-native';
 import { View } from '@/components/Themed';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const SafeScreen = ({ children, onRefresh }: { children: React.ReactNode, onRefresh: () => void }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -15,6 +16,7 @@ const SafeScreen = ({ children, onRefresh }: { children: React.ReactNode, onRefr
 
   return (
       <View style={styles.container}>
+      <KeyboardAwareScrollView>
     <SafeAreaView >
       <ScrollView
         onScroll={({ nativeEvent }) => {
@@ -28,6 +30,7 @@ const SafeScreen = ({ children, onRefresh }: { children: React.ReactNode, onRefr
         {children}
       </ScrollView>
     </SafeAreaView>
+      </KeyboardAwareScrollView>
       </View>
   );
 };
@@ -40,5 +43,6 @@ const styles = StyleSheet.create({
     minWidth: '100%',
     height: '100%',
     padding: 5,
+
   },
 });

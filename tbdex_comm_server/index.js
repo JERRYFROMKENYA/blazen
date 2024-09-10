@@ -169,13 +169,20 @@ app.use(express.json());
     }
 
     try {
-      const offerings = await fetchOfferings();
-      const [payinCurrency, payoutCurrency] = offering.split(':');
-      console.log('Selected currencies:', payinCurrency, payoutCurrency);
-      const filteredOfferings = offerings.filter(offering =>
-        offering.data.payin.currencyCode === payinCurrency &&
-        offering.data.payout.currencyCode === payoutCurrency
-      ).map(offering => ({
+     const offerings = await fetchOfferings();
+const [payinCurrency, payoutCurrency] = offering.split(':');
+console.log('Selected currencies:', payinCurrency, payoutCurrency);
+
+const filteredOfferings = await Promise.all(
+  offerings
+    .filter(offering =>
+      offering.data.payin.currencyCode === payinCurrency &&
+      offering.data.payout.currencyCode === payoutCurrency
+    )
+    .map(async offering => {
+      const pfi = await pb.collection('pfi').getFirstListItem(`did= "${offering.metadata.from}"`);
+      return {
+        name: pfi.name,
         from: offering.metadata.from,
         offeringId: offering.metadata.id,
         description: offering.data.description,
@@ -186,9 +193,12 @@ app.use(express.json());
         payoutMethods: offering.data.payout.methods,
         requiredClaims: offering.data.requiredClaims,
         offering
-      }));
+      };
+    })
+);
 
-      res.status(200).json(filteredOfferings);
+console.log('Filtered offerings:', filteredOfferings);
+res.status(200).json(filteredOfferings);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -196,7 +206,12 @@ app.use(express.json());
 
   // Endpoint to fetch offerings
   app.post('/offerings', async (req, res) => {
-    const { offering, amount, payoutPaymentDetails, customerCredentials, customerDid, payinPaymentDetails } = req.body;
+    const { offering,
+      amount,
+      payoutPaymentDetails,
+      customerCredentials,
+      customerDid,
+      payinPaymentDetails } = req.body;
 
     if (!offering || !amount || !payoutPaymentDetails || !customerCredentials || !customerDid) {
       return res.status(400).json({ error: 'All fields (offering, amount, payoutPaymentDetails, customerCredentials, customerDid) are required' });

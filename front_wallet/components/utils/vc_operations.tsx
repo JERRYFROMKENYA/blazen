@@ -17,6 +17,18 @@ export async function fetchVCIssuerURL(pb: any, issuerName: string) {
     return null;
   }
 }
+export async function fetchVCIssuerURLById(pb: any, id: string) {
+  try {
+    const response = await pb.collection('vc_issuer').getFirstListItem(`id="${id}"`);
+    if (!response) {
+      throw new Error(`Issuer with id ${id} not found`);
+    }
+    return response.url;
+  } catch (error) {
+    console.error('Error fetching VC Issuer URL:', error);
+    return null;
+  }
+}
 
 // `components/utils/vc_operations.tsx`
 

@@ -7,6 +7,9 @@ import { usePocketBase } from "@/components/Services/Pocketbase";
 import { getWalletsForLoggedInUser } from "@/components/utils/wallet_ops";
 import { formatNumberWithCommas } from "@/components/utils/format";
 import SendMoneyAction from "@/components/SendMoney/SendMoneyAction";
+import PayInForm from "@/components/SendMoney/payInForm";
+import SafeScreen from "@/components/SafeScreen/SafeScreen";
+import PayinMethodMenu from "@/components/SendMoney/payinMethodMenu";
 
 export default function SendMoney() {
   const [recipient, setRecipient] = useState('');
@@ -21,8 +24,15 @@ export default function SendMoney() {
   const [allAvailableOfferings, setAllAvailableOfferings] = useState([]);
   const [pfis, setPfis] = useState([]);
   const [filteredPfis, setFilteredPfis] = useState([]);
+  const[selectedPfiName, setSelectedPfiName]=useState("");
   const [selectedPfi, setSelectedPfi] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const[selectedPayinMethod, setSelectedPayinMethod]=useState(null);
+
+  const onSelectPayinMethod=(method:any)=>{
+    setSelectedPayinMethod(method);
+  }
+
   const showModal = () => setModalVisible(true);
   const hideModal = () => setModalVisible(false);
 
@@ -117,21 +127,30 @@ export default function SendMoney() {
   const handlePfiSelect = (pfi) => {
     console.log('Selected PFI:', pfi);
     setSelectedPfi(pfi);
+    const result = pb.collection("pfi").getFirstListItem(`did = "${pfi.from}"`);
+    console.log("result ",result);
+    setSelectedPfiName(result.name);
   };
 
-  const handleSendMoney = () => {
-    if (recipient && amount && walletInUse && selectedOffering && selectedPfi) {
-      if(walletInUse.balance < amount){Alert.alert('Error', 'Insufficient funds'); return;}
-      Alert.alert('Success', `Sent ${amount} ${selectedOffering.split(':')[1]} from ${walletInUse.address} to ${recipient}`);
+  const handleSendMoney = (payInDetails:{}) => {
+    if(walletInUse?.balance < amount){Alert.alert('Error', 'Insufficient funds'); return;}
+      Alert.alert('Success', `Sent ${amount} ${selectedOffering.split(':')[1]}
+       from ${walletInUse.address}
+       to ${JSON.stringify(payInDetails)}`);
       showModal();
+
+
+
+
+
+
       Keyboard.dismiss();
-    } else {
-      Alert.alert('Error', 'Please fill in all fields');
-    }
+
   };
 
+  // @ts-ignore
   return (
-    <Provider>
+    <SafeScreen>
       <View style={styles.container}>
         <Text style={styles.title}>Send Money</Text>
 
@@ -180,34 +199,30 @@ export default function SendMoney() {
 
         {/* Display Selected PFI Details */}
         {selectedPfi && (
-          <View style={styles.pfiDetails}>
-            <Text>{selectedPfi.description}</Text>
-            <Text>1 {selectedPfi.payoutCurrency} ={Math.round(1/selectedPfi.payoutUnitsPerPayinUnit)} {selectedPfi.payinCurrency}</Text>
-            <Text>Payin Methods: {selectedPfi.payinMethods.map(method => method.kind).join(', ')}</Text>
-            <Text>Payout Methods: {selectedPfi.payoutMethods.map(method => method.kind).join(', ')}</Text>
-          </View>
+            <>
+              <View style={styles.pfiDetails}>
+                <Text>{selectedPfiName}</Text>
+                <Text>{selectedPfi.description}</Text>
+                <Text>1 {selectedPfi.payoutCurrency} ={Math.round(1/selectedPfi.payoutUnitsPerPayinUnit)} {selectedPfi.payinCurrency}</Text>
+                <Text>{selectedPfi.payinMethods.map(method => method.requiredPaymentDetails.title).join(', ')}</Text>
+                <Text>{selectedPfi.payoutMethods.map(method => method.requiredPaymentDetails.title).join(', ')}</Text>
+              </View>
+              {console.log(selectedPfi)}
+              <PayinMethodMenu
+                  payinMethods={selectedPfi?.payoutMethods}
+                  onSelect={onSelectPayinMethod}
+                  selectedPayinMethod={selectedPayinMethod}
+              />
+            </>
+
         )}
-
-
-        {(walletInUse != undefined && selectedOffering && selectedPfi && walletInUse.balance > 0) && <>
+        {/*TODO 1: Display A Menu With Each of the selectedPfi 's payinMethods */}
+        {(walletInUse != undefined && selectedPayinMethod && selectedOffering && selectedPfi && walletInUse.balance > 0) && <>
           <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-          <TextInput
-            style={styles.input}
-            placeholder="Recipient"
-            value={recipient}
-            onChangeText={setRecipient}
-          />
-          <View style={{ width: "100%", flexDirection: "row", alignItems: "center" }}>
-            <Text style={{fontWeight:"bold", padding:1}}>{walletInUse.currency ||""} </Text>
-            <TextInput
-              style={[styles.input, { flex: 1 }]}
-              placeholder="Amount"
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="numeric"
-            />
-          </View>
-          <Button mode={"outlined"} children="Send" onPress={handleSendMoney} />
+          {/*TODO 2: Render Input depending on the payInMethods*/}
+          <PayInForm handleSendMoney={handleSendMoney}
+                       payInProperties={selectedPayinMethod.requiredPaymentDetails.properties}
+                       walletInUse={walletInUse} />
         </>}
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
         <Text style={styles.title}>All Available Offerings:</Text>
@@ -224,7 +239,7 @@ export default function SendMoney() {
         walletInUse: walletInUse,
         selectedOffering: selectedOffering
       }} visible={modalVisible} hide={hideModal} />
-    </Provider>
+    </SafeScreen>
   );
 }
 

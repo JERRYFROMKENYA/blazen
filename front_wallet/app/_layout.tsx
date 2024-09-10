@@ -75,6 +75,12 @@ function RootLayoutNav() {
               <Stack.Screen name="actions/bill_split" options={{ presentation: 'modal', headerShown:false }} />
               <Stack.Screen name="actions/save" options={{ presentation: 'modal', headerShown:false }} />
               <Stack.Screen name="actions/withdraw" options={{ presentation: 'modal', headerShown:false }} />
+            {/*  VC*/}
+              <Stack.Screen name="Credentials/add_verifiable_credentials" options={{ presentation: 'modal', headerShown:false }} />
+            {/*  Profile*/}
+                <Stack.Screen name="Profile/Profile" options={{ presentation: 'modal', headerShown:false }} />
+              {/*Manage DID*/}
+              <Stack.Screen name="DID/manage_did" options={{ presentation: 'modal', headerShown:false }} />
             </Stack>
           </PaperProvider>
         </AuthProvider>

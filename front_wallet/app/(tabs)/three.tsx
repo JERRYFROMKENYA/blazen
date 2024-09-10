@@ -1,55 +1,55 @@
-// `app/(tabs)/two.tsx`
+// `app/(tabs)/three.tsx`
 import { StyleSheet } from 'react-native';
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
-import { useRouter } from 'expo-router';
-import { useDidOperations } from '@/components/utils/did_operations';
-import { generateVC } from "@/components/utils/user_details";
-import { useGenerateVC } from "@/components/useGenerateVC";
-import { useAuth } from "@/app/(auth)/auth";
-import { getDIDForLoggedInUser, getVCForLoggedInUser } from "@/components/utils";
-import { createWallet, getWalletsForLoggedInUser } from "@/components/utils/wallet_ops";
-import { useEffect, useState } from "react";
-import { usePocketBase } from "@/components/Services/Pocketbase";
-import React from 'react';
+import React, {useEffect, useState} from 'react';
+import CredentialsList from "@/components/CredentialsScreen/CredentialsList";
+import SafeScreen from "@/components/SafeScreen/SafeScreen";
+import ExplanationCard from "@/components/CredentialsScreen/ExplanationCard";
+import { Appbar, FAB } from 'react-native-paper';
+import {usePocketBase} from "@/components/Services/Pocketbase";
+import {useAuth} from "@/app/(auth)/auth";
+import {useRouter} from "expo-router";
 
 export default function CredentialScreen() {
-    const router = useRouter();
-    const { setDHTDid, setJWKDid } = useDidOperations();
-    const { handleGenerateVC } = useGenerateVC();
-    const { signOut, user } = useAuth();
-    const { pb } = usePocketBase();
-    const [myDid, setMyDid] = useState("this isnt working currently please wait this isnt working currently please wait");
-    const [myVC, setMyVC] = useState("\"this isnt working currently please wait\" \"this isnt working currently please wait\"");
-    const [myWallets, setMyWallets] = useState([]);
+    const router =useRouter();
+    // const _handleSearch = () => console.log('Searching');
+    // const _handleMore = () => console.log('Shown more');
+    const {pb}=usePocketBase();
+    const{user}=useAuth();
+    const [vcList,setVcList]=useState([]);
+    async function getVCList() {
+        const resultList = await pb.collection('customer_vc').getFullList({
+            filter: `user = "${user.id}"`,expand:"issuer"
+        })
 
-    useEffect(() => {
-        getDIDForLoggedInUser(user, pb).then(r => setMyDid(r.document.id));
-        getVCForLoggedInUser(user, pb).then(r => setMyVC(r));
-        getWalletsForLoggedInUser(user, pb).then(r => setMyWallets(r));
-    }, [user, pb]);
+        setVcList(resultList)
+        console.log(resultList)
+    }
+    useEffect(()=>{
+        getVCList().then(r => {})
+    },[user,pb])
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Testing </Text>
-            <Text style={styles.title}>My DID: </Text>
-            <Text>{String(myDid).slice(0, 12)}</Text>
-            <Text style={styles.title}>My VC: </Text>
-            <Text>{String(myVC).slice(-12, -1)}</Text>
-            <Text style={styles.title}>My Wallets: </Text>
-            {myWallets.map(wallet => (
-                <Text key={wallet.id}>{wallet.address} - {wallet.balance} {wallet.currency}</Text>
-            ))}
-            <Text onPress={() => { setDHTDid().then(r => console.log(r)) }} style={styles.title}>Test DHT</Text>
-            <Text onPress={() => { setJWKDid().then(r => console.log(r)) }} style={styles.title}>Test JWT</Text>
-            <Text onPress={() => { handleGenerateVC().then(r => console.log(r)) }} style={styles.title}>Test VC</Text>
-            <Text onPress={() => { createWallet(user, pb, 0, user.id, "fiat", "KES").then(r => console.log(r)) }} style={styles.title}>Create Wallet</Text>
-            <Text onPress={async () => {
-                await signOut();
-            }} style={styles.title}>Sign Out</Text>
-
-            <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-            <EditScreenInfo path="app/(tabs)/two.tsx" />
+            <Appbar.Header>
+                <Appbar.Content title="Verifiable Credentials" />
+                {/*<Appbar.Action icon="magnify" onPress={_handleSearch} />*/}
+                {/*<Appbar.Action icon="dots-vertical" onPress={_handleMore} />*/}
+            </Appbar.Header>
+            <SafeScreen onRefresh={()=>{
+                getVCList().then(r => {})
+            }}>
+                <ExplanationCard/>
+                <CredentialsList
+                    refresh={getVCList}
+                    vcList={vcList} />
+            </SafeScreen>
+            <FAB
+                style={styles.fab}
+                icon="plus"
+                onPress={() =>router.push('/Credentials/add_verifiable_credentials' )}
+            />
         </View>
     );
 }
@@ -57,16 +57,11 @@ export default function CredentialScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
     },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    separator: {
-        marginVertical: 30,
-        height: 1,
-        width: '80%',
+    fab: {
+        position: 'absolute',
+        margin: 16,
+        right: 0,
+        bottom: 0,
     },
 });

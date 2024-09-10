@@ -7,12 +7,12 @@ import {useAuth} from "@/app/(auth)/auth";
 import CredentialScreen from "./three";
 
 export default function TabLayout() {
-  const router =useRouter();
+
 
   const [index, setIndex] = React.useState(0);
   const [routes] = React.useState([
     { key: 'home', title: 'Home', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
-    { key: 'creds', title: 'Credentials', focusedIcon: 'account-circle', unfocusedIcon: 'account-circle-outline' },
+    { key: 'creds', title: 'Credentials', focusedIcon: 'lock', unfocusedIcon: 'lock-outline' },
     { key: 'user', title: 'Me', focusedIcon: 'account-circle', unfocusedIcon: 'account-circle-outline' },
 
   ]);
