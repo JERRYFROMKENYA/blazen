@@ -45,7 +45,7 @@ export default function AddVerifiableCredential() {
         }
     }
 
-   const handlePress = async (id: string, data: any) => {
+   const handlePress = async (issuer: {}, data: any) => {
     Alert.alert(
         "Do you want to create a VC using this provider?",
         `By Continuing you agree to submit the following data : ${Object.keys(data).map((key) => (
@@ -72,8 +72,8 @@ export default function AddVerifiableCredential() {
                     } catch (error) {
 
                         console.error("Error creating VC:", error);
-                        console.log(id);
-                        const URL = await fetchVCIssuerURLById(pb, id);
+                        console.log(issuer.id);
+                        const URL = await fetchVCIssuerURLById(pb, issuer.id);
                         const response = await pb.collection('customer_did').getFirstListItem(`user="${user.id}"`);
                         console.log(response.did);
                         const userDid = response.did.uri;
@@ -94,18 +94,18 @@ export default function AddVerifiableCredential() {
                         if(vc){
                             const data = {
                                 "user": user.id,
-                                "name": response.name,
+                                "name": issuer.name,
                                 "purpose": "Verification",
-                                "issuer": id,
+                                "issuer": issuer.id,
                                 vc
                             };
 
                             const record = await pb.collection('customer_vc').create(data);
-                            router.replace('/(tabs)/three');
+                            router.back();
                         }
                         else {
                             Alert.alert("Error", 'Error fetching VC');
-                            router.replace('/(tabs)/three');
+                            router.back();
                         }
                     }
                 }
@@ -152,7 +152,7 @@ export default function AddVerifiableCredential() {
                             description={`${vc.description} \n Verifies: ${Object.keys(vc.verifiables).map((key) => (
                                 `${toSentenceCase(vc.verifiables[key])} `
                             ))}`}
-                            onPress={()=>{handlePress(vc.id,vc.verifiables)}}
+                            onPress={()=>{handlePress(vc,vc.verifiables)}}
                         />
                         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
                     </React.Fragment>

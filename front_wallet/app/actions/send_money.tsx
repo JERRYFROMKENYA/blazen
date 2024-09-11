@@ -10,6 +10,7 @@ import SendMoneyAction from "@/components/SendMoney/SendMoneyAction";
 import PayInForm from "@/components/SendMoney/payInForm";
 import SafeScreen from "@/components/SafeScreen/SafeScreen";
 import PayinMethodMenu from "@/components/SendMoney/payinMethodMenu";
+import GetQuote from "@/components/SendMoney/GetQuote";
 
 export default function SendMoney() {
   const [recipient, setRecipient] = useState('');
@@ -24,10 +25,11 @@ export default function SendMoney() {
   const [allAvailableOfferings, setAllAvailableOfferings] = useState([]);
   const [pfis, setPfis] = useState([]);
   const [filteredPfis, setFilteredPfis] = useState([]);
-  const[selectedPfiName, setSelectedPfiName]=useState("");
+  const[showQuote, setShowQuote]=useState(false);
   const [selectedPfi, setSelectedPfi] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const[selectedPayinMethod, setSelectedPayinMethod]=useState(null);
+  const[payInDetails, setPayInDetails]=useState({});
 
   const onSelectPayinMethod=(method:any)=>{
     setSelectedPayinMethod(method);
@@ -129,7 +131,6 @@ export default function SendMoney() {
     setSelectedPfi(pfi);
     const result = pb.collection("pfi").getFirstListItem(`did = "${pfi.from}"`);
     console.log("result ",result);
-    setSelectedPfiName(result.name);
   };
 
   const handleSendMoney = (payInDetails:{}) => {
@@ -137,39 +138,35 @@ export default function SendMoney() {
       Alert.alert('Success', `Sent ${amount} ${selectedOffering.split(':')[1]}
        from ${walletInUse.address}
        to ${JSON.stringify(payInDetails)}`);
-      showModal();
-
-
-
-
-
-
+      setShowQuote(!showQuote);
+      // showModal();
+      setPayInDetails(payInDetails);
       Keyboard.dismiss();
 
   };
 
-  // @ts-ignore
   return (
     <SafeScreen>
       <View style={styles.container}>
         <Text style={styles.title}>Send Money</Text>
 
         {/*Select Wallet To Use*/}
-        <Menu
-          visible={visible}
-          onDismiss={closeMenu}
-          anchor={<Button onPress={openMenu}>{walletInUse ? `${walletInUse.currency}  ${formatNumberWithCommas(walletInUse.balance)} • ${walletInUse.provider}` : 'Select Wallet To Use'}</Button>}>
+        {!showQuote && <Menu
+            visible={visible}
+            onDismiss={closeMenu}
+            anchor={<Button
+                onPress={openMenu}>{walletInUse ? `${walletInUse.currency}  ${formatNumberWithCommas(walletInUse.balance)} • ${walletInUse.provider}` : 'Select Wallet To Use'}</Button>}>
           {userWallets.map(wallet => (
-            <Menu.Item
-              key={wallet.id}
-              onPress={() => handleWalletSelect(wallet)}
-              title={`${wallet.currency}  ${formatNumberWithCommas(wallet.balance)} • ${wallet.provider}`}
-            />
+              <Menu.Item
+                  key={wallet.id}
+                  onPress={() => handleWalletSelect(wallet)}
+                  title={`${wallet.currency}  ${formatNumberWithCommas(wallet.balance)} • ${wallet.provider}`}
+              />
           ))}
-        </Menu>
+        </Menu>}
 
         {/*Select Offering PayOut Currency Available*/}
-        {walletInUse && <><Menu
+        {(!showQuote && walletInUse) && <><Menu
             visible={offeringsVisible}
             onDismiss={closeOfferingsMenu}
             anchor={<Button
@@ -184,11 +181,12 @@ export default function SendMoney() {
         </Menu></>}
 
         {/*Load The PFIs*/}
-        {!selectedPfi && selectedOffering && filteredPfis.length > 0 && (
+        {(!selectedPfi && selectedOffering && filteredPfis.length > 0 && !showQuote)&& (
           <ScrollView>
             {filteredPfis.map(pfi => (
               <Card key={pfi.id} style={styles.card} onPress={() => handlePfiSelect(pfi)}>
                 <Card.Content>
+                  <Text>{pfi.name}</Text>
                   <Text>{pfi.description}</Text>
                   <Text>1 {walletInUse.currency} = {pfi.payoutUnitsPerPayinUnit} {selectedOffering.split(":")[1]}</Text>
                 </Card.Content>
@@ -198,17 +196,18 @@ export default function SendMoney() {
         )}
 
         {/* Display Selected PFI Details */}
-        {selectedPfi && (
+        {(selectedPfi && !showQuote)&& (
             <>
               <View style={styles.pfiDetails}>
-                <Text>{selectedPfiName}</Text>
+                <Text>{selectedPfi.name}</Text>
                 <Text>{selectedPfi.description}</Text>
-                <Text>1 {selectedPfi.payoutCurrency} ={Math.round(1/selectedPfi.payoutUnitsPerPayinUnit)} {selectedPfi.payinCurrency}</Text>
-                <Text>{selectedPfi.payinMethods.map(method => method.requiredPaymentDetails.title).join(', ')}</Text>
+                <Text>1 {selectedPfi.payinCurrency} ={Math.round(selectedPfi.payoutUnitsPerPayinUnit)} {selectedPfi.payoutCurrency}</Text>
+                {/*<Text>{selectedPfi.payinMethods.map(method => method.requiredPaymentDetails.title).join(', ')}</Text>*/}
                 <Text>{selectedPfi.payoutMethods.map(method => method.requiredPaymentDetails.title).join(', ')}</Text>
               </View>
               {console.log(selectedPfi)}
               <PayinMethodMenu
+
                   payinMethods={selectedPfi?.payoutMethods}
                   onSelect={onSelectPayinMethod}
                   selectedPayinMethod={selectedPayinMethod}
@@ -217,15 +216,28 @@ export default function SendMoney() {
 
         )}
         {/*TODO 1: Display A Menu With Each of the selectedPfi 's payinMethods */}
-        {(walletInUse != undefined && selectedPayinMethod && selectedOffering && selectedPfi && walletInUse.balance > 0) && <>
+        {(!showQuote && walletInUse != undefined && selectedPayinMethod && selectedOffering && selectedPfi && walletInUse.balance > 0) && <>
           <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
           {/*TODO 2: Render Input depending on the payInMethods*/}
           <PayInForm handleSendMoney={handleSendMoney}
+                     amount={amount}
+                     setAmount={setAmount}
                        payInProperties={selectedPayinMethod.requiredPaymentDetails.properties}
                        walletInUse={walletInUse} />
         </>}
+        {/*TODO 3: Render A Quote*/}
+        {showQuote && <GetQuote
+            paymentDetails={payInDetails}
+            setShowQuote={setShowQuote}
+            offering={selectedPfi.offering}
+            amount={amount}
+            showQuote={showQuote}
+        />}
+
+
+        {/*TODO 4: */}
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-        <Text style={styles.title}>All Available Offerings:</Text>
+        <Text style={styles.title} onPress={()=>{setShowQuote(!showQuote)}}>All Available Offerings:</Text>
         <View style={{flexWrap:"wrap" ,flexDirection:"row",alignItems:"center",justifyContent:"center"}}>
           {allAvailableOfferings.map((offering, index) => (
             <Text key={index}> • {offering.replace(':', ' to ')} </Text>

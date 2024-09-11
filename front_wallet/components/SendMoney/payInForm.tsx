@@ -11,11 +11,13 @@ type PayInFormProps = {
   handleSendMoney: (data: { [key: string]: any }) => void;
   payInProperties: PayInProperties;
   walletInUse: { currency: string };
+  amount: string;
+  setAmount: (amount: string) => void;
 };
 
-const PayInForm: React.FC<PayInFormProps> = ({ handleSendMoney, payInProperties, walletInUse }) => {
+const PayInForm: React.FC<PayInFormProps> = ({ handleSendMoney, payInProperties, walletInUse, setAmount, amount }) => {
   const [state, setState] = useState(payInProperties);
-  const [amount, setAmount] = useState('');
+
 
   const handleChange = (key: string, value: any) => {
     setState(prevState => ({

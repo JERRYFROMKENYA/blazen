@@ -28,7 +28,7 @@ export default function CredentialScreen() {
     }
     useEffect(()=>{
         getVCList().then(r => {})
-    },[user,pb])
+    },[user,pb,router])
 
     return (
         <View style={styles.container}>

@@ -12,11 +12,20 @@ app.use(express.json());
 
 // IIFE to handle async imports and initialization
 (async () => {
-  // Import PocketBase dynamically
   const PocketBase = (await import('pocketbase')).default;
   const { Close, Order, Rfq, TbdexHttpClient } = await import('@tbdex/http-client');
   const { Jwt, PresentationExchange } = await import('@web5/credentials');
   const pb = new PocketBase(process.env.POCKETBASE_URL);
+
+  /*
+  *Imports End here( I don't think any of your problems are above
+  *  this line unless you are having problems with dot env)
+  *
+  *
+  *Functions Start Here
+  *
+  *
+  * */
 
   // Function to create a DID JWK document
   async function createDidJwkDocument() {
@@ -116,7 +125,8 @@ app.use(express.json());
     try {
       await rfq.verifyOfferingRequirements(offering);
     } catch (e) {
-      console.log('Offering requirements not met', e);
+      throw new Error ('Offering requirements not met', e)
+      // console.log('Offering requirements not met', e);
     }
 
     await rfq.sign(customerDid);
@@ -125,11 +135,114 @@ app.use(express.json());
 
     try {
       await TbdexHttpClient.createExchange(rfq);
+      return rfq;
     } catch (error) {
       console.error('Failed to create exchange:', error);
+      // return ('Failed to create exchange:', error)
       throw new Error('Failed to create exchange: ' + error.message);
     }
   };
+
+
+
+  //fetch exchanges
+
+  const FetchExchanges = async (customerDid, pfiUri) => {
+    const custDid = await DidDht.import({ portableDid: customerDid })
+    try {
+      const exchanges = await TbdexHttpClient.getExchanges({
+        pfiDid:pfiUri,
+        did:custDid,
+      });
+      // const mappedExchanges =formatMessages(exchanges)
+      return exchanges;
+    }catch (e) {
+      throw new Error('Failed to fetch exchanges: ' + e.message);
+    }
+
+  }
+
+
+
+  const FetchExchange = async (customerDid, pfiUri, exId) => {
+    const custDid = await DidDht.import({ portableDid: customerDid })
+    try {
+      const exchange = await TbdexHttpClient.getExchange({
+        pfiDid:pfiUri,
+        did:custDid,
+        exchangeId:exId
+      });
+
+      return exchange;
+    }catch (e) {
+      throw new Error('Failed to fetch exchanges: ' + e.message);
+    }
+
+  }
+
+
+  const AddClose = async (exchangeId, custDid, pfiUri,reason) => {
+    const customerDid = await DidDht.import({ portableDid: custDid })
+    try {
+      const close = Close.create({
+        metadata: {
+          from: customerDid.uri,
+          to: pfiUri,
+          protocol: '1.0',
+          exchangeId: exchangeId
+        },
+        data:{
+          reason
+        }
+      });
+
+
+
+      await close.sign(customerDid);
+
+
+
+      await TbdexHttpClient.submitClose(close);
+
+
+
+      return close;
+    } catch (e) {
+      throw new Error('Failed to close exchange: ' + e.message);
+    }
+  }
+
+
+
+  const AddOrder = async (exchangeId,custDid,  pfiUri) => {
+    const customerDid = await DidDht.import({ portableDid: custDid })
+    const order = Order.create({
+      metadata: {
+        from: customerDid.uri,
+        to: pfiUri,
+        protocol: '1.0',
+        exchangeId: exchangeId
+      }
+        });
+
+    await order.sign(customerDid);
+    try{
+        await TbdexHttpClient.submitOrder(order);
+        return order;
+    }catch (e) {
+        throw new Error('Failed to submit order: ' + e.message);
+    }
+
+  }
+
+
+
+  /*Functions End Here
+  *
+  *
+  * Endpoints Start Here
+  * */
+
 
   // Endpoint to handle requests and return DID JWK document
   app.get('/jwk', async (req, res) => {
@@ -226,6 +339,103 @@ res.status(200).json(filteredOfferings);
       res.status(500).json({ "error-offerings": err });
     }
   });
+
+
+
+
+
+  // Endpoint to fetch exchanges
+  app.post('/get-exchanges', async (req, res) => {
+
+    const { customerDid, pfiUri } = req.body;
+
+
+    if (!pfiUri || !customerDid) {
+      return res.status(400).json({ error: 'All fields (pfiUri, customerDid) are required' });
+    }
+
+    try {
+      const exchanges = await FetchExchanges(customerDid,pfiUri);
+      console.log('Exchanges:', exchanges);
+      res.status(200).json(exchanges);
+    } catch (err) {
+      console.log(err)
+      res.status(500).json({ "error-offerings": err });
+    }
+  });
+
+
+
+    // Endpoint to fetch exchange
+  app.post('/get-exchange', async (req, res) => {
+
+    const { customerDid, pfiUri, exchangeId } = req.body;
+
+
+    if (!pfiUri || !customerDid ||!exchangeId) {
+      return res.status(400).json({ error: 'All fields (pfiUri, customerDid, exchangeId) are required' });
+    }
+
+    try {
+      const exchange = await FetchExchange(customerDid,pfiUri, exchangeId);
+      console.log('Exchange:', exchange);
+      res.status(200).json(exchange);
+    } catch (err) {
+      console.log(err)
+      res.status(500).json({ "error-offerings": err });
+    }
+  });
+
+  // Endpoint to send a  close message to exchange
+
+  app.post('/close', async (req, res) => {
+
+    const { customerDid, pfiUri, exchangeId, reason } = req.body;
+
+
+    if (!pfiUri || !customerDid ||!exchangeId) {
+      return res.status(400).json({ error: 'All fields (pfiUri, customerDid, exchangeId) are required' });
+    }
+
+    try {
+      const close = await AddClose(exchangeId, customerDid, pfiUri, reason||"");
+      console.log('Close:', close);
+      res.status(200).json(close);
+    } catch (err) {
+      console.log(err)
+      res.status(500).json({ "error-offerings": err });
+    }
+  });
+
+  app.post('/order', async (req, res) => {
+
+    const { customerDid, pfiUri, exchangeId } = req.body;
+
+
+    if (!pfiUri || !customerDid ||!exchangeId) {
+      return res.status(400).json({ error: 'All fields (pfiUri, customerDid, exchangeId) are required' });
+    }
+
+    try {
+      const order = await AddOrder(exchangeId, customerDid, pfiUri);
+      console.log('Order:', order);
+      res.status(200).json(order);
+    } catch (err) {
+      console.log(err)
+      res.status(500).json({ "error-offerings": err });
+    }
+  });
+
+
+
+
+  /*
+  * Endpoints End Here
+  *
+  * Server Starts Serving Here
+  * (If you are experiencing any problems I promise its not below this line)
+  * */
+
 
   // Start the server
   app.listen(PORT, (error) => {
