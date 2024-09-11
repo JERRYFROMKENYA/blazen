@@ -30,6 +30,7 @@ export default function SendMoney() {
   const [modalVisible, setModalVisible] = useState(false);
   const[selectedPayinMethod, setSelectedPayinMethod]=useState(null);
   const[payInDetails, setPayInDetails]=useState({});
+  const [receivedQuote, setReceivedQuote] = useState(false);
 
   const onSelectPayinMethod=(method:any)=>{
     setSelectedPayinMethod(method);
@@ -226,7 +227,8 @@ export default function SendMoney() {
                        walletInUse={walletInUse} />
         </>}
         {/*TODO 3: Render A Quote*/}
-        {showQuote && <GetQuote
+        {(showQuote&&!receivedQuote) && <GetQuote
+            setReceivedQuote={setReceivedQuote}
             paymentDetails={payInDetails}
             setShowQuote={setShowQuote}
             offering={selectedPfi.offering}

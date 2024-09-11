@@ -98,6 +98,11 @@ app.use(express.json());
       presentationDefinition: offering.data.requiredClaims
     });
 
+   // Fetch the first list item from the collection
+    const payinMethodItem = await pb.collection("internal_payment_methods").getFirstListItem(`name="${offering.data.payin.methods[0].kind}"`);
+    const payinMethod = payinMethodItem.payload;
+
+
     const rfq = Rfq.create({
       metadata: {
         from: customerDid.uri,
@@ -111,7 +116,7 @@ app.use(express.json());
           amount: amount.toString(),
           currencyCode: offering.data.payin.currencyCode,
           kind: offering.data.payin.methods[0].kind,
-          paymentDetails: payinPaymentDetails,
+          paymentDetails: payinMethod,
         },
         payout: {
           kind: offering.data.payout.methods[0].kind,
@@ -121,6 +126,13 @@ app.use(express.json());
         claims: selectedCredentials
       }
     });
+    console.log(
+        {
+          kind: offering.data.payin.methods[0].kind,
+          paymentDetails: payinMethod,
+        }
+
+    )
 
     try {
       await rfq.verifyOfferingRequirements(offering);
@@ -133,8 +145,32 @@ app.use(express.json());
 
     console.log('RFQ:', rfq);
 
+
     try {
       await TbdexHttpClient.createExchange(rfq);
+      if(rfq){
+        // Convert cDid from JSON to string
+        // const cDidObject = JSON.parse(cDid);
+        // const cDidString = JSON.stringify(cDid);
+
+        // Use cDidString in the query
+        const cust_did_item = await pb.collection('customer_did').getFirstListItem(`did.uri="${cDid.uri}"`);
+        const cust_did = cust_did_item.id;
+        const pfi_did_item = await pb.collection('pfi').getFirstListItem(`did= "${offering.metadata.from}"`);
+        const pfi_did = pfi_did_item.id;
+
+        const data = {
+          "did": cust_did,
+          "pfi": pfi_did,
+          rfq,
+          "exchangeId": rfq.metadata.exchangeId,
+          "reason": "pending",
+          "status": "pending"
+        };
+
+        const record = await pb.collection('customer_quotes').create(data);
+        if(record) console.log('Record created successfully:');
+      }
       return rfq;
     } catch (error) {
       console.error('Failed to create exchange:', error);
@@ -203,7 +239,15 @@ app.use(express.json());
 
 
       await TbdexHttpClient.submitClose(close);
+      const quote_item= await pb.collection('customer_quotes').getFirstListItem(`exchangeId= "${exchangeId}"`);
+      const quote_id = quote_item.id;
+      const data = {
+        "reason": reason,
+        "status": "completed"
+      };
 
+      const record = await pb.collection('customer_quotes').update(quote_id, data);
+      if(record) console.log('Record updated successfully:');
 
 
       return close;
@@ -228,6 +272,16 @@ app.use(express.json());
     await order.sign(customerDid);
     try{
         await TbdexHttpClient.submitOrder(order);
+      // Use cDidString in the query
+      const quote_item= await pb.collection('customer_quotes').getFirstListItem(`exchangeId= "${exchangeId}"`);
+      const quote_id = quote_item.id;
+      const data = {
+        "reason": "success",
+        "status": "completed"
+      };
+
+      const record = await pb.collection('customer_quotes').update(quote_id, data);
+      if(record) console.log('Record updated successfully:');
         return order;
     }catch (e) {
         throw new Error('Failed to submit order: ' + e.message);
@@ -269,6 +323,34 @@ app.use(express.json());
     try {
       const mockDids = await fetchMockDids();
       res.status(200).json(mockDids);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  app.get('/mock-dids-data', async (req, res) => {
+    try {
+      const offerings = await fetchOfferings();
+      const filteredOfferings = await Promise.all(
+          offerings.map(async offering => {
+                // const pfi = await pb.collection('pfi').getFirstListItem(`did= "${offering.metadata.from}"`);
+                return {
+                  // name: pfi.name,
+                  from: offering.metadata.from,
+                  offeringId: offering.metadata.id,
+                  description: offering.data.description,
+                  payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
+                  payinCurrency: offering.data.payin.currencyCode,
+                  payoutCurrency: offering.data.payout.currencyCode,
+                  payinMethods: offering.data.payin.methods,
+                  payoutMethods: offering.data.payout.methods,
+                  requiredClaims: offering.data.requiredClaims,
+                  offering
+                };
+              })
+      );
+
+      console.log('Filtered offerings:', filteredOfferings);
+      res.status(200).json(filteredOfferings);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

@@ -5,7 +5,7 @@ import { Button, Chip, Surface, Text } from "react-native-paper";
 import React from "react";
 import { useRouter } from "expo-router";
 
-export default function GetQuote({ paymentDetails, setShowQuote, offering, amount }: { paymentDetails: any, showQuote: boolean, setShowQuote: Function, offering: any, amount: string }) {
+export default function GetQuote({ paymentDetails, setShowQuote, offering, amount, setQuoteReceived }: { setQuoteReceived: Function,paymentDetails: any, showQuote: boolean, setShowQuote: Function, offering: any, amount: string }) {
     const router = useRouter();
 
     const { pb } = usePocketBase();
