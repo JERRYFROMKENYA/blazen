@@ -1,10 +1,9 @@
 import React from 'react';
 import HomeScreen from './index';
 import { BottomNavigation } from 'react-native-paper';
-import TabTwoScreen from "@/app/(tabs)/two";
-import {useRouter} from "expo-router";
-import {useAuth} from "@/app/(auth)/auth";
+
 import CredentialScreen from "./three";
+import Transactions from "@/app/(tabs)/two";
 
 export default function TabLayout() {
 
@@ -13,14 +12,14 @@ export default function TabLayout() {
   const [routes] = React.useState([
     { key: 'home', title: 'Home', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
     { key: 'creds', title: 'Credentials', focusedIcon: 'lock', unfocusedIcon: 'lock-outline' },
-    { key: 'user', title: 'Me', focusedIcon: 'account-circle', unfocusedIcon: 'account-circle-outline' },
+    { key: 'user', title: 'Transactions', focusedIcon: 'view-list', unfocusedIcon: 'view-list-outline' },
 
   ]);
 
   const renderScene = BottomNavigation.SceneMap({
     home: HomeScreen,
     creds: CredentialScreen,
-    user: TabTwoScreen,
+    user: Transactions,
   });
 
 

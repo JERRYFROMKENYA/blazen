@@ -81,6 +81,8 @@ function RootLayoutNav() {
                 <Stack.Screen name="Profile/Profile" options={{ presentation: 'modal', headerShown:false }} />
               {/*Manage DID*/}
               <Stack.Screen name="DID/manage_did" options={{ presentation: 'modal', headerShown:false }} />
+            {/*  Exchange Details*/}
+              <Stack.Screen name="exchange-details/[exchangeId]" options={{ headerShown: false }} />
             </Stack>
           </PaperProvider>
         </AuthProvider>

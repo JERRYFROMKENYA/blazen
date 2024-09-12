@@ -26,7 +26,7 @@ const CredentialsList: React.FC<{ vcList: any[],refresh:Function }> = ({ vcList,
                     issuer={vc.expand.issuer.name}
                     properties={vc.expand.issuer.verifiables}
                     purpose={vc.purpose}
-                    vc={vc.vc.slice(-12, -1)}
+                    vc={vc.vc}
                     onDelete={() => {
                         onDelete(vc.id)
                         refresh()

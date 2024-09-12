@@ -89,7 +89,8 @@ export default function AddVerifiableCredential() {
                             Alert.alert("Error", 'Error fetching User data');
                             return;
                         }
-                        const vc = await requestVC(URL, user.name, user.country, userDid);
+                        const name = user.first_name+" "+user.middle_name+" "+user.last_name;
+                        const vc = await requestVC(URL, name, user.country, userDid);
                         console.log(vc)
                         if(vc){
                             const data = {

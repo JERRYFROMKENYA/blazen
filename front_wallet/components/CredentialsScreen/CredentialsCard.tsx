@@ -45,7 +45,7 @@ const CredentialsCard = ({issuer, dateIssued, properties, vc, purpose, onDelete}
                     <Menu.Item onPress={onDelete} title="Delete" />
                 </Menu>
             </View>
-            <Text>Partial Verifiable Credential: {vc}</Text>
+            <Text>Partial Verifiable Credential: {vc.slice(-12,-1)}</Text>
             <Text>Used for {purpose}</Text>
             <Text variant={"bodySmall"}>Information Verified:</Text>
             <View style={{backgroundColor:"transparent", flexDirection:"row"}}>

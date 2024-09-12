@@ -149,11 +149,6 @@ app.use(express.json());
     try {
       await TbdexHttpClient.createExchange(rfq);
       if(rfq){
-        // Convert cDid from JSON to string
-        // const cDidObject = JSON.parse(cDid);
-        // const cDidString = JSON.stringify(cDid);
-
-        // Use cDidString in the query
         const cust_did_item = await pb.collection('customer_did').getFirstListItem(`did.uri="${cDid.uri}"`);
         const cust_did = cust_did_item.id;
         const pfi_did_item = await pb.collection('pfi').getFirstListItem(`did= "${offering.metadata.from}"`);
@@ -216,6 +211,39 @@ app.use(express.json());
 
   }
 
+const FetchAllExchanges = async (customerDid) => {
+  const custDid = await DidDht.import({ portableDid: customerDid });
+  const pfis = await pb.collection('pfi').getFullList();
+  const exchanges = [];
+
+  try {
+    for (const pfi of pfis) {
+      const pfiUri = pfi.did;
+      const pfiName = pfi.name;
+      const pfiExchanges = await TbdexHttpClient.getExchanges({
+        pfiDid: pfiUri,
+        did: custDid,
+      });
+
+      // Add PFI name to each exchange
+      const modifiedExchanges = pfiExchanges.map(exchange => ({
+        ...exchange,
+        name: pfiName,
+      }));
+
+      exchanges.push(...modifiedExchanges);
+    }
+
+    return exchanges;
+  } catch (e) {
+    throw new Error('Failed to fetch exchanges: ' + e.message);
+  }
+};
+
+
+
+
+
 
   const AddClose = async (exchangeId, custDid, pfiUri,reason) => {
     const customerDid = await DidDht.import({ portableDid: custDid })
@@ -243,7 +271,7 @@ app.use(express.json());
       const quote_id = quote_item.id;
       const data = {
         "reason": reason,
-        "status": "completed"
+        "status": "cancelled"
       };
 
       const record = await pb.collection('customer_quotes').update(quote_id, data);
@@ -460,6 +488,25 @@ res.status(200).json(filteredOfferings);
 
     try {
       const exchange = await FetchExchange(customerDid,pfiUri, exchangeId);
+      console.log('Exchange:', exchange);
+      res.status(200).json(exchange);
+    } catch (err) {
+      console.log(err)
+      res.status(500).json({ "error-offerings": err });
+    }
+  });
+  //all user exchanges
+  app.post('/get-all-exchanges', async (req, res) => {
+
+    const { customerDid} = req.body;
+
+
+    if ( !customerDid ) {
+      return res.status(400).json({ error: 'All fields ( customerDid) are required' });
+    }
+
+    try {
+      const exchange = await FetchAllExchanges(customerDid);
       console.log('Exchange:', exchange);
       res.status(200).json(exchange);
     } catch (err) {
