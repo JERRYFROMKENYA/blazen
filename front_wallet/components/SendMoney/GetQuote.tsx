@@ -8,6 +8,7 @@ import {View} from "@/components/Themed";
 import { useRef } from "react";
 import {formatNumberWithCommas} from "../utils/format";
 import {Alert} from "react-native";
+import {useLoading} from "@/components/utils/LoadingContext";
 
 export default function GetQuote({ paymentDetails, setShowQuote, offering, amount, setQuoteReceived, wallet }: {wallet:any, setQuoteReceived: Function,paymentDetails: any, showQuote: boolean, setShowQuote: Function, offering: any, amount: string }) {
     const router = useRouter();
@@ -21,6 +22,7 @@ export default function GetQuote({ paymentDetails, setShowQuote, offering, amoun
     const [showResponse, setShowResponse] = useState(false);
     const [rfq, setRfq] = useState({});
     const[quote,setQuote]=useState();
+    const {setLoading} = useLoading();
 
     const toSentenceCase = (str: string) => {
         if (!str) return str;
@@ -28,12 +30,15 @@ export default function GetQuote({ paymentDetails, setShowQuote, offering, amoun
     };
 
     const refreshData = async () => {
+        setLoading(true);
         const kcc = await pb.collection('customer_vc').getFullList({ filter: `user = "${user.id}"`, expand: "issuer" });
         setAllCustomerVCs(kcc);
 
         const customerDid = await pb.collection('customer_did').getFirstListItem(`user = "${user.id}"`);
         setCustomerDid(customerDid);
+        setLoading(false);
     };
+
 
     useEffect(() => {
         refreshData();
@@ -45,6 +50,7 @@ export default function GetQuote({ paymentDetails, setShowQuote, offering, amoun
 
 
 const fetchQuote = async () => {
+    setLoading(true);
     const bodyData = {
         payoutPaymentDetails: paymentDetails,
         offering: offering,
@@ -95,14 +101,17 @@ const fetchQuote = async () => {
         setShowResponse(true);
         console.log(rfqData);
         console.log(quoteData[1]);
+        setLoading(false);
 
     } catch (e) {
-        console.error('Error fetching quote:', e);
+        // console.error('Error fetching quote:', e);
+        setLoading(false);
     }
 };
 
 const confirmQuote = async () => {
     //
+    setLoading(true);
     const res =await fetch('http://138.197.89.72:3000/order', {
         method: 'POST',
         headers: {
@@ -147,14 +156,17 @@ const confirmQuote = async () => {
             Alert.alert("Order Failed","Your order has failed," +
                 " contact support with the following information, rfq_id "+rfq.metadata.exchangeId);
         }
+        setLoading(false);
         router.push('/(tabs)/');
 
     }
+    setLoading(false);
 
 }
 
     const cancelQuote = async () => {
         //
+        setLoading(true);
         const res =await fetch('http://138.197.89.72:3000/close', {
             method: 'POST',
             headers: {
@@ -198,9 +210,11 @@ const confirmQuote = async () => {
                 Alert.alert("Order Failed","Your order has failed," +
                     " contact support with the following information, rfq_id "+rfq.metadata.exchangeId);
             }
+            setLoading(false);
             router.push('/(tabs)/');
 
         }
+        setLoading(false);
 
     }
 

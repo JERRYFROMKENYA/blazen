@@ -1,35 +1,174 @@
-import { StatusBar } from 'expo-status-bar';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Modal } from 'react-native';
+import { Appbar, Button, Surface, Text } from 'react-native-paper';
+import { usePocketBase } from '@/components/Services/Pocketbase';
+import { useAuth } from '@/app/(auth)/auth';
+import { useLoading } from '@/components/utils/LoadingContext';
+import WalletSelectionModal from '@/components/Save/WalletSelectionModal';
+import AddPocket from '@/components/Save/AddPocket';
+import SafeScreen from "@/components/SafeScreen/SafeScreen";
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function Savings() {
+  const { pb } = usePocketBase();
+  const { user } = useAuth();
+  const { setLoading } = useLoading();
+  const [savingPockets, setSavingPockets] = useState([]);
+  const [wallets, setWallets] = useState([]);
+  const [selectedPocket, setSelectedPocket] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [addPocketVisible, setAddPocketVisible] = useState(false);
 
-export default function ModalScreen() {
+  const getSavingPockets = async () => {
+    setLoading(true);
+    const pockets = await pb.collection('savings_pocket').getFullList({
+      filter: `user = "${user.id}"`, expand: 'savings_tier'
+    });
+    setSavingPockets(pockets);
+    setLoading(false);
+  };
+
+  const getWallets = async () => {
+    const wallets = await pb.collection('wallet').getFullList({
+      filter: `user = "${user.id}"`,
+    });
+    setWallets(wallets);
+  };
+
+  useEffect(() => {
+    getSavingPockets();
+    getWallets();
+  }, []);
+
+  const handleTopUp = (pocket) => {
+    setSelectedPocket(pocket);
+    setModalVisible(true);
+  };
+
+  const handleWithdraw = async (pocket) => {
+  const currentDate = new Date();
+  const lockUntilDate = new Date(pocket.lock_until);
+
+  if (currentDate < lockUntilDate) {
+    alert('This pocket is locked until ' + lockUntilDate.toDateString());
+    return;
+  }
+
+  const userWallet = wallets.find(wallet => wallet.currency === pocket.expand.savings_tier.currency);
+  if (!userWallet) {
+    alert('You do not have a wallet with the corresponding currency. Please go to your profile and create one.');
+    return;
+  }
+
+  try {
+    setLoading(true);
+    await pb.collection('wallet').update(userWallet.id, { balance: userWallet.balance + pocket.amount });
+    await pb.collection('savings_pocket').delete(pocket.id);
+    getSavingPockets();
+    getWallets();
+  } catch (error) {
+    // console.error('Error updating wallet or pocket:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const handleWalletSelect = async (wallet, amount) => {
+    if(!amount) return
+    if (amount > wallet.balance) {
+      alert('Insufficient balance');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await pb.collection('wallet').update(wallet.id, { balance: wallet.balance - amount });
+      await pb.collection('savings_pocket').update(selectedPocket.id, { amount: selectedPocket.amount + amount });
+      getSavingPockets();
+      getWallets();
+      setModalVisible(false);
+    } catch (error) {
+      // console.error('Error updating wallet or pocket:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Modal</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/signup.tsx" />
-
-      {/* Use a light status bar on iOS to account for the black space above the modal */}
-      <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
-    </View>
+    <SafeScreen onRefresh={() => { getSavingPockets(); getWallets(); }}>
+      <Appbar.Header>
+        <Appbar.Content title="Savings" />
+      </Appbar.Header>
+      <View>
+        <Surface style={styles.surface}>
+          <Text variant={"titleSmall"} style={styles.title}>My NexX Pockets</Text>
+          {savingPockets.map((pocket: any) => (
+            <Surface style={styles.pocket} key={pocket.id}>
+              <View style={styles.pocketDetails}>
+                <Text variant={"bodySmall"}>Name: {pocket.name}</Text>
+                <Text variant={"bodySmall"}> {pocket.purpose}</Text>
+                <Text variant={"bodySmall"}>Savings Plan: {pocket.expand.savings_tier.name}</Text>
+                <Text variant={"bodySmall"}>Amount Saved: {pocket.expand.savings_tier.currency}{pocket.amount}</Text>
+                <Text variant={"bodySmall"}>Goal: {pocket.expand.savings_tier.currency}{pocket.goal}</Text>
+                <Text variant={"bodySmall"}>Interest: {pocket.expand.savings_tier.interest_rate * 100}% p.a</Text>
+              </View>
+              <View style={styles.buttonColumn}>
+                <Button mode="contained" style={styles.button} onPress={() => handleTopUp(pocket)}>Top Up</Button>
+                <Button mode="contained" style={styles.button} onPress={() => handleWithdraw(pocket)}>Withdraw</Button>
+              </View>
+            </Surface>
+          ))}
+          <Button mode="contained" onPress={() => setAddPocketVisible(true)}>Add New Pocket</Button>
+        </Surface>
+        <WalletSelectionModal
+          visible={modalVisible}
+          wallets={wallets.filter(wallet => wallet.currency === selectedPocket?.expand.savings_tier.currency)}
+          onSelect={handleWalletSelect}
+          onClose={() => setModalVisible(false)}
+        />
+        <Modal visible={addPocketVisible} transparent={true} animationType="slide">
+          <AddPocket onClose={() => setAddPocketVisible(false)} />
+        </Modal>
+      </View>
+    </SafeScreen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+  },
+  surface: {
+    padding: 20,
+    margin: 10,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    elevation: 4,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 10,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  pocket: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 15,
+    marginVertical: 10,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    elevation: 2,
+  },
+  pocketDetails: {
+    flex: 1,
+  },
+  buttonColumn: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  },
+  button: {
+    marginVertical: 5,
   },
 });

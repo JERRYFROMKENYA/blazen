@@ -28,7 +28,7 @@ export async function generateVC(user: any, pb: any) {
 
     return await storeCustomerVC(user, pb, vc.replaceAll("{","").replaceAll("}",""), 'Ultimate Identity VC', 'Verification', issuer.id);
   } catch (error) {
-    console.error('Error generating VC:', error);
+    // console.error('Error generating VC:', error);
     return null;
   }
 }

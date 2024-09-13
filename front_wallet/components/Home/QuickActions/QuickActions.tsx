@@ -10,24 +10,25 @@ export default function QuickActions(){
     return(
         <Surface style={styles.balanceCard} elevation={0}>
             <View style={styles.balanceHeader}>
-                <Text variant="titleMedium">Quick Actions</Text>
+                {/*<Text variant="titleMedium">Quick Actions</Text>*/}
             </View>
             <View style={styles.gridContainer}>
-                <View style={styles.gridRow}>
-                    <Chip style={styles.chip} icon="plus-circle"  selected onPress={() => router.push('/actions/deposit_money')}>Deposit</Chip>
-                    <Chip style={styles.chip} icon="minus-circle"  selected onPress={() => console.log('Pressed')}>Withdraw</Chip>
-                    <Chip icon="call-split" onPress={() => console.log('Pressed')}>Bill Split</Chip>
-                </View>
+                {/*<View style={styles.gridRow}>*/}
+                {/*    /!*<Chip style={styles.chip} icon="plus-circle"  selected onPress={() => router.push('/actions/deposit_money')}>Deposit</Chip>*!/*/}
+                {/*    /!*<Chip style={styles.chip} icon="minus-circle"  selected onPress={() => console.log('Pressed')}>Withdraw</Chip>*!/*/}
+                {/*    /!*<Chip icon="call-split" onPress={() => console.log('Pressed')}>Bill Split</Chip>*!/*/}
+                {/*</View>*/}
                 <View style={styles.gridRow}>
                     <Chip style={styles.chip} icon="send-circle"  selected onPress={() => router.push("/actions/send_money")}>Send</Chip>
                     <Chip style={styles.chip} icon="call-received"  selected onPress={() => router.push("/actions/receive")}>Receive</Chip>
-                    <Chip icon="contactless-payment" onPress={() => console.log('Pressed')}>Pay</Chip>
+                    <Chip style={styles.chip} icon="call-split" onPress={() => console.log('Pressed')}>Bill Split</Chip>
+                    {/*<Chip icon="contactless-payment" onPress={() => console.log('Pressed')}>Pay</Chip>*/}
 
                 </View>
                 <View style={{...styles.gridRow, justifyContent: 'center',
                     alignItems:"center",}}>
                     {/*<Chip icon="information" onPress={() => console.log('Pressed')}>Pay</Chip>*/}
-                    <Chip icon="piggy-bank" onPress={() => console.log('Pressed')}>Save</Chip>
+                    <Chip style={styles.chip} icon="piggy-bank" onPress={() => router.push("/actions/save")}>Save</Chip>
 
                 </View>
             </View>

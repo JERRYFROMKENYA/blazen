@@ -18,7 +18,7 @@ export function useGenerateVC() {
       const result = await generateVC(user, pb);
       console.log(result);
     } catch (error) {
-      console.error(error);
+      // console.error(error);
     }
   };
 

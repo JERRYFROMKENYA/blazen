@@ -10,8 +10,10 @@ import { Appbar, FAB } from 'react-native-paper';
 import {usePocketBase} from "@/components/Services/Pocketbase";
 import {useAuth} from "@/app/(auth)/auth";
 import {useRouter} from "expo-router";
+import {useLoading} from "@/components/utils/LoadingContext";
 
 export default function CredentialScreen() {
+    const {setLoading}=useLoading();
     const router =useRouter();
     // const _handleSearch = () => console.log('Searching');
     // const _handleMore = () => console.log('Shown more');
@@ -27,7 +29,10 @@ export default function CredentialScreen() {
         console.log(resultList)
     }
     useEffect(()=>{
-        getVCList().then(r => {})
+        setLoading(true);
+        getVCList().then(r => {
+            setLoading(false)
+        })
     },[user,pb,router])
 
     return (

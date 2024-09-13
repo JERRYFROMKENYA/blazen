@@ -11,6 +11,7 @@ import React from 'react';
 
 import { PocketBaseProvider } from '@/components/Services/Pocketbase';
 import { AuthProvider } from '@/app/(auth)/auth';
+import {LoadingProvider} from "@/components/utils/LoadingContext";
 
 
 
@@ -52,41 +53,48 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
+
   return (
-      //Backend Provider
-      <PocketBaseProvider>
-        {/*Authentication Provider*/}
-        <AuthProvider>
-          {/*UI Library Provider*/}
-          <PaperProvider>
-            {/*Stack Provider*/}
-            <Stack>
-              {/*Main App Stack*/}
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              {/*Auth Stack*/}
-              {/*<Stack.Screen name="(auth)" options={{ headerShown: false }} />*/}
-              <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
-              {/*Modal is just a cool template to use-- no practical use lol*/}
-              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-              {/*Actions*/}
-              <Stack.Screen name="actions/send_money" options={{ presentation: 'modal', headerShown:false }} />
-              <Stack.Screen name="actions/deposit_money" options={{ presentation: 'modal', headerShown:false }} />
-              <Stack.Screen name="actions/receive" options={{ presentation: 'modal', headerShown:false }} />
-              <Stack.Screen name="actions/pay" options={{ presentation: 'modal', headerShown:false }} />
-              <Stack.Screen name="actions/bill_split" options={{ presentation: 'modal', headerShown:false }} />
-              <Stack.Screen name="actions/save" options={{ presentation: 'modal', headerShown:false }} />
-              <Stack.Screen name="actions/withdraw" options={{ presentation: 'modal', headerShown:false }} />
-            {/*  VC*/}
-              <Stack.Screen name="Credentials/add_verifiable_credentials" options={{ presentation: 'modal', headerShown:false }} />
-            {/*  Profile*/}
+      // Loading Provider
+      <LoadingProvider>
+        {/*//Backend Provider*/}
+        <PocketBaseProvider>
+          {/*Authentication Provider*/}
+          <AuthProvider>
+            {/*UI Library Provider*/}
+            <PaperProvider>
+              {/*Stack Provider*/}
+              <Stack>
+                {/*Main App Stack*/}
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                {/*Auth Stack*/}
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+                {/*Modal is just a cool template to use-- no practical use lol*/}
+                <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+                {/*Actions*/}
+                <Stack.Screen name="actions/send_money" options={{ presentation: 'modal', headerShown:false }} />
+                <Stack.Screen name="actions/deposit_money" options={{ presentation: 'modal', headerShown:false }} />
+                <Stack.Screen name="actions/receive" options={{ presentation: 'modal', headerShown:false }} />
+                <Stack.Screen name="actions/pay" options={{ presentation: 'modal', headerShown:false }} />
+                <Stack.Screen name="actions/bill_split" options={{ presentation: 'modal', headerShown:false }} />
+                <Stack.Screen name="actions/save" options={{ headerShown:false }} />
+                <Stack.Screen name="actions/withdraw" options={{ presentation: 'modal', headerShown:false }} />
+                {/*  VC*/}
+                <Stack.Screen name="Credentials/add_verifiable_credentials" options={{ presentation: 'modal', headerShown:false }} />
+                {/*  Profile*/}
                 <Stack.Screen name="Profile/Profile" options={{ presentation: 'modal', headerShown:false }} />
-              {/*Manage DID*/}
-              <Stack.Screen name="DID/manage_did" options={{ presentation: 'modal', headerShown:false }} />
-            {/*  Exchange Details*/}
-              <Stack.Screen name="exchange-details/[exchangeId]" options={{ headerShown: false }} />
-            </Stack>
-          </PaperProvider>
-        </AuthProvider>
-      </PocketBaseProvider>
+                {/*Manage DID*/}
+                <Stack.Screen name="DID/manage_did" options={{ presentation: 'modal', headerShown:false }} />
+                {/*  Exchange Details*/}
+                <Stack.Screen name="exchange-details/[exchangeId]" options={{ headerShown: false }} />
+              </Stack>
+            </PaperProvider>
+          </AuthProvider>
+        </PocketBaseProvider>
+
+
+      </LoadingProvider>
+
   );
 }

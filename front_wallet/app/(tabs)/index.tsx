@@ -6,6 +6,7 @@ import {Appbar, Text } from "react-native-paper";
 import { useAuth } from "@/app/(auth)/auth";
 import PocketBase from "pocketbase";
 import { useRouter } from "expo-router";
+import {useLoading} from "@/components/utils/LoadingContext";
 
 interface User {
   name: string;
@@ -18,44 +19,49 @@ export default function Home() {
   const { user, refreshAuth } = useAuth();
   const [name, setName] = useState("loading...");
   const [avatar, setAvatar] = useState("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQimIXWmgpyuYaqMRDE3BdO183iSVJ_T2JUNg&s");
-
+  const { setLoading } = useLoading();
   useEffect(() => {
+    setLoading(true);
     setName((user as User)?.name ?? "");
     if ((user as User)?.avatar) {
       setAvatar(pocketbase.getFileUrl(user, user?.avatar));
     }
     console.log(avatar);
-  }, [user]);
+    setLoading(false);
+  }, [user,router]);
 
   const handleRefresh = async () => {
     router.replace("/(tabs)/");
   };
 
   return (
-    <View style={styles.container}>
-      <SafeScreen onRefresh={handleRefresh}>
-        <Appbar.Header style={styles.header}>
-          <Text variant={"displaySmall"} style={styles.greeting}>
-            Hi, {name}
-          </Text>
-          <View style={styles.avatarContainer}>
-            <TouchableOpacity onPress={() => { router.push({ pathname: "/Profile/Profile" }) }}>
-              <Image source={{ uri: avatar }} style={styles.avatar} />
-            </TouchableOpacity>
-          </View>
-        </Appbar.Header>
+      user && (<View style={styles.container}>
+    <SafeScreen onRefresh={handleRefresh}>
+      <Appbar.Header style={styles.header}>
+        <Text variant={"displaySmall"} style={styles.greeting}>
+          Hi, {name}
+        </Text>
+        <View style={styles.avatarContainer}>
+          <TouchableOpacity onPress={() => {
+            router.push({pathname: "/Profile/Profile"})
+          }}>
+            <Image source={{uri: avatar}} style={styles.avatar}/>
+          </TouchableOpacity>
+        </View>
+      </Appbar.Header>
 
-        {/* Start Balance Card */}
-        <BalanceCard />
-        {/* End Balance Card */}
-        {/* Start Action Tray */}
-        <QuickActions />
-        {/* End Action Tray */}
-        {/* Start Activity Tray */}
-        <TransactionsWidget />
-        {/* End Activity Tray */}
-      </SafeScreen>
-    </View>
+      {/* Start Balance Card */}
+      <BalanceCard/>
+      {/* End Balance Card */}
+      {/* Start Action Tray */}
+      <QuickActions/>
+      {/* End Action Tray */}
+      {/* Start Activity Tray */}
+      <TransactionsWidget/>
+      {/* End Activity Tray */}
+    </SafeScreen>
+  </View>)
+
   );
 }
 

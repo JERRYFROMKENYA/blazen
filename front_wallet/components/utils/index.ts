@@ -12,7 +12,7 @@ export async function getVCForLoggedInUser(user: any, pb: any) {
     const existingVC = await checkExistingVC(user, pb, 'Ultimate Identity');
     if(existingVC) return existingVC
   } catch (error) {
-    console.error('Error getting VC for logged-in user:', error);
+    // console.error('Error getting VC for logged-in user:', error);
     return null;
   }
 }
@@ -47,7 +47,7 @@ export async function submitImportedDID(user: any, pb: any, didJson: any) {
     });
     return response;
   } catch (error) {
-    console.error('Error submitting imported DID:', error);
+    // console.error('Error submitting imported DID:', error);
     return null;
   }
 }

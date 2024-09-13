@@ -12,7 +12,7 @@ export async function getTransactionsForLoggedInUser(user: any, pb: any) {
     });
     return transactions;
   } catch (error) {
-    console.error('Error getting transactions for logged-in user:', error);
+    // console.error('Error getting transactions for logged-in user:', error);
     return null;
   }
 }

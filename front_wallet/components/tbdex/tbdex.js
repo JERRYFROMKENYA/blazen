@@ -60,7 +60,7 @@ const useStore = () => {
         setOfferings(allOfferings);
         updateCurrencies(allOfferings);
       } catch (error) {
-        console.error('Failed to fetch offerings:', error);
+        // console.error('Failed to fetch offerings:', error);
       }
     };
 
@@ -76,7 +76,7 @@ const useStore = () => {
           localStorage.setItem('customerDid', JSON.stringify(exportedDid));
         }
       } catch (error) {
-        console.error('Failed to initialize DID:', error);
+        // console.error('Failed to initialize DID:', error);
       }
     };
 
@@ -124,7 +124,7 @@ const useStore = () => {
     try {
       // Submit RFQ message to the PFI
     } catch (error) {
-      console.error('Failed to create exchange:', error);
+      // console.error('Failed to create exchange:', error);
     }
   };
 
@@ -134,7 +134,7 @@ const useStore = () => {
       const mappedExchanges = formatMessages(exchanges);
       return mappedExchanges;
     } catch (error) {
-      console.error('Failed to fetch exchanges:', error);
+      // console.error('Failed to fetch exchanges:', error);
     }
   };
 
@@ -144,7 +144,7 @@ const useStore = () => {
     try {
       // Send Close message
     } catch (error) {
-      console.error('Failed to close exchange:', error);
+      // console.error('Failed to close exchange:', error);
     }
   };
 
@@ -154,7 +154,7 @@ const useStore = () => {
     try {
       // Send order message
     } catch (error) {
-      console.error('Failed to submit order:', error);
+      // console.error('Failed to submit order:', error);
     }
   };
 
@@ -170,7 +170,7 @@ const useStore = () => {
         updateExchanges(allExchanges.reverse());
         setTransactionsLoading(false);
       } catch (error) {
-        console.error('Failed to fetch exchanges:', error);
+        // console.error('Failed to fetch exchanges:', error);
       }
     };
 

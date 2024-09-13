@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { StatusBar, Keyboard, Alert, ScrollView, Animated, Platform, StyleSheet } from 'react-native';
-import {TextInput, Button, Menu, Provider, Card, Appbar} from 'react-native-paper';
-import { Text, View } from '@/components/Themed';
+import {
+  StatusBar,
+  Keyboard,
+  Alert,
+  ScrollView,
+  Animated,
+  Platform,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity, Modal
+} from 'react-native';
+import {Text,TextInput, Button, Menu, Provider, Card, Appbar} from 'react-native-paper';
+import {  View } from '@/components/Themed';
 import { useAuth } from "@/app/(auth)/auth";
 import { usePocketBase } from "@/components/Services/Pocketbase";
 import { getWalletsForLoggedInUser } from "@/components/utils/wallet_ops";
@@ -12,6 +22,10 @@ import SafeScreen from "@/components/SafeScreen/SafeScreen";
 import PayinMethodMenu from "@/components/SendMoney/payinMethodMenu";
 import GetQuote from "@/components/SendMoney/GetQuote";
 import {useRouter} from "expo-router";
+import {useLoading} from "@/components/utils/LoadingContext";
+import { MaterialIcons } from '@expo/vector-icons';
+
+
 
 export default function SendMoney() {
   const router =useRouter();
@@ -33,10 +47,50 @@ export default function SendMoney() {
   const[selectedPayinMethod, setSelectedPayinMethod]=useState(null);
   const[payInDetails, setPayInDetails]=useState({});
   const [receivedQuote, setReceivedQuote] = useState(false);
+  const { setLoading } = useLoading();
+  const [averageRatings, setAverageRatings] = useState({});
+  const [walletModalVisible, setWalletModalVisible] = useState(false);
+  const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
+  const openWalletModal = () => setWalletModalVisible(true);
+  const closeWalletModal = () => setWalletModalVisible(false);
+
+  const openCurrencyModal = () => setCurrencyModalVisible(true);
+  const closeCurrencyModal = () => setCurrencyModalVisible(false);
+  const renderWalletItem = ({ item }) => (
+      <TouchableOpacity onPress={() => handleWalletSelect(item)}>
+        <Text style={styles.modalItem}>{`${item.currency}  ${formatNumberWithCommas(item.balance)} • ${item.provider}`}</Text>
+      </TouchableOpacity>
+  );
+
+  const renderCurrencyItem = ({ item }) => (
+      <TouchableOpacity onPress={() => handleOfferingSelect(item)}>
+        <Text style={styles.modalItem}>{item}</Text>
+      </TouchableOpacity>
+  );
+
 
   const onSelectPayinMethod=(method:any)=>{
     setSelectedPayinMethod(method);
   }
+
+
+
+const renderStars = (rating) => {
+    // console.warn(averageRatings)
+
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+        stars.push(
+            <MaterialIcons
+                key={i}
+                name={i <= rating ? 'star' : 'star-border'}
+                size={20}
+                color="#FFD700"
+            />
+        );
+    }
+  return <View style={{flexDirection:"row", backgroundColor:"transparent"}}>{stars}</View>;
+};
 
   const showModal = () => setModalVisible(true);
   const hideModal = () => setModalVisible(false);
@@ -61,11 +115,12 @@ export default function SendMoney() {
       filterOfferings();
       extractAllOfferings(pfiCollection);
     } catch (error) {
-      console.error('Error fetching PFIs and offerings:', error);
+      // console.error('Error fetching PFIs and offerings:', error);
     }
   };
 
   const filterOfferings = (currency = '') => {
+    setLoading(true)
     const uniqueOfferings = new Set();
     const uniqueCurrencies = new Set();
     pfis.forEach(pfi => {
@@ -78,6 +133,7 @@ export default function SendMoney() {
     });
     setAvailableOfferings(Array.from(uniqueOfferings));
     setAvailableCurrencies(Array.from(uniqueCurrencies));
+    setLoading(false)
   };
 
   const extractAllOfferings = (pfis) => {
@@ -88,6 +144,7 @@ export default function SendMoney() {
       });
     });
     setAllAvailableOfferings(Array.from(allOfferings));
+
   };
 
   const openMenu = () => setVisible(true);
@@ -104,15 +161,17 @@ export default function SendMoney() {
     setWalletInUse(wallet);
     filterOfferings(wallet.currency);
     clearSelectedOffering();
-    closeMenu();
+    closeWalletModal();
   };
 
   const handleOfferingSelect = async (offering) => {
+    setLoading(true);
     setSelectedOffering(offering);
     closeOfferingsMenu();
 
     // Fetch PFIs based on the selected offering
     try {
+
       const response = await fetch('http://138.197.89.72:3000/select-pfi', {
         method: 'POST',
         headers: {
@@ -120,33 +179,72 @@ export default function SendMoney() {
         },
         body: JSON.stringify({ 'offering':`${offering}` }),
       });
-      console.log(offering)
+      // console.log(offering)
       const data = await response.json();
       console.log(data);
-      setFilteredPfis(data); // Store the filtered PFIs in the new state
+      setFilteredPfis(data);
+      setLoading(false)
+      closeCurrencyModal();
+      fetchPFIsAndOfferings();// Store the filtered PFIs in the new state
     } catch (error) {
-      console.error('Error fetching PFIs:', error);
+      // console.error('Error fetching PFIs:', error);
+      setLoading(false)
+      closeCurrencyModal();
+      fetchPFIsAndOfferings();
     }
+    closeCurrencyModal();
+    fetchPFIsAndOfferings();
+
+
+
+
   };
 
   const handlePfiSelect = (pfi) => {
-    console.log('Selected PFI:', pfi);
+    setLoading(true);
+    // console.log('Selected PFI:', pfi);
     setSelectedPfi(pfi);
     const result = pb.collection("pfi").getFirstListItem(`did = "${pfi.from}"`);
-    console.log("result ",result);
+    // console.log("result ",result);
+    setLoading(false)
   };
 
   const handleSendMoney = (payInDetails:{}) => {
     if(walletInUse?.balance < amount){Alert.alert('Error', 'Insufficient funds'); return;}
-      Alert.alert('Success', `Sent ${amount} ${selectedOffering.split(':')[1]}
-       from ${walletInUse.address}
-       to ${JSON.stringify(payInDetails)}`);
       setShowQuote(!showQuote);
       // showModal();
       setPayInDetails(payInDetails);
       Keyboard.dismiss();
 
   };
+  const fetchAverageRatings = async () => {
+    try {
+        const ratings = await pb.collection('pfi_rating').getFullList({expand:"pfi"});
+        const pfiRatings = ratings.reduce((acc, rating) => {
+
+            if (!acc[rating.pfi]) {
+                acc[rating.expand.pfi.did] = { total: 0, count: 0 };
+            }
+            // acc[id]=rating.expand.did
+            acc[rating.expand.pfi.did].total += rating.rating;
+            acc[rating.expand.pfi.did].count += 1;
+            return acc;
+        }, {});
+
+
+        const averageRatings = Object.keys(pfiRatings).reduce((acc, pfi) => {
+            acc[pfi] = pfiRatings[pfi].total / pfiRatings[pfi].count;
+            return acc;
+        }, {});
+
+        setAverageRatings(averageRatings);
+    } catch (error) {
+        // console.error('Error fetching average ratings:', error);
+    }
+};
+  useEffect(() => {
+    fetchAverageRatings();
+  }, [filteredPfis, pfis,selectedPfi]);
 
   return (
       <>
@@ -160,34 +258,22 @@ export default function SendMoney() {
 
 
             {/*Select Wallet To Use*/}
-            {!showQuote && <Menu
-                visible={visible}
-                onDismiss={closeMenu}
-                anchor={<Button
-                    onPress={openMenu}>{walletInUse ? `${walletInUse.currency}  ${formatNumberWithCommas(walletInUse.balance)} • ${walletInUse.provider}` : 'Select Wallet To Use'}</Button>}>
-              {userWallets.map(wallet => (
-                  <Menu.Item
-                      key={wallet.id}
-                      onPress={() => handleWalletSelect(wallet)}
-                      title={`${wallet.currency}  ${formatNumberWithCommas(wallet.balance)} • ${wallet.provider}`}
-                  />
-              ))}
-            </Menu>}
+            {!showQuote && (
+                walletInUse ? (
+                    <Text onPress={openWalletModal}>{`${walletInUse.currency}  ${formatNumberWithCommas(walletInUse.balance)} • ${walletInUse.provider}`}</Text>
+                ) : (
+                    <Button onPress={openWalletModal}>Select Wallet To Use</Button>
+                )
+            )}
 
-            {/*Select Offering PayOut Currency Available*/}
-            {(!showQuote && walletInUse) && <><Menu
-                visible={offeringsVisible}
-                onDismiss={closeOfferingsMenu}
-                anchor={<Button
-                    onPress={openOfferingsMenu}>{selectedOffering ? `to ${selectedOffering.split(':')[1]}` : 'Select Currency'}</Button>}>
-              {availableOfferings.map((offering, index) => (
-                  <Menu.Item
-                      key={index}
-                      onPress={() => handleOfferingSelect(offering)}
-                      title={offering.replace(':', ' to ')}
-                  />
-              ))}
-            </Menu></>}
+            {/* Select Offering PayOut Currency Available */}
+            {(!showQuote && walletInUse) && (
+                selectedOffering ? (
+                    <Text onPress={openCurrencyModal}>{`to ${selectedOffering.split(':')[1]}`}</Text>
+                ) : (
+                    <Button onPress={openCurrencyModal}>Select Currency</Button>
+                )
+            )}
 
             {/*Load The PFIs*/}
             {(!selectedPfi && selectedOffering && filteredPfis.length > 0 && !showQuote)&& (
@@ -198,6 +284,8 @@ export default function SendMoney() {
                           <Text>{pfi.name}</Text>
                           <Text>{pfi.description}</Text>
                           <Text>1 {walletInUse.currency} = {pfi.payoutUnitsPerPayinUnit} {selectedOffering.split(":")[1]}</Text>
+                          <Text variant={"bodySmall"}>{"Kindly note these ratings are based on users who have used this PFI"}</Text>
+                          {renderStars(averageRatings[pfi.from] || 0)}
                         </Card.Content>
                       </Card>
                   ))}
@@ -210,11 +298,13 @@ export default function SendMoney() {
                   <View style={styles.pfiDetails}>
                     <Text>{selectedPfi.name}</Text>
                     <Text>{selectedPfi.description}</Text>
-                    <Text>1 {selectedPfi.payinCurrency} ={Math.round(selectedPfi.payoutUnitsPerPayinUnit)} {selectedPfi.payoutCurrency}</Text>
+                    <Text>1 {selectedPfi.payinCurrency} ={selectedPfi.payoutUnitsPerPayinUnit} {selectedPfi.payoutCurrency}</Text>
                     {/*<Text>{selectedPfi.payinMethods.map(method => method.requiredPaymentDetails.title).join(', ')}</Text>*/}
                     <Text>{selectedPfi.payoutMethods.map(method => method.requiredPaymentDetails.title).join(', ')}</Text>
+                    <Text variant={"bodySmall"}>{"Kindly note these ratings are based on users who have used this PFI"}</Text>
+                    {renderStars(averageRatings[selectedPfi.from] || 0)}
                   </View>
-                  {console.log(selectedPfi)}
+
                   <PayinMethodMenu
 
                       payinMethods={selectedPfi?.payoutMethods}
@@ -263,6 +353,25 @@ export default function SendMoney() {
             selectedOffering: selectedOffering
           }} visible={modalVisible} hide={hideModal} />
         </SafeScreen>
+
+        <Modal visible={walletModalVisible} onRequestClose={closeWalletModal}>
+        <FlatList
+            data={userWallets}
+            renderItem={renderWalletItem}
+            keyExtractor={(item) => item.id}
+        />
+        <Button onPress={closeWalletModal}>Close</Button>
+      </Modal>
+
+  <Modal visible={currencyModalVisible} onRequestClose={closeCurrencyModal}>
+    <FlatList
+        data={availableOfferings}
+        renderItem={renderCurrencyItem}
+        keyExtractor={(item) => item}
+    />
+    <Button onPress={closeCurrencyModal}>Close</Button>
+  </Modal>
+
       </>
 
   );
@@ -307,4 +416,9 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     width: '100%',
   },
+  modalItem: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  }
 });

@@ -13,7 +13,7 @@ export async function fetchVCIssuerURL(pb: any, issuerName: string) {
     }
     return response.url;
   } catch (error) {
-    console.error('Error fetching VC Issuer URL:', error);
+    // console.error('Error fetching VC Issuer URL:', error);
     return null;
   }
 }
@@ -25,7 +25,7 @@ export async function fetchVCIssuerURLById(pb: any, id: string) {
     }
     return response.url;
   } catch (error) {
-    console.error('Error fetching VC Issuer URL:', error);
+    // console.error('Error fetching VC Issuer URL:', error);
     return null;
   }
 }
@@ -45,7 +45,7 @@ export async function requestVC(url: string, customerName: string, countryCode: 
     const data = await response.text(); // Parse response as text
     return data;
   } catch (error) {
-    console.error('Error requesting VC:', error);
+    // console.error('Error requesting VC:', error);
     return null;
   }
 }
@@ -57,7 +57,7 @@ export async function checkExistingVC(user: any, pb: any, issuerName: string) {
     const existingVC = await pb.collection('customer_vc').getFirstListItem(`user="${user.id}" && issuer.name="${issuerName}"`);
     return existingVC.vc;
   } catch (error) {
-    console.error('Error checking existing VC:', error);
+    // console.error('Error checking existing VC:', error);
     return null;
   }
 }
@@ -77,7 +77,7 @@ export async function storeCustomerVC(user: any, pb: any, vc: string, name: stri
     });
     return response;
   } catch (error) {
-    console.error('Error storing customer VC:', error);
+    // console.error('Error storing customer VC:', error);
     return null;
   }
 }
