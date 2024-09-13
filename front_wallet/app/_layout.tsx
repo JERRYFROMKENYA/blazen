@@ -64,7 +64,8 @@ function RootLayoutNav() {
               {/*Main App Stack*/}
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               {/*Auth Stack*/}
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              {/*<Stack.Screen name="(auth)" options={{ headerShown: false }} />*/}
+              <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
               {/*Modal is just a cool template to use-- no practical use lol*/}
               <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
               {/*Actions*/}

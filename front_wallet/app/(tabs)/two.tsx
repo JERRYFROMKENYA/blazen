@@ -32,10 +32,14 @@ export default function Transactions() {
     const fetchTransactions = async () => {
         const transactions = await pb.collection('customer_quotes').
         getFullList({filter:`rfq.metadata.from = "${did.uri}"`, expand: 'pfi'});
+        console.log(transactions);
         setCompletedTransactions(transactions.filter((t: any) => t.status === 'completed'));
         setPendingTransactions(transactions.filter((t: any) => t.status === 'pending'));
-        setFailedTransactions(transactions.filter((t: any) => t.status === 'failed'));
+        setFailedTransactions(transactions.filter((t: any) => t.status === 'cancelled'));
         console.log("completed: ",completedTransactions);
+        if(transactions.length === 0){
+           fetchTransactions().then(r => r);
+        }
     }
 
     const getDid = async () => {
@@ -48,6 +52,7 @@ export default function Transactions() {
     useEffect(() => {
         getDid().then(r => r);
         fetchTransactions().then(r => {})
+        refreshTransactions()
         console.log(user);
         console.log(avatar);
     }, [user,pb,router]);
@@ -89,6 +94,7 @@ export default function Transactions() {
                 <Surface elevation={2} style={{width:"100%",
                     padding:30,
                     marginBottom:10,
+                    marginTop:10,
                     flexDirection:"column",borderRadius:20,
                     justifyContent:"space-between",alignItems:"center"}}>
                     <Text variant={"titleSmall"}>DID: Decentralized Identifier</Text>

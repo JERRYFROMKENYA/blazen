@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import SafeScreen from '@/components/SafeScreen/SafeScreen';
 import { BalanceCard, QuickActions, TransactionsWidget } from "@/components/Home";
 import { View, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { Text } from "react-native-paper";
+import {Appbar, Text } from "react-native-paper";
 import { useAuth } from "@/app/(auth)/auth";
 import PocketBase from "pocketbase";
 import { useRouter } from "expo-router";
@@ -34,7 +34,7 @@ export default function Home() {
   return (
     <View style={styles.container}>
       <SafeScreen onRefresh={handleRefresh}>
-        <View style={styles.header}>
+        <Appbar.Header style={styles.header}>
           <Text variant={"displaySmall"} style={styles.greeting}>
             Hi, {name}
           </Text>
@@ -43,7 +43,7 @@ export default function Home() {
               <Image source={{ uri: avatar }} style={styles.avatar} />
             </TouchableOpacity>
           </View>
-        </View>
+        </Appbar.Header>
 
         {/* Start Balance Card */}
         <BalanceCard />
@@ -64,6 +64,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    backgroundColor:"transparent",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

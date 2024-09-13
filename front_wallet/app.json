@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Kimera",
-    "slug": "Kimera",
+    "name": "NexX",
+    "slug": "nexx",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -19,7 +19,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.nexx.app"
     },
     "web": {
       "bundler": "metro",
@@ -31,6 +32,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "68cef0ef-d0db-4d2f-890c-68fa61fa2d11"
+      }
     }
   }
 }

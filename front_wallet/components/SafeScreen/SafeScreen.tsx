@@ -42,7 +42,6 @@ const styles = StyleSheet.create({
     marginBottom: 45,
     minWidth: '100%',
     height: '100%',
-    padding: 15,
 
   },
 });

@@ -234,15 +234,15 @@ export default function ExchangeId() {
                 {exchange && (
                     <>
                         <Surface style={{ flexDirection:"column",width:"100%",
-                            marginVertical:20,
+                            marginVertical:30,
                             justifyContent: "center", alignItems: "center",
                             padding:5, borderRadius:10}} elevation={3}>
                             <Text variant={"bodyLarge"}>Exchange ID: {exchangeId}</Text>
                             <Text variant={"bodyLarge"}>PFI: {exchange.expand.pfi.name}</Text>
                             <Text variant={"bodyLarge"}>Transaction Status: {toSentenceCase(exchange.status)}</Text>
-                            <Text variant={"bodyLarge"}>Sending: {exchange.rfq.data.payin.currencyCode} {formatNumberWithCommas(exchange.rfq.data.payin.amount)}</Text>
+                            <Text variant={"bodyLarge"}>You're sending: {exchange.rfq.data.payin.currencyCode} {formatNumberWithCommas(exchange.rfq.data.payin.amount)}</Text>
                         </Surface>
-                        {transaction && (
+                        {(transaction && exchange.status!="cancelled") && (
                             <Surface style={{ flexDirection:"column",width:"100%",
                                 marginVertical:20,
                                 justifyContent: "center", alignItems: "center",
@@ -252,7 +252,7 @@ export default function ExchangeId() {
                             </Surface>
                         )}
 
-                        {transaction && (
+                        {(transaction && exchange.status!="cancelled") && (
                             <Surface style={{ flexDirection:"column",width:"100%",
                                 marginVertical:20,
                                 justifyContent: "center", alignItems: "center",
