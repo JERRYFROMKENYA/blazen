@@ -16,7 +16,7 @@ export async function createWallet(user: any, pb: any, balance: number, address:
     });
     return response;
   } catch (error) {
-    console.error('Error creating wallet:', error);
+    // console.error('Error creating wallet:', error);
     return null;
   }
 }
@@ -36,7 +36,7 @@ export async function getWalletsForLoggedInUser(user: any, pb: any) {
     });
     return wallets;
   } catch (error) {
-    console.error('Error getting wallets for logged-in user:', error);
+    // console.error('Error getting wallets for logged-in user:', error);
     return null;
   }
 }

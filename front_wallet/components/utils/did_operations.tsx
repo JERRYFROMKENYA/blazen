@@ -14,7 +14,7 @@ export async function fetchJWK() {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     return null;
   }
 }
@@ -28,7 +28,7 @@ export async function fetchDHT() {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     return null;
   }
 }
@@ -47,7 +47,7 @@ export async function storeUserDID(user: any, pb: any, did: object, type: string
     });
     return response;
   } catch (error) {
-    console.error('Error storing user DID:', error);
+    // console.error('Error storing user DID:', error);
     return null;
   }
 }

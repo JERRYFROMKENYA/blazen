@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { Platform, StyleSheet,  Alert } from 'react-native';
 import {Text, Menu, Provider, Button, Icon} from 'react-native-paper';
-import QRCode from 'react-native-qrcode-svg';
+// import QRCode from 'react-native-qrcode-svg';
 import {View} from '@/components/Themed';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 
@@ -51,23 +51,23 @@ export default function ModalScreen() {
           <Menu.Item onPress={() => { setAction('Scan QR Code'); setScannerVisible(true);  closeMenu(); }} title="Scan QR Code" />
         </Menu>
 
-        {action === 'Receive Money' && (
-            <View style={{ padding:10,backgroundColor:"white"}}>
-          <QRCode value={walletInfo} size={200}
+        {/*{action === 'Receive Money' && (*/}
+        {/*    <View style={{ padding:10,backgroundColor:"white"}}>*/}
+        {/*  <QRCode value={walletInfo} size={200}*/}
 
-          />
-            </View>
-        )}
+        {/*  />*/}
+        {/*    </View>*/}
+        {/*)}*/}
 
-        {action === 'Scan QR Code' && scannerVisible && (
-            <>
-              <BarCodeScanner
-                  onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-                  style={StyleSheet.absoluteFillObject}
-              />
-              {scanned && <Button children={'Tap to Scan'} onPress={() => { setScanned(false); setScannerVisible(true); }} />}
-            </>
-        )}
+        {/*{action === 'Scan QR Code' && scannerVisible && (*/}
+        {/*    <>*/}
+        {/*      <BarCodeScanner*/}
+        {/*          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}*/}
+        {/*          style={StyleSheet.absoluteFillObject}*/}
+        {/*      />*/}
+        {/*      {scanned && <Button children={'Tap to Scan'} onPress={() => { setScanned(false); setScannerVisible(true); }} />}*/}
+        {/*    </>*/}
+        {/*)}*/}
 
         <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
       </View>

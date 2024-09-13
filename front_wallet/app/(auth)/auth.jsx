@@ -12,6 +12,7 @@ const AuthContext = createContext({
     isLoggedIn: false,
     isInitialized: false,
     user: {},
+    did:{}
 });
 
 export function useAuth() {
@@ -42,8 +43,6 @@ function useProtectedRoute(user, isInitialized) {
 
         if (!user && !inAuthGroup) {
             router.replace('/(auth)/login');
-        } else if (user) {
-
         }
     }, [user, segments, isNavigationReady, isInitialized]);
 }
@@ -53,6 +52,7 @@ export function AuthProvider({ children }) {
     const [isInitialized, setIsInitialized] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState(null);
+    const [did, setDid]=useState(null);
 
     useEffect(() => {
         const checkAuthStatus = async () => {
@@ -61,6 +61,20 @@ export function AuthProvider({ children }) {
                 setIsLoggedIn(isLoggedIn);
                 setUser(isLoggedIn ? pb.authStore.model : null);
                 setIsInitialized(true);
+            if (user) {
+                    try {
+                        pb.collection('customer_did').getFirstListItem(`user = "${user.id}"`, {
+                            sort: 'updated',
+                        }).then(did=>{
+                            setDid(did.did);
+                            console.log(did)
+                        })
+
+                    } catch (error) {
+                        // console.error("Error fetching DID:", error);
+                    }
+
+                }
             }
         };
 
@@ -135,6 +149,7 @@ export function AuthProvider({ children }) {
                 isLoggedIn,
                 isInitialized,
                 user,
+                did
             }}
         >
             {children}

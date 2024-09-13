@@ -8,7 +8,9 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "22.6.0",
+      "prebuildCommand": "prebuild --npm"
     },
     "production": {}
   },

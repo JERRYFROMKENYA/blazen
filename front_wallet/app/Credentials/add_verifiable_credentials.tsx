@@ -8,6 +8,7 @@ import { useAuth } from '@/app/(auth)/auth';
 import SafeScreen from "@/components/SafeScreen/SafeScreen";
 import {fetchVCIssuerURLById, requestVC} from "@/components/utils/vc_operations";
 import {useRouter} from "expo-router";
+import {useLoading} from "@/components/utils/LoadingContext";
 
 export default function AddVerifiableCredential() {
     const router = useRouter();
@@ -16,6 +17,7 @@ export default function AddVerifiableCredential() {
     const [vcList, setVcList] = useState([]);
     const { pb } = usePocketBase();
     const { user } = useAuth();
+    const {setLoading} = useLoading();
 
     const _handleSearch = () => setShowSearch(!showSearch);
 
@@ -25,7 +27,9 @@ export default function AddVerifiableCredential() {
     }
 
     useEffect(() => {
+        setLoading(true);
         getVCList();
+        setLoading(false);
     }, [user, pb]);
 
     const toSentenceCase = (str: string) => {
@@ -60,18 +64,20 @@ export default function AddVerifiableCredential() {
             {
                 text: "OK",
                 onPress: async () => {
+                    setLoading(true);
                     try {
 
-                        const vc_initial = await pb.collection('customer_vc').getFirstListItem(`issuer="${id}"`);
+                        const vc_initial = await pb.collection('customer_vc').getFirstListItem(`issuer="${issuer.id}"`);
                         if (vc_initial) {
                             Alert.alert("Error", 'You already have a VC from this issuer');
-                            router.back();
+                            setLoading(false);
+                           router.push('/(tabs)/three');
                             return;
                         }
 
                     } catch (error) {
 
-                        console.error("Error creating VC:", error);
+                        // console.error("Error creating VC:", error);
                         console.log(issuer.id);
                         const URL = await fetchVCIssuerURLById(pb, issuer.id);
                         const response = await pb.collection('customer_did').getFirstListItem(`user="${user.id}"`);
@@ -102,11 +108,13 @@ export default function AddVerifiableCredential() {
                             };
 
                             const record = await pb.collection('customer_vc').create(data);
-                            router.back();
+                            setLoading(false)
+                            router.push('/(tabs)/three');
                         }
                         else {
                             Alert.alert("Error", 'Error fetching VC');
-                            router.back();
+                            setLoading(false)
+                           router.push('/(tabs)/three');
                         }
                     }
                 }

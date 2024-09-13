@@ -1,50 +1,59 @@
 import React, { useState } from 'react';
-import { Menu, Button, Text } from 'react-native-paper';
+import { Modal, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, Button } from 'react-native-paper';
 
-type PayinMethod = {
-  requiredPaymentDetails: {
-    title: string;
-  };
-};
-
-type PayinMethodMenuProps = {
-  payinMethods: PayinMethod[];
-  onSelect: (method: PayinMethod) => void;
-  selectedPayinMethod?: PayinMethod;
-};
+interface PayinMethodMenuProps {
+    payinMethods: Array<{ requiredPaymentDetails: { title: string } }>;
+    onSelect: (method: { requiredPaymentDetails: { title: string } }) => void;
+    selectedPayinMethod?: { requiredPaymentDetails: { title: string } };
+}
 
 const PayinMethodMenu: React.FC<PayinMethodMenuProps> = ({ payinMethods, onSelect, selectedPayinMethod }) => {
-  const [visible, setVisible] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
 
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
+    const openModal = () => setModalVisible(true);
+    const closeModal = () => setModalVisible(false);
 
-  if (!payinMethods || payinMethods.length === 0) {
-    return null; // Return null if payinMethods is undefined or empty
-  }
+    const handlePayInMethodSelect = (method: { requiredPaymentDetails: { title: string } }) => {
+        onSelect(method);
+        closeModal();
+    };
 
-  return (
-    selectedPayinMethod ? (
-      <Text variant="bodyMedium">{selectedPayinMethod.requiredPaymentDetails.title}</Text>
-    ) : (
-      <Menu
-        visible={visible}
-        onDismiss={closeMenu}
-        anchor={<Button onPress={openMenu}>Select Payin Method</Button>}
-      >
-        {payinMethods.map((method, index) => (
-          <Menu.Item
-            key={index}
-            onPress={() => {
-              onSelect(method);
-              closeMenu();
-            }}
-            title={method.requiredPaymentDetails.title}
-          />
-        ))}
-      </Menu>
-    )
-  );
+    const renderPayInMethodItem = ({ item }: { item: { requiredPaymentDetails: { title: string } } }) => (
+        <TouchableOpacity onPress={() => handlePayInMethodSelect(item)}>
+            <Text style={styles.modalItem}>{item.requiredPaymentDetails.title}</Text>
+        </TouchableOpacity>
+    );
+
+    if (!payinMethods || payinMethods.length === 0) {
+        return null; // Return null if payinMethods is undefined or empty
+    }
+
+    return (
+        <>
+            {selectedPayinMethod ? (
+                <Text variant="bodyMedium">{selectedPayinMethod.requiredPaymentDetails.title}</Text>
+            ) : (
+                <Button onPress={openModal}>Select Payin Method</Button>
+            )}
+            <Modal visible={modalVisible} onRequestClose={closeModal}>
+                <FlatList
+                    data={payinMethods}
+                    renderItem={renderPayInMethodItem}
+                    keyExtractor={(item, index) => index.toString()}
+                />
+                <Button onPress={closeModal}>Close</Button>
+            </Modal>
+        </>
+    );
 };
+
+const styles = StyleSheet.create({
+    modalItem: {
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+    },
+});
 
 export default PayinMethodMenu;

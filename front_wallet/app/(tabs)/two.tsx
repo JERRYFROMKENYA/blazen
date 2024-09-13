@@ -10,6 +10,7 @@ import {usePocketBase} from "@/components/Services/Pocketbase";
 import * as FileSystem from 'expo-file-system';
 import {useRouter} from "expo-router";
 import {formatNumberWithCommas} from "@/components/utils/format";
+import {useLoading} from "@/components/utils/LoadingContext";
 
 
 interface User {
@@ -18,51 +19,61 @@ interface User {
 }
 
 export default function Transactions() {
-    const router =useRouter();
-    const [avatar, setAvatar] = useState("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQimIXWmgpyuYaqMRDE3BdO183iSVJ_T2JUNg&s");
-    const {user, signOut}=useAuth();
-    const {pb}=usePocketBase();
+    const router = useRouter();
+    // const [avatar, setAvatar] = useState("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQimIXWmgpyuYaqMRDE3BdO183iSVJ_T2JUNg&s");
+    const {user, signOut} = useAuth();
+    const {pb} = usePocketBase();
     const [did, setDid] = useState("loading...");
-    const [expanded, setExpandedTransactions] = React.useState(true);
+    // const [expanded, setExpandedTransactions] = React.useState(true);
     const [completedTransactions, setCompletedTransactions] = React.useState([]);
     const [pendingTransactions, setPendingTransactions] = React.useState([]);
     const [failedTransactions, setFailedTransactions] = React.useState([]);
+    const {setLoading} = useLoading();
 
-
-    const fetchTransactions = async () => {
-        const transactions = await pb.collection('customer_quotes').
-        getFullList({filter:`rfq.metadata.from = "${did.uri}"`, expand: 'pfi'});
-        console.log(transactions);
-        setCompletedTransactions(transactions.filter((t: any) => t.status === 'completed'));
-        setPendingTransactions(transactions.filter((t: any) => t.status === 'pending'));
-        setFailedTransactions(transactions.filter((t: any) => t.status === 'cancelled'));
-        console.log("completed: ",completedTransactions);
-        if(transactions.length === 0){
-           fetchTransactions().then(r => r);
-        }
-    }
 
     const getDid = async () => {
-        const did = await pb.collection('customer_did').getFirstListItem(`user = "${user.id}"`,{
+        const did = await pb.collection('customer_did').getFirstListItem(`user = "${user.id}"`, {
             sort: 'updated',
         });
         setDid(did.did);
         console.log(did);
+
+        const fetchTransactions = async () => {
+            const transactions = await pb.collection('customer_quotes').getFullList({
+                filter: `rfq.metadata.from = "${did.did.uri}"`,
+                expand: 'pfi'
+            });
+            console.log(transactions);
+            setCompletedTransactions(transactions.filter((t: any) => t.status === 'completed'));
+            setPendingTransactions(transactions.filter((t: any) => t.status === 'pending'));
+            setFailedTransactions(transactions.filter((t: any) => t.status === 'cancelled'));
+            console.log("completed: ", completedTransactions);
+        }
+
+        fetchTransactions()
     }
+
+
+
+
+
+
+
     useEffect(() => {
-        getDid().then(r => r);
-        fetchTransactions().then(r => {})
-        refreshTransactions()
-        console.log(user);
-        console.log(avatar);
+        setLoading(true)
+        getDid().then(()=>{
+            setLoading(false)
+        })
+
     }, [user,pb,router]);
 
     const go_to_details = (exchangeId: string) => {
         router.push(`/exchange-details/${exchangeId}`);
     }
     const refreshTransactions = () => {
-        fetchTransactions().then(r => {
-
+        setLoading(true)
+        getDid().then(()=>{
+            setLoading(false)
         })
     }
 
@@ -77,7 +88,7 @@ export default function Transactions() {
     };
 
     const handleLearnMore = () => {
-        Linking.openURL('https://example.com/learn-more');
+        Linking.openURL('https://tbdex.io/trust-compliance');
     };
     const handleSignOut =()=>{
         // sign out
