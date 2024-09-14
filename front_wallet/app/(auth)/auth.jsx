@@ -8,6 +8,7 @@ const AuthContext = createContext({
     signIn: (email, password) => {},
     signOut: () => {},
     createAccount: () => {},
+    createNewAccount: ({ email, password, passwordConfirm, name }) => {},
     refreshAuth: () => {},
     isLoggedIn: false,
     isInitialized: false,
@@ -116,6 +117,7 @@ export function AuthProvider({ children }) {
                 passwordConfirm,
                 name: name ?? '',
             });
+            await appSignIn(email, password)
 
             return { user: resp };
         } catch (e) {

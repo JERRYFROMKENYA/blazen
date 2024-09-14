@@ -8,10 +8,10 @@ import {
   Platform,
   StyleSheet,
   FlatList,
-  TouchableOpacity, Modal
+  TouchableOpacity,
 } from 'react-native';
 import {Text,TextInput, Button, Menu, Provider, Card, Appbar} from 'react-native-paper';
-import {  View } from '@/components/Themed';
+import {  View,Modal } from '@/components/Themed';
 import { useAuth } from "@/app/(auth)/auth";
 import { usePocketBase } from "@/components/Services/Pocketbase";
 import { getWalletsForLoggedInUser } from "@/components/utils/wallet_ops";

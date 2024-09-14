@@ -1,6 +1,6 @@
-import {Text, View} from "@/components/Themed";
+import {Text, View, Modal} from "@/components/Themed";
 import {Platform, StyleSheet} from "react-native";
-import {Button, Modal, PaperProvider, Portal} from "react-native-paper";
+import {Button,  PaperProvider, Portal} from "react-native-paper";
 import React from "react";
 
 

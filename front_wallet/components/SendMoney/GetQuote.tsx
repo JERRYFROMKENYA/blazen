@@ -104,7 +104,7 @@ const fetchQuote = async () => {
         setLoading(false);
 
     } catch (e) {
-        // console.error('Error fetching quote:', e);
+        console.error('Error fetching quote:', e);
         setLoading(false);
     }
 };
