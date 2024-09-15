@@ -64,7 +64,7 @@ export default function CoinExchange() {
 
   const renderCurrencyItem = ({ item }) => (
       <TouchableOpacity onPress={() => handleOfferingSelect(item)}>
-        <Text style={styles.modalItem}>{item}</Text>
+        <Text style={styles.modalItem}>{codeToCurrency(item).replace(":"," to ")}</Text>
       </TouchableOpacity>
   );
 
@@ -284,7 +284,7 @@ const renderStars = (rating) => {
             {/* Select Offering PayOut Currency Available */}
             {(!showQuote && walletInUse) && (
                 selectedOffering ? (
-                    <Text onPress={openCurrencyModal}>{`to ${selectedOffering.split(':')[1]}`}</Text>
+                    <Text onPress={openCurrencyModal}>{`to ${codeToCurrency(selectedOffering.split(':')[1])}`}</Text>
                 ) : (
                     <Button onPress={openCurrencyModal}>Select Currency</Button>
                 )
