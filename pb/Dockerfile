@@ -20,4 +20,4 @@ EXPOSE 8090
 
 # start PocketBase
 #you can add a https flag to the command to enable https instead of http
-CMD ["/pb/pocketbase", "serve", "--https=0.0.0.0:8090"]
+CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090"]

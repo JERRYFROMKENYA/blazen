@@ -19,7 +19,7 @@ export const PocketBaseProvider = ({ children }) => {
                 initial: await AsyncStorage.getItem('pb_auth'),
                 clear: async () => AsyncStorage.removeItem('pb_auth'),
             });
-            const pbInstance = new PocketBase("https://138.197.89.72:8090/", store);
+            const pbInstance = new PocketBase("http://138.197.89.72:8090/", store);
             setPb(pbInstance);
 
         };

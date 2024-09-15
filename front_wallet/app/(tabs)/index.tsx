@@ -15,7 +15,7 @@ interface User {
 
 export default function Home() {
   const router = useRouter();
-  const pocketbase = new PocketBase('https://138.197.89.72:8090');
+  const pocketbase = new PocketBase('http://138.197.89.72:8090');
   const { user, refreshAuth } = useAuth();
   const [name, setName] = useState("loading...");
   const [avatar, setAvatar] = useState("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQimIXWmgpyuYaqMRDE3BdO183iSVJ_T2JUNg&s");
