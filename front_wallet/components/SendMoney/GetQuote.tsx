@@ -157,7 +157,7 @@ const confirmQuote = async () => {
                 " contact support with the following information, rfq_id "+rfq.metadata.exchangeId);
         }
         setLoading(false);
-        router.push('/(tabs)/');
+        router.replace(`/exchange-details/${rfq.metadata.exchangeId}`);
 
     }
     setLoading(false);
@@ -211,7 +211,7 @@ const confirmQuote = async () => {
                     " contact support with the following information, rfq_id "+rfq.metadata.exchangeId);
             }
             setLoading(false);
-            router.push('/(tabs)/');
+            router.replace(`/exchange-details/${rfq.metadata.exchangeId}`);
 
         }
         setLoading(false);

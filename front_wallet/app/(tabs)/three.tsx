@@ -26,14 +26,15 @@ export default function CredentialScreen() {
         })
 
         setVcList(resultList)
-        console.log(resultList)
+        // console.log(resultList)
     }
     useEffect(()=>{
         setLoading(true);
         getVCList().then(r => {
-            setLoading(false)
+
         })
-    },[user,pb,router])
+        setLoading(false)
+    },[user])
 
     return (
         <View style={styles.container}>

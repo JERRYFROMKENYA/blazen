@@ -19,4 +19,5 @@ RUN unzip /tmp/pb.zip -d /pb/
 EXPOSE 8090
 
 # start PocketBase
-CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090"]
+#you can add a https flag to the command to enable https instead of http
+CMD ["/pb/pocketbase", "serve", "--https=0.0.0.0:8090"]

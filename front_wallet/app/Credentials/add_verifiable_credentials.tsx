@@ -67,7 +67,7 @@ export default function AddVerifiableCredential() {
                     setLoading(true);
                     try {
 
-                        const vc_initial = await pb.collection('customer_vc').getFirstListItem(`issuer="${issuer.id}"`);
+                        const vc_initial = await pb.collection('customer_vc').getFirstListItem(`issuer="${issuer.id}" && user="${user.id}"`);
                         if (vc_initial) {
                             Alert.alert("Error", 'You already have a VC from this issuer');
                             setLoading(false);

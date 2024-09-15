@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Text, Button } from 'react-native-paper';
+import {Modal} from "@/components/Themed"
 
 interface PayinMethodMenuProps {
     payinMethods: Array<{ requiredPaymentDetails: { title: string } }>;
@@ -34,7 +35,7 @@ const PayinMethodMenu: React.FC<PayinMethodMenuProps> = ({ payinMethods, onSelec
             {selectedPayinMethod ? (
                 <Text variant="bodyMedium">{selectedPayinMethod.requiredPaymentDetails.title}</Text>
             ) : (
-                <Button onPress={openModal}>Select Payin Method</Button>
+                <Button onPress={openModal}>Select Payment Method</Button>
             )}
             <Modal visible={modalVisible} onRequestClose={closeModal}>
                 <FlatList

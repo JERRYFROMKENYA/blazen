@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Platform } from 'react-native';
-import { Text, Button, Surface, ActivityIndicator } from 'react-native-paper';
+import { StyleSheet,  ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { Text, Button, Surface, ActivityIndicator , TextInput} from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { usePocketBase } from '@/components/Services/Pocketbase';
 import { useAuth } from '@/app/(auth)/auth';
 import { useLoading } from '@/components/utils/LoadingContext';
+import { View } from '@/components/Themed';
 
 const AddPocket = ({ onClose }: { onClose: () => void }) => {
   const { pb } = usePocketBase();
@@ -181,13 +182,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    // backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   surface: {
     width: '90%', // Increased width
     padding: 30, // Increased padding
     borderRadius: 10,
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
   },
   input: {
     height: 40,
@@ -204,10 +205,10 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 5,
     borderRadius: 5,
-    backgroundColor: '#f0f0f0',
+    // backgroundColor: '#f0f0f0',
   },
   selectedTier: {
-    backgroundColor: '#d0f0c0',
+    // backgroundColor: '#d0f0c0',
   },
   tierTitle: {
     fontWeight: 'bold',

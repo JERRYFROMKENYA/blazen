@@ -6,26 +6,26 @@ import { useAuth } from "@/app/(auth)/auth";
 import { getWalletsForLoggedInUser } from "@/components/utils/wallet_ops";
 import { usePocketBase } from "@/components/Services/Pocketbase";
 import { formatNumberWithCommas } from "@/components/utils/format";
-import { useRouter } from "expo-router";
-import { useLoading } from "@/components/utils/LoadingContext";
+import {useRouter} from "expo-router";
+import {useLoading} from "@/components/utils/LoadingContext";
 
 export default function BalanceCard() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [wallets, setWallets] = useState([{ currency: "KES", balance: 0 }]);
+  const router = useRouter()
+  const { user } = useAuth()
+  const [wallets, setWallets] = useState([{ currency: "KES", balance: 0}]);
   const [currentWalletIndex, setCurrentWalletIndex] = useState(0);
   const [isBalanceHidden, setIsBalanceHidden] = useState(false);
   const { pb } = usePocketBase();
-  const { setLoading } = useLoading();
+  const {setLoading}=useLoading()
 
   useEffect(() => {
     if (!user) return;
-    setLoading(true);
+    setLoading(true)
     getWalletsForLoggedInUser(user, pb).then(r => {
-      setWallets(r || []);
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, [user, pb, router, setLoading]);
+      setWallets(r)
+      setLoading(false)
+    });
+  }, [user, pb, router]);
 
   const handleNextWallet = () => {
     setCurrentWalletIndex((prevIndex) => (prevIndex + 1) % wallets.length);
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   walletNavigation: {
-    backgroundColor: 'transparent',
+      backgroundColor: 'transparent',
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',

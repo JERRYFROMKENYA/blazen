@@ -53,19 +53,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    // backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
     width: '80%',
     padding: 20,
     borderRadius: 10,
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
   },
   walletItem: {
     padding: 10,
     marginVertical: 5,
     borderRadius: 5,
-    backgroundColor: '#f0f0f0',
+    // backgroundColor: '#f0f0f0',
   },
   input: {
     height: 40,

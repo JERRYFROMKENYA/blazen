@@ -136,14 +136,14 @@ export default function Savings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    // backgroundColor: '#f0f0f0',
     padding: 10,
   },
   surface: {
     padding: 20,
     margin: 10,
     borderRadius: 10,
-    backgroundColor: '#ffffff',
+    // backgroundColor: '#ffffff',
     elevation: 4,
   },
   title: {
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     padding: 15,
     marginVertical: 10,
     borderRadius: 10,
-    backgroundColor: '#ffffff',
+    // backgroundColor: '#ffffff',
     elevation: 2,
   },
   pocketDetails: {

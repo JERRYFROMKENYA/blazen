@@ -92,6 +92,7 @@ export default function Profile() {
                     title="Profile"
                     description="Change your Profile Picture and Nickname"
                     left={props => <List.Icon {...props} icon="account-circle-outline" />}
+                    onPress={()=>{router.push('/Settings/Profile')}}
                 />
                 <List.Item
                     title="Security"
@@ -125,7 +126,9 @@ export default function Profile() {
                 flexDirection:"column",borderRadius:20,
                 justifyContent:"space-between",alignItems:"center"}}>
                 <Text variant={"bodySmall"}>©️ 2024 NexX, powered by tbDex</Text>
+                <Text variant={"labelLarge"} onPress={()=>{router.push("/actions/test_screen")}}>_TEST SCREEN</Text>
             </Surface>
+
 
         </SafeScreen>
     </View>

@@ -33,6 +33,7 @@ export async function getWalletsForLoggedInUser(user: any, pb: any) {
   try {
     const wallets = await pb.collection('wallet').getFullList({
       filter: `user="${user.id}"`,
+      expand:'user'
     });
     return wallets;
   } catch (error) {
