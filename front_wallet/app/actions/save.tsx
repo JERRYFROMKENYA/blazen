@@ -7,6 +7,7 @@ import { useLoading } from '@/components/utils/LoadingContext';
 import WalletSelectionModal from '@/components/Save/WalletSelectionModal';
 import AddPocket from '@/components/Save/AddPocket';
 import SafeScreen from "@/components/SafeScreen/SafeScreen";
+import {useRouter} from "expo-router";
 
 export default function Savings() {
   const { pb } = usePocketBase();
@@ -17,6 +18,7 @@ export default function Savings() {
   const [selectedPocket, setSelectedPocket] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [addPocketVisible, setAddPocketVisible] = useState(false);
+  const router = useRouter();
 
   const getSavingPockets = async () => {
     setLoading(true);
@@ -96,6 +98,7 @@ export default function Savings() {
   return (
     <SafeScreen onRefresh={() => { getSavingPockets(); getWallets(); }}>
       <Appbar.Header>
+        <Appbar.BackAction  onPress={() => router.back()} />
         <Appbar.Content title="Savings" />
       </Appbar.Header>
       <View>

@@ -18,7 +18,7 @@ const router =useRouter()
     // Check if the user already has a PIN set
     const checkPin = async () => {
       const userData = await pb.collection('users').getOne(user.id);
-      setIsPinSet(!!userData.mfa_pin);
+      setIsPinSet(!!userData.pin);
     };
 
     checkPin();
@@ -30,8 +30,9 @@ const router =useRouter()
           return;
       }
     setLoading(true);
-    // await pb.collection('users').update(user.id, { mfa_pin: pin });
+    await pb.collection('users').update(user.id, { pin });
     setLoading(false);
+    Alert.alert('Success', 'PIN has been set successfully');
   };
 
   return (
@@ -47,6 +48,7 @@ const router =useRouter()
         <TextInput
           label="6-digit PIN"
           value={pin}
+          secureTextEntry={true}
           onChangeText={text => setPin(text)}
           keyboardType="numeric"
           maxLength={6}
@@ -54,7 +56,8 @@ const router =useRouter()
         />
           <TextInput
               label="Confirm 6-digit PIN"
-              value={pin}
+              value={confirmPIN}
+              secureTextEntry={true}
               onChangeText={text => setConfirmPIN(text)}
               keyboardType="numeric"
               maxLength={6}

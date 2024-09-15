@@ -31,6 +31,7 @@ const PasswordScreen = () => {
       Alert.alert("Error", "Failed to change password");
     } finally {
       setLoading(false);
+      Alert.alert('Success', 'Password has been changed successfully');
     }
   };
 

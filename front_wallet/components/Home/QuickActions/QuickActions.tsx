@@ -20,7 +20,8 @@ export default function QuickActions(){
                 {/*</View>*/}
                 <View style={styles.gridRow}>
                     <Chip style={styles.chip} icon="send-circle"  selected onPress={() => router.push("/actions/send_money")}>Send</Chip>
-                    <Chip style={styles.chip} icon="call-received"  selected onPress={() => router.push("/actions/receive")}>Receive</Chip>
+                    {/*<Chip style={styles.chip} icon="call-received"  selected onPress={() => router.push("/actions/receive")}>Receive</Chip>*/}
+                    <Chip style={styles.chip} icon="wallet" onPress={() => router.push("/Wallets/ManageWallets")}>My Wallets</Chip>
                     <Chip style={styles.chip} icon="call-split" onPress={() => router.push('/actions/bill_split')}>Bill Split</Chip>
                     {/*<Chip icon="contactless-payment" onPress={() => console.log('Pressed')}>Pay</Chip>*/}
 
@@ -29,8 +30,9 @@ export default function QuickActions(){
                     alignItems:"center",}}>
                     {/*<Chip icon="information" onPress={() => console.log('Pressed')}>Pay</Chip>*/}
                     <Chip style={styles.chip} icon="piggy-bank" onPress={() => router.push("/actions/save")}>Save</Chip>
-                    <Chip style={styles.chip} icon="wallet" onPress={() => router.push("/Wallets/ManageWallets")}>My Wallets</Chip>
                     <Chip style={styles.chip} icon="bank" onPress={() => router.push("/actions/coin_exchange")}>Exchange</Chip>
+
+
                 </View>
             </View>
         </Surface>

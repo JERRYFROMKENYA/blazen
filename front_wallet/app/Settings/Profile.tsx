@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import {Alert, StyleSheet, View} from 'react-native';
 import { Text, Appbar, Button, TextInput, Avatar } from 'react-native-paper';
 import { useAuth } from '@/app/(auth)/auth';
 import { usePocketBase } from '@/components/Services/Pocketbase';
@@ -8,7 +8,7 @@ import * as ImagePicker from 'expo-image-picker';
 import {useRouter} from "expo-router";
 
 const ProfileScreen = () => {
-  const { user, setUser } = useAuth();
+  const { user } = useAuth();
   const { pb } = usePocketBase();
   const [username, setUsername] = useState(user.username);
   const [avatar, setAvatar] = useState(user.avatar);
@@ -39,8 +39,9 @@ const ProfileScreen = () => {
     }
 
     await pb.collection('users').update(user.id, formData);
-    setUser({ ...user, username, avatar });
+    // setUser({ ...user, username, avatar });
     setLoading(false);
+    Alert.alert('Profile updated successfully', 'Your profile has been updated successfully. You need to log out for some changes to be visible');
   };
 
   return (
