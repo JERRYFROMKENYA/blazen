@@ -30,8 +30,7 @@ export default function QuickActions(){
                     {/*<Chip icon="information" onPress={() => console.log('Pressed')}>Pay</Chip>*/}
                     <Chip style={styles.chip} icon="piggy-bank" onPress={() => router.push("/actions/save")}>Save</Chip>
                     <Chip style={styles.chip} icon="wallet" onPress={() => router.push("/Wallets/ManageWallets")}>My Wallets</Chip>
-
-
+                    <Chip style={styles.chip} icon="bank" onPress={() => router.push("/actions/coin_exchange")}>Exchange</Chip>
                 </View>
             </View>
         </Surface>

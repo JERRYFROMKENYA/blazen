@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Modal } from 'react-native';
-import { Appbar, Button, Surface, Text } from 'react-native-paper';
+import {StyleSheet, View, Modal, ImageSourcePropType} from 'react-native';
+import {Appbar, Button, Card, Icon, Surface, Text} from 'react-native-paper';
 import { usePocketBase } from '@/components/Services/Pocketbase';
 import { useAuth } from '@/app/(auth)/auth';
 import { useLoading } from '@/components/utils/LoadingContext';
@@ -101,6 +101,7 @@ export default function Savings() {
       <View>
         <Surface style={styles.surface}>
           <Text variant={"titleSmall"} style={styles.title}>My NexX Pockets</Text>
+          <ExplanationCard/>
           {savingPockets.map((pocket: any) => (
             <Surface style={styles.pocket} key={pocket.id}>
               <View style={styles.pocketDetails}>
@@ -132,6 +133,42 @@ export default function Savings() {
     </SafeScreen>
   );
 }
+
+const privacyShieldImage: ImageSourcePropType = require('@/assets/images/save.png');
+
+const ExplanationCard = () => {
+  const [hidden, setHidden] = React.useState(false);
+  console.log(hidden)
+  return (
+      !hidden && (
+          <Card style={{ marginVertical: 10 }}>
+            <Card.Cover style={{ width: "100%" }} source={privacyShieldImage} />
+            <Card.Content>
+              <Text variant="bodyMedium" style={{ marginBottom: 5, marginTop: 5 }}>
+                {"What is a Pocket?"}
+              </Text>
+              <Text variant="bodySmall">
+                {"A Pocket is a sophisticated kind of wallet designed" +
+                    " to give NexXers more control over their " +
+                    "financial freedom, in tandem with Coin Exchange a NexXer " +
+                    "can create pockets depending on the saving options given," +
+                    "earn interest on these saving options."}
+              </Text>
+            </Card.Content>
+            <Card.Actions>
+              <Button
+                  style={{ alignSelf: "flex-end" }}
+                  icon={() => <Icon size={20} source={"close"} />}
+                  onPress={() => setHidden(!hidden)}
+              >
+                {"Close"}
+              </Button>
+            </Card.Actions>
+
+          </Card>
+      )
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

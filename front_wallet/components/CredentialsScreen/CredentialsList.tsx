@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePocketBase } from '@/components/Services/Pocketbase';
 import { useAuth } from '@/app/(auth)/auth';
-import { View } from 'react-native';
+import {Image, View} from 'react-native';
 import { Text } from '@/components/Themed';
 import CredentialsCard from '@/components/CredentialsScreen/CredentialsCard';
 import {useRouter} from "expo-router";
@@ -17,7 +17,7 @@ const CredentialsList: React.FC<{ vcList: any[],refresh:Function }> = ({ vcList,
     }
 
     return (
-        <View>
+        <View style={{marginBottom:120}}>
             {vcList.length === 0 && <View style={{ alignItems:"center",padding: 20 }}><Text>No credentials found</Text></View>}
             {vcList.map((vc: any) => (
                 <CredentialsCard
@@ -33,6 +33,10 @@ const CredentialsList: React.FC<{ vcList: any[],refresh:Function }> = ({ vcList,
                     }}
                 />
             ))}
+            <Image
+                source={require('@/assets/images/adaptive-icon.png')}
+                style={{ width: 200, height: 50, margin: 20, alignSelf:"center" }}
+            />
         </View>
     );
 }

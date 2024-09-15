@@ -33,7 +33,7 @@ export async function fetchDHT() {
   }
 }
 
-export async function storeUserDID(user: any, pb: any, did: object, type: string) {
+export async function storeUserDID(user: any, pb: any, did: object, type: string, source :string) {
   if (!user || !pb) {
     throw new Error('User not logged in or PocketBase not initialized');
   }
@@ -43,7 +43,7 @@ export async function storeUserDID(user: any, pb: any, did: object, type: string
       user: user.id,
       did: did,
       type: type, // Ensure the type field is included
-      source:"app_generated"
+      source: source
     });
     return response;
   } catch (error) {
@@ -61,7 +61,7 @@ export function useDidOperations() {
     if (!did) {
       throw new Error('Error fetching JWK');
     }
-    return await storeUserDID(user, pb, did, 'jwk');
+    return await storeUserDID(user, pb, did, 'jwk','app_generated');
   };
 
   const setDHTDid = async () => {
@@ -69,7 +69,7 @@ export function useDidOperations() {
     if (!did) {
       throw new Error('Error fetching DHT');
     }
-    return await storeUserDID(user, pb, did, 'dht');
+    return await storeUserDID(user, pb, did, 'dht','app_generated');
   };
 
   return {

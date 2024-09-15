@@ -5,6 +5,7 @@ import { useAuth } from '@/app/(auth)/auth';
 import { usePocketBase } from '@/components/Services/Pocketbase';
 import SafeScreen from "@/components/SafeScreen/SafeScreen";
 import * as ImagePicker from 'expo-image-picker';
+import {useRouter} from "expo-router";
 
 const ProfileScreen = () => {
   const { user, setUser } = useAuth();
@@ -12,6 +13,7 @@ const ProfileScreen = () => {
   const [username, setUsername] = useState(user.username);
   const [avatar, setAvatar] = useState(user.avatar);
   const [loading, setLoading] = useState(false);
+  const router=useRouter()
 
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -62,6 +64,7 @@ const ProfileScreen = () => {
           <Button mode="contained" onPress={handleUpdateProfile} loading={loading} style={styles.button}>
             Update Profile
           </Button>
+          <Button mode={"elevated"} style={{margin:5,backgroundColor:"maroon"}} textColor={"white"}> Delete NexX Account</Button>
         </View>
       </SafeScreen>
     </View>

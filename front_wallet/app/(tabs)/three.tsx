@@ -1,5 +1,5 @@
 // `app/(tabs)/three.tsx`
-import { StyleSheet } from 'react-native';
+import {Image, StyleSheet} from 'react-native';
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 import React, {useEffect, useState} from 'react';
@@ -50,6 +50,7 @@ export default function CredentialScreen() {
                 <CredentialsList
                     refresh={getVCList}
                     vcList={vcList} />
+
             </SafeScreen>
             <FAB
                 style={styles.fab}

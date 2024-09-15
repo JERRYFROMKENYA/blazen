@@ -2,7 +2,7 @@ import SafeScreen from "@/components/SafeScreen/SafeScreen";
 import React, {useState} from "react";
 import {Appbar, Avatar, Text, Surface, Button, List} from "react-native-paper";
 import {View} from "@/components/Themed";
-import { TouchableOpacity, Linking } from "react-native";
+import {TouchableOpacity, Linking, Image} from "react-native";
 import {useAuth} from "@/app/(auth)/auth";
 import {useEffect} from "react";
 import {usePocketBase} from "@/components/Services/Pocketbase";
@@ -17,7 +17,7 @@ interface User {
 
 export default function Profile() {
     const router =useRouter();
-    const [avatar, setAvatar] = useState("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQimIXWmgpyuYaqMRDE3BdO183iSVJ_T2JUNg&s");
+
     const {user, signOut}=useAuth();
     const {pb}=usePocketBase();
     const [did, setDid] = useState("loading...");
@@ -27,6 +27,8 @@ export default function Profile() {
         setDid(did.did);
         console.log(did);
     }
+    const [avatar, setAvatar] = useState("https://avatars.dicebear.com/api/identicon/" +
+        user.username + ".svg");
     useEffect(() => {
        getDid().then(r => r);
         if ((user as User)?.avatar) {
@@ -66,8 +68,7 @@ export default function Profile() {
                 justifyContent:"space-between",alignItems:"center"}}>
                 <Avatar.Image size={100} source={{uri:avatar}} style={{marginBottom:20}} />
                 <Text variant={"bodySmall"}>Full Name: {name}</Text>
-                <Text variant={"displaySmall"}>{user.name}</Text>
-                <Text variant={"bodyMedium"}>NexX Username: {user.username}</Text>
+                <Text variant={"displaySmall"}>{user.username}</Text>
                 <Text style={{alignSelf:"flex-end", justifyContent:"flex-end",marginTop:10}} variant={"bodySmall"}>Member Since:{"2024"}</Text>
             </Surface>
             <Surface elevation={2} style={{width:"100%",
@@ -97,17 +98,22 @@ export default function Profile() {
                 <List.Item
                     title="Security"
                     description="Setup Authentication and Security"
-                    left={props => <List.Icon {...props} icon="account-lock" />}
+                    left={props => <List.Icon {...props} icon="account-lock"/>}
+                    onPress={()=>{router.push('/Settings/Security')}}
                 />
                 <List.Item
                     title="Password"
                     description="Change Your Password"
-                    left={props => <List.Icon {...props} icon="form-textbox-password" />}
+                    left={props => <List.Icon {...props} icon="form-textbox-password"
+                    />}
+                    onPress={()=>{router.push('/Settings/Password')}}
                 />
                 <List.Item
                     title="Support"
                     description="Contact Us, Privacy Policy, Terms of Service"
-                    left={props => <List.Icon {...props} icon="comment-text-multiple" />}
+                    left={props => <List.Icon {...props} icon="comment-text-multiple"
+                    />}
+                    onPress={()=>{router.push('/Settings/Support')}}
                 />
 
             </Surface>
@@ -117,15 +123,20 @@ export default function Profile() {
                 marginBottom:10,
                 flexDirection:"column",borderRadius:20,
                 justifyContent:"space-between",alignItems:"center"}}>
-                <Button mode={"outlined"} style={{color:"red"}} onPress={handleSignOut}>Sign Out</Button>
-                <Button mode={"elevated"} style={{margin:5,backgroundColor:"maroon"}} textColor={"white"}> Delete NexX Account</Button>
+                <Button mode={"outlined"} onPress={handleSignOut}>Sign Out</Button>
+
             </Surface>
             <Surface elevation={0} style={{width:"100%",
                 padding:5,
                 marginBottom:150,
                 flexDirection:"column",borderRadius:20,
                 justifyContent:"space-between",alignItems:"center"}}>
+                <Image
+                source={require('@/assets/images/adaptive-icon.png')}
+                style={{ width: 200, height: 50, marginBottom: 20 }}
+                />
                 <Text variant={"bodySmall"}>©️ 2024 NexX, powered by tbDex</Text>
+
                 <Text variant={"labelLarge"} onPress={()=>{router.push("/actions/test_screen")}}>_TEST SCREEN</Text>
             </Surface>
 

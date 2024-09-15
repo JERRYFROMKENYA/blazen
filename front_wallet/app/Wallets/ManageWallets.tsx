@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, FlatList } from 'react-native';
-import { Text, Card, Appbar, Button } from 'react-native-paper';
+import {StyleSheet, FlatList, ImageSourcePropType} from 'react-native';
+import {Text, Card, Appbar, Button, Icon} from 'react-native-paper';
 import { useAuth } from '@/app/(auth)/auth';
 import { usePocketBase } from '@/components/Services/Pocketbase';
 import SafeScreen from "@/components/SafeScreen/SafeScreen";
@@ -26,7 +26,7 @@ const ManageWalletsScreen = () => {
   }, [user, pb, router]);
 
   const handleCreateWallet = () => {
-    router.push('/Wallets/CreateWallet');
+    router.push('/actions/coin_exchange');
   };
 
   const handleManageWallet = (walletId) => {
@@ -40,6 +40,7 @@ const ManageWalletsScreen = () => {
         <Appbar.Content title="Manage Wallets" />
       </Appbar.Header>
       <SafeScreen>
+        <ExplanationCard/>
         {wallets && (
           <FlatList
               style={
@@ -69,6 +70,41 @@ const ManageWalletsScreen = () => {
         </Button>
       </SafeScreen>
     </View>
+  );
+};
+
+const privacyShieldImage: ImageSourcePropType = require('@/assets/images/privacy_shield.png');
+
+const ExplanationCard = () => {
+  const [hidden, setHidden] = React.useState(false);
+  console.log(hidden)
+  return (
+      !hidden && (
+          <Card style={{ marginVertical: 10 }}>
+            {/*<Card.Cover style={{ width: "100%" }} source={privacyShieldImage} />*/}
+            <Card.Content>
+              <Text variant="bodyMedium" style={{ marginBottom: 5, marginTop: 5 }}>
+                {"What is a wallet?"}
+              </Text>
+              <Text variant="bodySmall">
+                {"NexX Wallets are the ultimate way to manage your" +
+                    " finances and even send money to friends and " +
+                    "family. wallets are isolated and " +
+                    "independent spaces where your money is stored."}
+              </Text>
+            </Card.Content>
+            <Card.Actions>
+              <Button
+                  style={{ alignSelf: "flex-end" }}
+                  icon={() => <Icon size={20} source={"close"} />}
+                  onPress={() => setHidden(!hidden)}
+              >
+                {"Close"}
+              </Button>
+            </Card.Actions>
+
+          </Card>
+      )
   );
 };
 

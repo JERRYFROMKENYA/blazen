@@ -11,6 +11,7 @@ import { createWallet, getWalletsForLoggedInUser } from "@/components/utils/wall
 import { useEffect, useState } from "react";
 import { usePocketBase } from "@/components/Services/Pocketbase";
 import React from 'react';
+import OnboardingModal from "@/components/Onboarding/OnboardingModal";
 
 export default function TabTwoScreen() {
     const router = useRouter();
@@ -21,6 +22,7 @@ export default function TabTwoScreen() {
     const [myDid, setMyDid] = useState("this isnt working currently please wait this isnt working currently please wait");
     const [myVC, setMyVC] = useState("\"this isnt working currently please wait\" \"this isnt working currently please wait\"");
     const [myWallets, setMyWallets] = useState([]);
+    const [isOnboardingVisible, setIsOnboardingVisible] = useState(false);
 
     useEffect(() => {
         getDIDForLoggedInUser(user, pb).then(r => setMyDid(r.document.id));
@@ -42,6 +44,7 @@ export default function TabTwoScreen() {
             <Text onPress={() => { setDHTDid().then(r => console.log(r)) }} style={styles.title}>Test DHT</Text>
             <Text onPress={() => { setJWKDid().then(r => console.log(r)) }} style={styles.title}>Test JWT</Text>
             <Text onPress={() => { handleGenerateVC().then(r => console.log(r)) }} style={styles.title}>Test VC</Text>
+            <Text onPress={()=>{setIsOnboardingVisible(true)}} style={styles.title}>Show Onboarding</Text>
             <Text onPress={() => { createWallet(user, pb, 0, user.id, "fiat", "KES").then(r => console.log(r)) }} style={styles.title}>Create Wallet</Text>
             <Text onPress={async () => {
                 await signOut();
@@ -49,6 +52,7 @@ export default function TabTwoScreen() {
 
             <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
             <EditScreenInfo path="app/(tabs)/two.tsx" />
+            <OnboardingModal visible={isOnboardingVisible} onDismiss={() => setIsOnboardingVisible(false)} />
         </View>
     );
 }

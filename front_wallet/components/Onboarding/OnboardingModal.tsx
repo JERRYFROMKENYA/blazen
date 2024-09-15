@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { StyleSheet, ScrollView, useColorScheme, FlatList, TouchableOpacity, Alert, Image, Platform } from 'react-native';
-import { Portal, Text, Button, ProgressBar, TextInput } from 'react-native-paper';
+import { StyleSheet, ScrollView, FlatList, TouchableOpacity, Alert, Image, Platform } from 'react-native';
+import { Portal, Text, Button, ProgressBar, TextInput, Icon } from 'react-native-paper';
 import { Modal, View } from "@/components/Themed";
 import * as DocumentPicker from 'expo-document-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from "@/app/(auth)/auth";
 import { usePocketBase } from "@/components/Services/Pocketbase";
+import { useRouter } from "expo-router";
+import {storeUserDID, useDidOperations} from "@/components/utils/did_operations";
+import { useLoading } from "@/components/utils/LoadingContext";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const countryMapping = {
   "US": "United States",
@@ -18,7 +22,14 @@ const countryMapping = {
   "NG": "Nigeria"
 };
 
-const OnboardingModal = ({ visible, onDismiss }) => {
+const idTypes = ["Passport", "National ID", "Driver's License", "Other"];
+
+interface OnboardingModalProps {
+  visible: boolean;
+  onDismiss: () => void;
+}
+
+const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss }) => {
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
     emailVisibility: false,
@@ -37,17 +48,26 @@ const OnboardingModal = ({ visible, onDismiss }) => {
     first_name: '',
     middle_name: '',
     last_name: '',
-    settings: '',
+    settings: { pin: '' },
     delete_request: '',
     delete_reason: '',
     is_banned: false,
+    pin:''
   });
   const [countryModalVisible, setCountryModalVisible] = useState(false);
-  const [passportPhoto, setPassportPhoto] = useState(null);
-  const [idPhoto, setIdPhoto] = useState(null);
+  const [idTypeModalVisible, setIdTypeModalVisible] = useState(false);
+  const [passportPhoto, setPassportPhoto] = useState<any>(null);
+  const [idPhoto, setIdPhoto] = useState<any>(null);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
-  const { user } = useAuth();
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [personalDid, setPersonalDid] = useState('');
+  const [usePersonalDid, setUsePersonalDid] = useState(false);
+  const { user, signOut } = useAuth();
   const { pb } = usePocketBase();
+  const router = useRouter();
+  const { setDHTDid } = useDidOperations();
+  const { setLoading } = useLoading();
 
   const steps = [
     "Welcome to the app! Let's get started.",
@@ -57,55 +77,105 @@ const OnboardingModal = ({ visible, onDismiss }) => {
     "All done! Please verify your email to continue."
   ];
 
-  const handleNext = async () => {
-    if (step < steps.length - 1) {
-      setStep(step + 1);
-    } else {
-      const formDataToSend = new FormData();
-      Object.keys(formData).forEach(key => {
-        formDataToSend.append(key, formData[key]);
-      });
-      if (passportPhoto) {
-        formDataToSend.append('avatar', {
-          uri: passportPhoto.uri,
-          name: passportPhoto.name,
-          type: passportPhoto.type,
-        });
-      }
-      if (idPhoto) {
-        formDataToSend.append('id_document', {
-          uri: idPhoto.uri,
-          name: idPhoto.name,
-          type: idPhoto.type,
-        });
-      }
-      // Send formDataToSend to PocketBase
+  const createWallet = async (userId: string, country: string) => {
+    const countryToCurrency = {
+      "US": "USD",
+      "AU": "AUD",
+      "UK": "GBP",
+      "KE": "KES",
+      "MX": "MXN",
+      "EU": "EUR",
+      "GH": "GHS",
+      "NG": "NGN"
+    };
 
-      const createdRecord = await pb.collection('users').update(user.id, formData);
-      if (createdRecord) {
-        await pb.collection('users').requestVerification(user.email);
-        Alert.alert("Complete", "Please verify your email to continue.");
-      }
-      onDismiss();
+    const currency = countryToCurrency[country];
+
+    try {
+      const response = await pb.collection('wallet').create({
+        user: userId,
+        currency: currency,
+        balance: 0, // Initial balance
+        provider: "NexX Testing Wallet",
+        address: userId
+      });
+      return response;
+    } catch (error) {
+      console.error('Error creating wallet:', error);
+      return null;
     }
   };
 
-  const handleChange = (name, value) => {
-    setFormData({ ...formData, [name]: value });
+  const handleNext = async () => {
+    if (step === 1 && !usernameAvailable) {
+      setErrorMessage('Username is taken. Please choose another one.');
+      return;
+    }
+    setErrorMessage('');
+    if (step < steps.length - 1) {
+      setStep(step + 1);
+    } else {
+      setLoading(true);
+      const formDataToSend = new FormData();
+      Object.keys(formData).forEach(key => {
+        formDataToSend.append(key, formData[key as keyof typeof formData]);
+      });
+      handleChange('name', formData.username);
+      formDataToSend.append('settings', JSON.stringify(formData.settings));
+
+      if (passportPhoto) {
+        // formDataToSend.append('avatar',new File(
+        //     [passportPhoto],
+        //     passportPhoto.name,
+        //     { type: passportPhoto}
+        // ));
+      }
+      if (idPhoto) {
+      // formDataToSend.append('avatar',new File(
+      //     [idPhoto],
+      //     idPhoto.name,
+      //     { type: idPhoto}
+      // ));
+      }
+      const createdRecord = await pb.collection('users').update(user.id, formDataToSend);
+      if (createdRecord) {
+        await pb.collection('users').requestVerification(user.email);
+        Alert.alert("Complete", "Please verify your email to continue. Then Login");
+      }
+      await createWallet(user.id, formData.country);
+      if (usePersonalDid && personalDid) {
+        await storeUserDID(user, pb, JSON.parse(personalDid),"dht" ,'user_import');
+      } else {
+        await setDHTDid();
+      }
+      setLoading(false);
+      signOut();
+      router.replace('/(auth)/login');
+    }
+    setLoading(false);
   };
 
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  const handleChange = (name: string, value: any) => {
+    setFormData({ ...formData, [name]: value });
+  };
 
   const openCountryModal = () => setCountryModalVisible(true);
   const closeCountryModal = () => setCountryModalVisible(false);
 
-  const handleCountrySelect = (code) => {
+  const openIdTypeModal = () => setIdTypeModalVisible(true);
+  const closeIdTypeModal = () => setIdTypeModalVisible(false);
+
+  const handleCountrySelect = (code: string) => {
     handleChange('country', code);
     closeCountryModal();
   };
 
-  const pickDocument = async (setFile) => {
+  const handleIdTypeSelect = (type: string) => {
+    handleChange('id_type', type);
+    closeIdTypeModal();
+  };
+
+  const pickDocument = async (setFile: React.Dispatch<any>) => {
     let result = await DocumentPicker.getDocumentAsync({});
     if (result.type === 'success') {
       setFile(result);
@@ -116,61 +186,78 @@ const OnboardingModal = ({ visible, onDismiss }) => {
     setDatePickerVisible(true);
   };
 
-  const onDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || formData.date_of_birth;
-    setDatePickerVisible(Platform.OS === 'ios');
-    handleChange('date_of_birth', currentDate.toISOString().split('T')[0]);
+  const onDateChange = (event: any, selectedDate: Date | undefined) => {
+    setDatePickerVisible(false);
+    if (selectedDate) {
+      handleChange('date_of_birth', selectedDate.toISOString().split('T')[0]);
+    }
   };
+
+  const checkUsernameAvailability = async (username: string) => {
+    // setErrorMessage('')
+    const result = await pb.collection('users').getList(1, 1, {
+      filter: `username="${username}"`,
+    });
+    setUsernameAvailable(result.items.length === 0);
+  };
+  const handleUsername =(value:string)=>{
+
+    handleChange('username', value);
+    checkUsernameAvailability(value);
+  }
 
   return (
     <Portal>
-      <Modal visible={visible} onDismiss={onDismiss} contentContainerStyle={[styles.modalContainer, isDarkMode && styles.modalContainerDark]}>
-        <ScrollView contentContainerStyle={styles.scrollView}>
-          <Text style={[styles.title, isDarkMode && styles.titleDark]} onPress={() => { setStep(step - 1) }}> {"< Back"} </Text>
-          <Text style={[styles.title, isDarkMode && styles.titleDark]}>Onboarding</Text>
-          <Text style={[styles.content, isDarkMode && styles.contentDark]}>{steps[step]}</Text>
+      <Modal visible={visible} onDismiss={onDismiss} contentContainerStyle={styles.modalContainer}>
+        <KeyboardAwareScrollView contentContainerStyle={styles.scrollView}>
+          <Button style={{ alignSelf: "flex-start" }} onPress={() => {
+            if (step <= 0) {
+              router.back();
+              return;
+            }
+            setStep(step - 1);
+          }} icon={() => (<Icon size={20} source={"arrow-left"} />)}>Back</Button>
+          <Text style={styles.content}>{steps[step]}</Text>
           <ProgressBar progress={(step + 1) / steps.length} style={styles.progressBar} />
           {step === 1 && (
             <>
-              <Text variant={"bodySmall"} children={"Use Your Government Name"} />
+              <Text variant={"bodySmall"}>Use Your Government Name</Text>
               <TextInput label="First Name" value={formData.first_name} onChangeText={(value) => handleChange('first_name', value)} style={styles.input} />
               <TextInput label="Middle Name" value={formData.middle_name} onChangeText={(value) => handleChange('middle_name', value)} style={styles.input} />
               <TextInput label="Last Name" value={formData.last_name} onChangeText={(value) => handleChange('last_name', value)} style={styles.input} />
-              <Text variant={"bodySmall"} children={"Use a unique username"} />
-              <TextInput label="Username" value={formData.name} onChangeText={(value) => {
-                handleChange('username', value)
-                handleChange('name', value)
-              }} style={styles.input} />
+              <Text variant={"bodySmall"}>Use a unique username</Text>
+              <TextInput
+                label="Username"
+                value={formData.username}
+                onChangeText={(value) => {
+                  handleUsername(value);
+
+                  checkUsernameAvailability(value).then(()=>{
+                  })
+                }}
+                style={styles.input}
+              />
+              {usernameAvailable === false && <Text style={styles.unavailable}>Username is taken</Text>}
+              {usernameAvailable === true && <Text style={styles.available}>Username is available</Text>}
+              {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
             </>
           )}
           {step === 2 && (
             <>
               <TextInput label="Street Address" value={formData.street_address} onChangeText={(value) => handleChange('street_address', value)} style={styles.input} />
               <TextInput label="State/County" value={formData.state_county} onChangeText={(value) => handleChange('state_county', value)} style={styles.input} />
-              <Button onPress={openCountryModal} style={styles.input}>
-                {formData.country ? countryMapping[formData.country] : "Select Country"}
-              </Button>
-              <Modal visible={countryModalVisible} onRequestClose={closeCountryModal}>
-                <FlatList
-                  data={Object.entries(countryMapping)}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity onPress={() => handleCountrySelect(item[0])}>
-                      <Text style={styles.modalItem}>{item[1]}</Text>
-                    </TouchableOpacity>
-                  )}
-                  keyExtractor={(item) => item[0]}
-                />
-                <Button onPress={closeCountryModal}>Close</Button>
-              </Modal>
+              <TextInput label="Country" value={formData.country} onFocus={openCountryModal} style={styles.input} />
             </>
           )}
           {step === 3 && (
             <>
-              <TextInput label="ID Type" value={formData.id_type} onChangeText={(value) => handleChange('id_type', value)} style={styles.input} />
               <TextInput label="ID Number" value={formData.id_number} onChangeText={(value) => handleChange('id_number', value)} style={styles.input} />
-              <Button onPress={showDatePicker} style={styles.input}>
-                {formData.date_of_birth ? `DOB: ${formData.date_of_birth}` : "Select Date of Birth"}
-              </Button>
+              <TextInput label="ID Type" value={formData.id_type} onFocus={openIdTypeModal} style={styles.input} />
+              <Button onPress={() => pickDocument(setPassportPhoto)}>Upload Passport Photo</Button>
+              {passportPhoto && <Image source={{ uri: passportPhoto.uri }} style={styles.imagePreview} />}
+              <Button onPress={() => pickDocument(setIdPhoto)}>Upload ID Photo</Button>
+              {idPhoto && <Image source={{ uri: idPhoto.uri }} style={styles.imagePreview} />}
+              <Button onPress={showDatePicker}>{formData.date_of_birth ?formData.date_of_birth :"Select Date of Birth"}</Button>
               {datePickerVisible && (
                 <DateTimePicker
                   value={formData.date_of_birth ? new Date(formData.date_of_birth) : new Date()}
@@ -179,24 +266,61 @@ const OnboardingModal = ({ visible, onDismiss }) => {
                   onChange={onDateChange}
                 />
               )}
-              <Button onPress={() => pickDocument(setPassportPhoto)} style={styles.input}>
-                {passportPhoto ? "Passport Photo Selected" : "Select Passport Photo"}
+            </>
+          )}
+          {step === 4 && (
+            <>
+              <TextInput
+                label="6-Digit PIN"
+                value={formData.pin}
+                onChangeText={(value) => handleChange('pin', value)}
+                keyboardType="numeric"
+                maxLength={6}
+                secureTextEntry
+                style={styles.input}
+              />
+              <Text>Do you want to add your own DID?</Text>
+              <Button onPress={() => setUsePersonalDid(!usePersonalDid)}>
+                {usePersonalDid ? "No, generate for me" : "Yes, I'll add my own"}
               </Button>
-              {passportPhoto && (
-                <Image source={{ uri: passportPhoto.uri }} style={styles.imagePreview} />
-              )}
-              <Button onPress={() => pickDocument(setIdPhoto)} style={styles.input}>
-                {idPhoto ? "ID Photo Selected" : "Select ID Photo"}
-              </Button>
-              {idPhoto && (
-                <Image source={{ uri: idPhoto.uri }} style={styles.imagePreview} />
+              {usePersonalDid && (
+                <TextInput
+                  label="Personal DID"
+                  value={personalDid}
+                  onChangeText={setPersonalDid}
+                  style={styles.input}
+                />
               )}
             </>
           )}
-          <Button mode="contained" onPress={handleNext} style={styles.button}>
+          <Button mode="contained" onPress={handleNext} style={styles.button} disabled={step === 4 && formData.pin.length !== 6}>
             {step < steps.length - 1 ? "Next" : "Finish"}
           </Button>
-        </ScrollView>
+        </KeyboardAwareScrollView>
+        <Modal visible={countryModalVisible} onRequestClose={closeCountryModal} style={styles.modal}>
+          <FlatList
+            data={Object.entries(countryMapping)}
+            renderItem={({ item }) => (
+              <TouchableOpacity onPress={() => handleCountrySelect(item[0])}>
+                <Text style={styles.modalItem}>{item[1]}</Text>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item[0]}
+          />
+          <Button onPress={closeCountryModal}>Close</Button>
+        </Modal>
+        <Modal visible={idTypeModalVisible} onRequestClose={closeIdTypeModal} style={styles.modal}>
+          <FlatList
+            data={idTypes}
+            renderItem={({ item }) => (
+              <TouchableOpacity onPress={() => handleIdTypeSelect(item)}>
+                <Text style={styles.modalItem}>{item}</Text>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item}
+          />
+          <Button onPress={closeIdTypeModal}>Close</Button>
+        </Modal>
       </Modal>
     </Portal>
   );
@@ -204,31 +328,16 @@ const OnboardingModal = ({ visible, onDismiss }) => {
 
 const styles = StyleSheet.create({
   modalContainer: {
-    backgroundColor: 'white',
     padding: 20,
     margin: 20,
     borderRadius: 10,
   },
-  modalContainerDark: {
-    backgroundColor: '#333',
-  },
   scrollView: {
     paddingBottom: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  titleDark: {
-    color: 'white',
   },
   content: {
     fontSize: 16,
     marginBottom: 20,
-  },
-  contentDark: {
-    color: 'white',
   },
   progressBar: {
     marginBottom: 20,
@@ -249,6 +358,19 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     marginVertical: 10,
+  },
+  modal: {
+    zIndex: 99,
+  },
+  available: {
+    color: 'green',
+  },
+  unavailable: {
+    color: 'red',
+  },
+  error: {
+    color: 'red',
+    marginTop: 10,
   },
 });
 

@@ -16,19 +16,18 @@ import { useAuth } from "@/app/(auth)/auth";
 import { usePocketBase } from "@/components/Services/Pocketbase";
 import { getWalletsForLoggedInUser } from "@/components/utils/wallet_ops";
 import { formatNumberWithCommas } from "@/components/utils/format";
-import SendMoneyAction from "@/components/SendMoney/SendMoneyAction";
-import PayInForm from "@/components/SendMoney/payInForm";
+import SendMoneyAction from "@/components/CoinExchange/SendMoneyAction";
+import PayInForm from "@/components/CoinExchange/payInForm";
 import SafeScreen from "@/components/SafeScreen/SafeScreen";
-import PayinMethodMenu from "@/components/SendMoney/payinMethodMenu";
-import GetQuote from "@/components/SendMoney/GetQuote";
+import PayinMethodMenu from "@/components/CoinExchange/payinMethodMenu";
+import GetQuote from "@/components/CoinExchange/GetQuote";
 import {useRouter} from "expo-router";
 import {useLoading} from "@/components/utils/LoadingContext";
 import { MaterialIcons } from '@expo/vector-icons';
-import {codeToCurrency} from "@/components/utils";
 
 
 
-export default function SendMoney() {
+export default function CoinExchange() {
   const router =useRouter();
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
@@ -65,13 +64,28 @@ export default function SendMoney() {
 
   const renderCurrencyItem = ({ item }) => (
       <TouchableOpacity onPress={() => handleOfferingSelect(item)}>
-        <Text style={styles.modalItem}>{codeToCurrency(item.replace(':'," to "))}</Text>
+        <Text style={styles.modalItem}>{item}</Text>
       </TouchableOpacity>
   );
 
 
   const onSelectPayinMethod=(method:any)=>{
     setSelectedPayinMethod(method);
+  }
+
+  function codeToCurrency(Code:String){
+   return  Code.trim().replace("USDC","USD Coin")
+        .replace("GHS","Ghananian Cedis")
+        .replace("NGN","Nigerian Naira")
+        .replace("KES","Kenyan Shilling")
+        .replace("USD","US Dollar")
+        .replace("EUR","Euro")
+        .replace("GBP","Great Britain Pound")
+        .replace("BTC","Bitcoin")
+        .replace("GB","Great Britain Pound")
+        .replace("MXN","Mexican Peso")
+        .replace("AUD","Australian Dollar")
+
   }
 
 
@@ -251,8 +265,7 @@ const renderStars = (rating) => {
       <>
         <Appbar.Header>
           <Appbar.Action icon={"arrow-left"} onPress={()=>{router.back()}}/>
-          <Appbar.Content title={"Send Money"}/>
-
+          <Appbar.Content title={"Coin Exchange"}/>
         </Appbar.Header>
         <SafeScreen>
           <ExplanationCard/>
@@ -271,7 +284,7 @@ const renderStars = (rating) => {
             {/* Select Offering PayOut Currency Available */}
             {(!showQuote && walletInUse) && (
                 selectedOffering ? (
-                    <Text onPress={openCurrencyModal}>{`to ${codeToCurrency(selectedOffering.split(':')[1])}`}</Text>
+                    <Text onPress={openCurrencyModal}>{`to ${selectedOffering.split(':')[1]}`}</Text>
                 ) : (
                     <Button onPress={openCurrencyModal}>Select Currency</Button>
                 )
@@ -324,7 +337,10 @@ const renderStars = (rating) => {
                          amount={amount}
                          setAmount={setAmount}
                          payInProperties={selectedPayinMethod.requiredPaymentDetails.properties}
-                         walletInUse={walletInUse} />
+                         walletInUse={walletInUse}
+                         method={selectedPayinMethod}
+
+              />
             </>}
             {/* Render A Quote*/}
             {(showQuote&&!receivedQuote) && <GetQuote
@@ -341,7 +357,7 @@ const renderStars = (rating) => {
             {/*TODO 4: */}
             <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
             <Text style={styles.title} onPress={()=>{setShowQuote(!showQuote)}}>All Available Offerings:</Text>
-            <View style={{flexWrap:"wrap" ,flexDirection:"row",alignItems:"center",justifyContent:"center",marginBottom:200}}>
+            <View style={{flexWrap:"wrap" ,flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
               {allAvailableOfferings.map((offering, index) => (
                   <Text key={index}> • {codeToCurrency(offering.replace(':', ' to '))} </Text>
               ))}
@@ -379,8 +395,7 @@ const renderStars = (rating) => {
   );
 }
 
-
-const privacyShieldImage: ImageSourcePropType = require('@/assets/images/privacy_shield.png');
+const privacyShieldImage: ImageSourcePropType = require('@/assets/images/coin_exchange.png');
 
 const ExplanationCard = () => {
   const [hidden, setHidden] = React.useState(false);
@@ -388,19 +403,15 @@ const ExplanationCard = () => {
   return (
       !hidden && (
           <Card style={{ marginVertical: 10 }}>
-            {/*<Card.Cover style={{ width: "100%" }} source={privacyShieldImage} />*/}
+            <Card.Cover style={{ width: "100%" }} source={privacyShieldImage} />
             <Card.Content>
               <Text variant="bodyMedium" style={{ marginBottom: 5, marginTop: 5 }}>
-                {"Send Money?"}
+                {"What is a Coin Exchange?"}
               </Text>
               <Text variant="bodySmall">
-                {"NexX is based on a sophisticated privacy first network called tbDEX," +
-                    "it allows you to send money to various recipients in different countries. '" +
-                    "With KYC on a need to know basis this puts you more in control of your data " +"" +
-                    "An Added advantage is Participating Financial Institutions (PFIs) are rated by users who have used them." +
-                    "This allows you to make an informed decision on which PFI to use. This also allows NexX " +
-                    "to give you fair and competitive rates on all exchanges." +
-                    "Remember different payment methods vary by the currency and the PFI."}
+                {"Our flag ship feature Coin Exchange on the tbdex" +
+                    " network allows you to exchange whatever currency you have for another on our next wallet app," +
+                    "we are backed by amazing and highly scrutinized Financial Institutions(PFIs)"}
               </Text>
             </Card.Content>
             <Card.Actions>
@@ -418,12 +429,11 @@ const ExplanationCard = () => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    // justifyContent: 'flex-start',
     paddingTop: 60,
     padding: 20,
   },

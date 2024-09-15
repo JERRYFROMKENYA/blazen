@@ -103,6 +103,8 @@ function RootLayoutNav() {
                 <Stack.Screen name="Settings/Security" options={{ title: 'Security',headerShown:false ,presentation:"modal"}} />
                 <Stack.Screen name="Settings/Password" options={{ title: 'Password',headerShown:false ,presentation:"modal"}} />
                 <Stack.Screen name="Settings/Support" options={{ title: 'Support',headerShown:false ,presentation:"modal"}} />
+              {/*  Coin Exchange*/}
+                <Stack.Screen name={"actions/coin_exchange"} options={{ headerShown: false }} />
               </Stack>
             </PaperProvider>
           </AuthProvider>

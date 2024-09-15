@@ -52,3 +52,19 @@ export async function submitImportedDID(user: any, pb: any, didJson: any) {
   }
 }
 
+
+export  function codeToCurrency(Code:String){
+  return  Code.trim().replace("USDC","USD Coin")
+      .replace("GHS","Ghananian Cedis")
+      .replace("NGN","Nigerian Naira")
+      .replace("KES","Kenyan Shilling")
+      .replace("USD","US Dollar")
+      .replace("EUR","Euro")
+      .replace("GBP","Great Britain Pound")
+      .replace("BTC","Bitcoin")
+      .replace("GB","Great Britain Pound")
+      .replace("MXN","Mexican Peso")
+      .replace("AUD","Australian Dollar")
+
+}
+

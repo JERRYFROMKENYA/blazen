@@ -22,7 +22,7 @@ export default function Home() {
   const { setLoading } = useLoading();
   useEffect(() => {
     setLoading(true);
-    setName((user as User)?.name ?? "");
+    setName((user as User)?.username ?? "");
     if ((user as User)?.avatar) {
       setAvatar(pocketbase.getFileUrl(user, user?.avatar));
     }
