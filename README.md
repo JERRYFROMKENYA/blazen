@@ -46,6 +46,8 @@ Currently available only for Android.
 
 [Download Version 0.0.1](https://github.com/JERRYFROMKENYA/blazen/releases/tag/v0.0.1)
 
+- Upon installation use email: "jerryanyumba@gmail.com" and password: "iwannagotothemoon"
+
 ## tbDEX Objectives and How NexX Achieves Them
 
 ### 1. Optionality
