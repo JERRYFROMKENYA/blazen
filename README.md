@@ -44,6 +44,33 @@ Currently available only for Android.
 
 [Download Version 0.0.1](https://github.com/JERRYFROMKENYA/blazen/releases/tag/v0.0.1)
 
+## tbDEX Objectives and How NexX Achieves Them
+
+### 1. Optionality
+- **NexX** adapts to all **Preferred Financial Institutions (PFIs)**, allowing users to choose the PFI of their preference for every transaction, giving users the power of choice and flexibility.
+
+### 2. Customer Management
+- Users have full control over their **Decentralized Identifiers (DIDs)** and **Verifiable Credentials (VCs)**, giving them ownership of their identity and transactions.
+
+### 3. Customer Satisfaction
+- NexX includes a feedback mechanism that allows users to rate their experience at the end of each transaction (on a scale of 1 to 5), along with the option to leave a comment. This helps us continually improve the app and deliver the best possible user experience.
+
+### 4. Profitability
+- **Profitability** is achieved through transaction fees charged during money transfers, ensuring a sustainable model while providing value to the users.
+
+## Additional Features
+
+### Innovation
+- **Bill Split**: The ability to create, join, and manage bills is a novel feature designed for ease of use, making bill splitting seamless for groups of friends, family, or colleagues.
+- **Coin Exchange**: Changing currencies has never been easier, with PFIs facilitating secure and instant exchanges, giving customers a hassle-free experience.
+
+### Stellar UI/UX
+- Every function in NexX comes with a dedicated tab explaining what it does, making it intuitive for users to understand and use each feature.
+- The user interface is designed for simplicity and effectiveness, ensuring that all controls are clear and easy to use.
+
+### Functionality
+- Every feature has been rigorously tested to ensure it works seamlessly, from sending money to exchanging coins. The straightforward controls make the app functional and accessible to all users.
+
 ## ➤ API Reference
 
 Base URL: `http://138.197.89.72:3000/`
