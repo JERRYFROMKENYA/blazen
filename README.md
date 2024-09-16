@@ -34,8 +34,10 @@ Ensure you use **Node.js**—Yarn may cause compatibility issues.
 ```bash
 cd ./tbdex_comm_server
 npm install
+npm run start
 cd ./front_wallet
 npm install
+npm run dev
 ```
 
 ### Install Binary
