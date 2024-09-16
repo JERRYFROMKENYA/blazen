@@ -137,7 +137,7 @@ export default function Profile() {
                 />
                 <Text variant={"bodySmall"}>©️ 2024 NexX, powered by tbDex</Text>
 
-                <Text variant={"labelLarge"} onPress={()=>{router.push("/actions/test_screen")}}>_TEST SCREEN</Text>
+                {/*<Text variant={"labelLarge"} onPress={()=>{router.push("/actions/test_screen")}}>_TEST SCREEN</Text>*/}
             </Surface>
 
 
