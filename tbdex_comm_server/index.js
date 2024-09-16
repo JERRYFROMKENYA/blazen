@@ -427,7 +427,7 @@ res.status(200).json(filteredOfferings);
     }
   });
 
-  // Endpoint to fetch offerings
+  // Endpoint to fetch Create Exchange
   app.post('/offerings', async (req, res) => {
     const { offering,
       amount,
