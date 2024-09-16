@@ -59,8 +59,8 @@ We value your feedback to keep improving NexX. After every transaction, rate you
 NexX is licensed under [![License](https://img.shields.io/static/v1?label=License&message=MIT&color=blue&?style=plastic&logo=appveyor)](https://opensource.org/license/MIT)
 
 ## Experience the world of NexX
-![nexx_transactions](https://github.com/user-attachments/assets/df4da1e1-dc05-400c-9369-ab29902acd7e)<br>
-![nexx_sendmoney](https://github.com/user-attachments/assets/3c9f4798-b276-468c-b547-34195619e04f)<br>
-![nexx_coinexchange](https://github.com/user-attachments/assets/b32c1e5e-c0ed-4064-836b-00d0534b6d7d)<br>
-![nexx_savings](https://github.com/user-attachments/assets/1aac03d5-7a95-4003-8c00-c2c4b39bbfbf)<br>
-![nexx_managewallets](https://github.com/user-attachments/assets/6362f02f-de08-473f-a814-8f997c8f9806)<br>
+# <p align="center">![nexx_transactions](https://github.com/user-attachments/assets/df4da1e1-dc05-400c-9369-ab29902acd7e)<br></p>
+# <p align="center">![nexx_sendmoney](https://github.com/user-attachments/assets/3c9f4798-b276-468c-b547-34195619e04f)<br></p>
+# <p align="center">![nexx_coinexchange](https://github.com/user-attachments/assets/b32c1e5e-c0ed-4064-836b-00d0534b6d7d)<br></p>
+# <p align="center">![nexx_savings](https://github.com/user-attachments/assets/1aac03d5-7a95-4003-8c00-c2c4b39bbfbf)<br></p>
+# <p align="center">![nexx_managewallets](https://github.com/user-attachments/assets/6362f02f-de08-473f-a814-8f997c8f9806)<br></p>
