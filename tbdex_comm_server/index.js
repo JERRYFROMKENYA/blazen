@@ -2,6 +2,8 @@
 require('dotenv').config();
 const express = require('express');
 const { DidJwk, DidDht, BearerDid } = require('@web5/dids');
+const multer = require('multer');
+const bodyParser = require('body-parser');
 
 // Initialize Express app
 const app = express();
@@ -16,6 +18,8 @@ app.use(express.json());
   const { Close, Order, Rfq, TbdexHttpClient } = await import('@tbdex/http-client');
   const { Jwt, PresentationExchange } = await import('@web5/credentials');
   const pb = new PocketBase(process.env.POCKETBASE_URL);
+
+
 
   /*
   *Imports End here( I don't think any of your problems are above
@@ -554,6 +558,28 @@ res.status(200).json(filteredOfferings);
       res.status(500).json({ "error-offerings": err });
     }
   });
+
+  // Endpoint for change of user profile-picture
+    app.post('/update-profile-picture', async (req, res) => {
+      const { user_id } = req.body;
+      const profilePicture = req.file
+        if (!user_id || !profilePicture) {
+        return res.status(400).json({ error: 'All fields (user_id, profilePicture) are required' });
+        }
+        try {
+          const formData = new FormData();
+          formData.append('avatar', profilePicture);
+        const record = await pb.collection('users').update(user_id, formData);
+        if (record) {
+            res.status(200).json({ message: 'Profile picture updated successfully' });
+        } else {
+            res.status(500).json({ error: 'Failed to update profile picture' });
+        }
+        } catch (err) {
+        res.status(500).json({ error: err.message });
+        }
+    });
+
 
 
 
