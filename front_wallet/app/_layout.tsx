@@ -70,6 +70,7 @@ function RootLayoutNav() {
                 {/*Auth Stack*/}
                 {/*<Stack.Screen name="(auth)" options={{ headerShown: false }} />*/}
                 <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+                <Stack.Screen name="(auth)/onboarding" options={{ headerShown: false }} />
                 {/*Modal is just a cool template to use-- no practical use lol*/},presentation:"modal
                 <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
                 {/*Actions*/}
@@ -84,11 +85,11 @@ function RootLayoutNav() {
                 {/*  VC*/}
                 <Stack.Screen name="Credentials/add_verifiable_credentials" options={{ presentation: 'modal', headerShown:false }} />
                 {/*  Profile*/}
-                <Stack.Screen name="Profile/Profile" options={{ presentation: 'modal', headerShown:false }} />
+                <Stack.Screen name="Profile/Profile" options={{  headerShown:false }} />
                 {/*Manage DID*/}
-                <Stack.Screen name="DID/manage_did" options={{ presentation: 'modal', headerShown:false }} />
+                <Stack.Screen name="DID/manage_did" options={{ headerShown:false }} />
                 {/*  Exchange Details*/}
-                <Stack.Screen name="exchange-details/[exchangeId]" options={{ headerShown: false , presentation:"modal"}} />
+                <Stack.Screen name="exchange-details/[exchangeId]" options={{ headerShown: false }} />
               {/*  Bill Management*/}
                 <Stack.Screen name="split_bill/BillCreation" options={{ title: 'Create Bill',headerShown:false ,presentation:"modal"}} />
                 <Stack.Screen name="split_bill/JoinBill" options={{ title: 'Join Bill',headerShown:false,presentation:"modal" }} />

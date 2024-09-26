@@ -20,6 +20,7 @@ const CredentialsCard = ({issuer, dateIssued, properties, vc, purpose, onDelete,
     const formattedDate = format(new Date(dateIssued), 'PPPpp');
     const toSentenceCase = (str: string) => {
         if (!str) return str;
+        if (str.toLowerCase() === 'did') return 'DID';
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     };
 
@@ -78,10 +79,12 @@ const styles = StyleSheet.create({
     surface: {
         padding: 10,
         height: "auto",
-        width: "100%",
+        width: "95%",
         alignItems: 'flex-start',
         justifyContent: 'center',
-        borderRadius:10
+        borderRadius:10,
+        alignSelf: 'center',
+        margin:10,
     },
     header: {
         backgroundColor:"transparent",

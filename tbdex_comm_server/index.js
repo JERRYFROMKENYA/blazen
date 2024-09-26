@@ -4,6 +4,9 @@ const express = require('express');
 const { DidJwk, DidDht, BearerDid } = require('@web5/dids');
 const multer = require('multer');
 const bodyParser = require('body-parser');
+// Setup multer for file uploads
+const upload = multer({ storage: multer.memoryStorage() }); // Store files in memory or specify disk storage
+
 
 // Initialize Express app
 const app = express();
@@ -11,6 +14,11 @@ const PORT = 3000;
 
 // Middleware to parse JSON requests
 app.use(express.json());
+const cors = require('cors');
+app.use(cors({
+  origin: 'http://localhost:3000', // Adjust based on your frontend origin
+}));
+
 
 // IIFE to handle async imports and initialization
 (async () => {
@@ -559,26 +567,111 @@ res.status(200).json(filteredOfferings);
     }
   });
 
-  // Endpoint for change of user profile-picture
-    app.post('/update-profile-picture', async (req, res) => {
-      const { user_id } = req.body;
-      const profilePicture = req.file
-        if (!user_id || !profilePicture) {
-        return res.status(400).json({ error: 'All fields (user_id, profilePicture) are required' });
-        }
-        try {
-          const formData = new FormData();
-          formData.append('avatar', profilePicture);
-        const record = await pb.collection('users').update(user_id, formData);
-        if (record) {
-            res.status(200).json({ message: 'Profile picture updated successfully' });
-        } else {
-            res.status(500).json({ error: 'Failed to update profile picture' });
-        }
-        } catch (err) {
-        res.status(500).json({ error: err.message });
-        }
-    });
+
+  // Endpoint for change of user profile picture
+  app.post('/update-profile-picture', upload.single('profilePicture'), async (req, res) => {
+    const { user_id } = req.body;
+    const profilePicture = req.file;
+
+    console.log('User ID:', user_id);
+    console.log('Profile Picture:', JSON.stringify(profilePicture.originalname));
+
+    if (!user_id || !profilePicture) {
+      console.log('All fields (user_id, profilePicture) are required');
+      return res.status(400).json({ error: 'All fields (user_id, profilePicture) are required' });
+    }
+
+    try {
+      const formData = new FormData();
+
+      const file = new File([profilePicture.buffer], profilePicture.originalname, { type: profilePicture.mimetype });
+
+      formData.append('avatar', file); // Include filename
+
+      const record = await pb.collection('users').update(user_id, formData);
+      if (record) {
+        res.status(200).json({ message: 'Profile picture updated successfully' });
+      } else {
+        res.status(500).json({ error: 'Failed to update profile picture' });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+    // Endpoint for change of user id document
+
+
+  app.post('/id-document', upload.fields([{ name: 'id_document', maxCount: 2 }]), async (req, res) => {
+    const { user_id } = req.body;
+    const files = req.files['id_document'];
+
+    if (!user_id || !files) {
+      console.log('All fields (user_id, profilePicture) are required');
+      return res.status(400).json({ error: 'All fields (user_id, profilePicture) are required' });
+    }
+
+    try {
+      const formData = new FormData();
+
+      for(const file of files){
+        console.log('File:', JSON.stringify(file.originalname));
+        const filedata = new File([file.buffer], file.originalname, { type: file.mimetype });
+
+        formData.append('id_document', filedata);
+      }
+
+       // Include filename
+
+      const record = await pb.collection('users').update(user_id, formData);
+      if (record) {
+        res.status(200).json({ message: 'id document updated successfully' });
+      } else {
+        res.status(500).json({ error: 'Failed to update profile picture' });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/files', upload.fields([{ name: 'files', maxCount: 99 }]), async (req, res) => {
+    const { user_id, name, description } = req.body;
+    const files = req.files['files'];
+
+    if (!user_id || !files) {
+      console.log('All fields (user_id, profilePicture) are required');
+      return res.status(400).json({ error: 'All fields (user_id, profilePicture) are required' });
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('description', description);
+      formData.append('user', user_id);
+
+      for(const file of files){
+        console.log('File:', JSON.stringify(file.originalname));
+        const filedata = new File([file.buffer], file.originalname, { type: file.mimetype });
+
+        formData.append('files', filedata);
+      }
+
+      // Include filename
+
+      const record = await pb.collection('files_').create(formData);
+      if (record) {
+        res.status(200).json({ message: 'files uploaded' });
+      } else {
+        res.status(500).json({ error: 'Failed to upload file' });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
 
 
 

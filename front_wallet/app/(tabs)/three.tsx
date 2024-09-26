@@ -46,10 +46,11 @@ export default function CredentialScreen() {
             <SafeScreen onRefresh={()=>{
                 getVCList().then(r => {})
             }}>
-                <ExplanationCard/>
+
                 <CredentialsList
                     refresh={getVCList}
                     vcList={vcList} />
+
 
             </SafeScreen>
             <FAB

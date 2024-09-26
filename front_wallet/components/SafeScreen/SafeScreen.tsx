@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     marginBottom: 45,
     minWidth: '100%',
     height: '100%',
-    paddingHorizontal:10
+    // paddingHorizontal:10
 
   },
 });

@@ -27,8 +27,7 @@ export default function Profile() {
         setDid(did.did);
         console.log(did);
     }
-    const [avatar, setAvatar] = useState("https://avatars.dicebear.com/api/identicon/" +
-        user.username + ".svg");
+    const [avatar, setAvatar] = useState("https://api.dicebear.com/9.x/pixel-art/jpg?seed="+user.username);
     useEffect(() => {
        getDid().then(r => r);
         if ((user as User)?.avatar) {
@@ -137,7 +136,7 @@ export default function Profile() {
                 />
                 <Text variant={"bodySmall"}>©️ 2024 NexX, powered by tbDex</Text>
 
-                {/*<Text variant={"labelLarge"} onPress={()=>{router.push("/actions/test_screen")}}>_TEST SCREEN</Text>*/}
+                <Text variant={"labelLarge"} onPress={()=>{router.push("/actions/test_screen")}}>_TEST SCREEN</Text>
             </Surface>
 
 

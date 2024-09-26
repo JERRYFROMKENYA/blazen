@@ -10,7 +10,7 @@ import {
   FlatList,
   TouchableOpacity, ImageSourcePropType,
 } from 'react-native';
-import {Text, TextInput, Button, Menu, Provider, Card, Appbar, Icon} from 'react-native-paper';
+import {Text, TextInput, Button, Menu, Provider, Card, Appbar, Icon, Chip} from 'react-native-paper';
 import {  View,Modal } from '@/components/Themed';
 import { useAuth } from "@/app/(auth)/auth";
 import { usePocketBase } from "@/components/Services/Pocketbase";
@@ -105,6 +105,8 @@ const renderStars = (rating) => {
       setUserWallets(r);
     });
 
+    if (allAvailableOfferings.length !== 0) return
+
     // Fetch PFIs and offerings
     fetchPFIsAndOfferings();
   }, [user, pb]);
@@ -159,6 +161,7 @@ const renderStars = (rating) => {
   };
 
   const handleWalletSelect = (wallet) => {
+    selectedPfi && setSelectedPfi(null);
     setWalletInUse(wallet);
     filterOfferings(wallet.currency);
     clearSelectedOffering();
@@ -166,41 +169,34 @@ const renderStars = (rating) => {
   };
 
   const handleOfferingSelect = async (offering) => {
+    selectedPfi && setSelectedPfi(null);
     setLoading(true);
     setSelectedOffering(offering);
     closeOfferingsMenu();
 
-    // Fetch PFIs based on the selected offering
     try {
-
       const response = await fetch('http://138.197.89.72:3000/select-pfi', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 'offering':`${offering}` }),
+        body: JSON.stringify({ 'offering': `${offering}` }),
       });
-      // console.log(offering)
+
       const data = await response.json();
-      console.log(data);
-      setFilteredPfis(data);
-      setLoading(false)
+      const sortedData = data.sort((a, b) => (averageRatings[b.from] || 0) - (averageRatings[a.from] || 0));
+      setFilteredPfis(sortedData);
+      setLoading(false);
       closeCurrencyModal();
-      fetchPFIsAndOfferings();// Store the filtered PFIs in the new state
+      fetchPFIsAndOfferings();
     } catch (error) {
-      // console.error('Error fetching PFIs:', error);
-      setLoading(false)
+      setLoading(false);
       closeCurrencyModal();
       fetchPFIsAndOfferings();
     }
     closeCurrencyModal();
     fetchPFIsAndOfferings();
-
-
-
-
   };
-
   const handlePfiSelect = (pfi) => {
     setLoading(true);
     // console.log('Selected PFI:', pfi);
@@ -220,7 +216,8 @@ const renderStars = (rating) => {
   };
   const fetchAverageRatings = async () => {
     try {
-        const ratings = await pb.collection('pfi_rating').getFullList({expand:"pfi"});
+        const ratings = await pb.collection('pfi_average_rating').getFullList({expand:"pfi"});
+
         const pfiRatings = ratings.reduce((acc, rating) => {
 
             if (!acc[rating.pfi]) {
@@ -255,25 +252,49 @@ const renderStars = (rating) => {
 
         </Appbar.Header>
         <SafeScreen>
-          <ExplanationCard/>
+
           <View style={styles.container}>
 
 
             {/*Select Wallet To Use*/}
             {!showQuote && (
                 walletInUse ? (
-                    <Text onPress={openWalletModal}>{`${walletInUse.currency}  ${formatNumberWithCommas(walletInUse.balance)} • ${walletInUse.provider}`}</Text>
+                    <>
+                      <Chip icon="wallet" onClose={()=>{
+                        setSelectedPfi(null);
+                        setSelectedOffering("")
+                        setShowQuote(false);
+                        setReceivedQuote(false);
+                        setAmount('');
+                        filterOfferings(walletInUse.currency);
+                        setWalletInUse(null)}} onPress={openWalletModal}> {`${walletInUse.currency}  ${formatNumberWithCommas(walletInUse.balance)} • ${walletInUse.provider}`}</Chip>
+                    </>
+
                 ) : (
-                    <Button onPress={openWalletModal}>Select Wallet To Use</Button>
+                    <Button onPress={openWalletModal}> Select Wallet To Use</Button>
                 )
             )}
 
             {/* Select Offering PayOut Currency Available */}
             {(!showQuote && walletInUse) && (
                 selectedOffering ? (
-                    <Text onPress={openCurrencyModal}>{`to ${codeToCurrency(selectedOffering.split(':')[1])}`}</Text>
+                    <>
+                      <Text onPress={openCurrencyModal}>{"\n🔽\n"}</Text>
+                        <Chip icon="currency-usd" onClose={()=>{
+                            setSelectedPfi(null);
+                            setSelectedOffering('')
+                          setPfis([]);
+                          setFilteredPfis([]);
+                            setShowQuote(false);
+                            setReceivedQuote(false);
+                            setAmount('');
+                          filterOfferings(walletInUse.currency);
+                        }} onPress={openCurrencyModal}> {`${codeToCurrency(selectedOffering.split(':')[1])}`}</Chip>
+
+                    </>
+
                 ) : (
-                    <Button onPress={openCurrencyModal}>Select Currency</Button>
+                    <Button onPress={openCurrencyModal}> Select Recipient's Currency</Button>
                 )
             )}
 
@@ -282,8 +303,14 @@ const renderStars = (rating) => {
                 <ScrollView>
                   {filteredPfis.map(pfi => (
                       <Card key={pfi.id} style={styles.card} onPress={() => handlePfiSelect(pfi)}>
-                        <Card.Content>
-                          <Text>{pfi.name}</Text>
+                        <Card.Content style={{justifyContent:"space-around"}}>
+                          <View style={{flexDirection:"row", justifyContent:"space-between",
+                            alignItems:"center",
+                            backgroundColor:"transparent"}}>
+                            <Text style={{fontWeight:"bold", fontSize:20,flex:1}}>🏦 {pfi.name}</Text>
+                          <Button style={{alignSelf:"flex-end", marginRight:0}} children={""} icon={()=>{return <Icon source={"information"} size={20}/>}}></Button>
+                          </View>
+
                           <Text>{pfi.description}</Text>
                           <Text>1 {walletInUse.currency} = {pfi.payoutUnitsPerPayinUnit} {selectedOffering.split(":")[1]}</Text>
                           <Text variant={"bodySmall"}>{"Kindly note these ratings are based on users who have used this PFI"}</Text>
@@ -298,7 +325,11 @@ const renderStars = (rating) => {
             {(selectedPfi && !showQuote)&& (
                 <>
                   <View style={styles.pfiDetails}>
-                    <Text>{selectedPfi.name}</Text>
+                    <View style={{flexDirection:"row", justifyContent:"space-between",
+                      alignItems:"center",
+                      backgroundColor:"transparent"}}>
+                      <Text style={{fontWeight:"bold", fontSize:20,flex:1}}>🏦 {selectedPfi.name}</Text>
+                    </View>
                     <Text>{selectedPfi.description}</Text>
                     <Text>1 {selectedPfi.payinCurrency} ={selectedPfi.payoutUnitsPerPayinUnit} {selectedPfi.payoutCurrency}</Text>
                     {/*<Text>{selectedPfi.payinMethods.map(method => method.requiredPaymentDetails.title).join(', ')}</Text>*/}
@@ -339,21 +370,32 @@ const renderStars = (rating) => {
 
 
             {/*TODO 4: */}
-            <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-            <Text style={styles.title} onPress={()=>{setShowQuote(!showQuote)}}>All Available Offerings:</Text>
-            <View style={{flexWrap:"wrap" ,flexDirection:"row",alignItems:"center",justifyContent:"center",marginBottom:200}}>
-              {allAvailableOfferings.map((offering, index) => (
-                  <Text key={index}> • {codeToCurrency(offering.replace(':', ' to '))} </Text>
-              ))}
-            </View>
+            {!selectedPfi&&<>
+              <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)"/>
+              <Text style={styles.title}>All Available Conversions:</Text>
+              <View style={{
+                flexWrap: "wrap",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 50
+              }}>
+                {allAvailableOfferings.map((offering, index) => (
+                    <Text key={index}> • {codeToCurrency(offering.replace(':', ' to '))} </Text>
+                ))}
+              </View>
+            </>}
+
             <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
           </View>
+
           <SendMoneyAction details={{
             recipient: recipient,
             amount: amount,
             walletInUse: walletInUse,
             selectedOffering: selectedOffering
           }} visible={modalVisible} hide={hideModal} />
+          <ExplanationCard/>
         </SafeScreen>
 
         <Modal visible={walletModalVisible} onRequestClose={closeWalletModal}>
@@ -387,7 +429,7 @@ const ExplanationCard = () => {
   console.log(hidden)
   return (
       !hidden && (
-          <Card style={{ marginVertical: 10 }}>
+          <Card style={{ marginBottom: 150 }}>
             {/*<Card.Cover style={{ width: "100%" }} source={privacyShieldImage} />*/}
             <Card.Content>
               <Text variant="bodyMedium" style={{ marginBottom: 5, marginTop: 5 }}>
@@ -424,8 +466,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingTop: 60,
-    padding: 20,
+    paddingTop: 30,
+    // padding: 20,
   },
   title: {
     fontSize: 15,
@@ -455,8 +497,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   card: {
-    marginVertical: 10,
-    width: '100%',
+    margin: 10,
+    width: '95%',
   },
   modalItem: {
     padding: 20,

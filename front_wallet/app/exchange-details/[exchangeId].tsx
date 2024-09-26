@@ -67,6 +67,8 @@ export default function ExchangeId() {
         switch (status.toLowerCase()) {
             case 'success':
                 return '#4CAF50';
+            case 'completed':
+                return '#4CAF50';
             case 'in_progress':
                 return '#4CAF50';// Green for success
             case 'pending':
@@ -74,7 +76,9 @@ export default function ExchangeId() {
             case 'transfering_funds':
                 return '#FFC107';// Yellow for pending
             case 'failed':
-                return '#F44336'; // Red for failed
+                return '#F44336';
+            case 'cancelled':
+                return '#F44336';// Red for failed
             default:
                 return '#9E9E9E'; // Grey for unknown status
         }
@@ -149,6 +153,10 @@ export default function ExchangeId() {
             const wallet_data = await pb.collection("wallet").getFirstListItem(`user="${user.id}"&&currency="${quote_data.rfq.data.payin.currencyCode}"&&balance>${Math.round(Number(quote_data.rfq.data.payin.amount) + Number(quote_data.rfq.data.payin.amount * 0.0035))}`);
             if (wallet_data) {
                 setWallet(wallet_data);
+            }
+            else{
+                Alert.alert("Insufficient Balance","You do not have sufficient balance in your wallet to complete this transaction")
+                // await cancelQuote()
             }
         } catch (error) {
             // console.error('Failed to fetch exchange details:', error);
@@ -329,9 +337,17 @@ export default function ExchangeId() {
                 {exchange && (
                     <>
                         <Surface style={{ flexDirection: "column", width: "100%", marginVertical: 30, justifyContent: "center", alignItems: "center", padding: 5, borderRadius: 10 }} elevation={3}>
+                            <Text variant={"bodyLarge"} style={{fontWeight:"bold"}}>🏦 {exchange.expand.pfi.name}</Text>
+                            <Text variant={"bodyLarge"}>Transaction Status: <Text style={{
+                                marginLeft: 5,
+                                fontWeight: "bold",
+                                fontSize: 16,
+                                color: getStatusColor(exchange.status||"default"),
+                            }}>
+                                {toSentenceCase(exchange.status||"pending")}
+                            </Text></Text>
+
                             <Text variant={"bodyLarge"}>Exchange ID: {exchangeId}</Text>
-                            <Text variant={"bodyLarge"}>PFI: {exchange.expand.pfi.name}</Text>
-                            <Text variant={"bodyLarge"}>Transaction Status: {toSentenceCase(exchange.status)}</Text>
                             <Text variant={"bodyLarge"}>You're sending: {exchange.rfq.data.payin.currencyCode} {formatNumberWithCommas(exchange.rfq.data.payin.amount)}</Text>
                         </Surface>
                         {(transaction && exchange.status != "cancelled") && (

@@ -12,7 +12,7 @@ import {useLoading} from "@/components/utils/LoadingContext";
 export default function BalanceCard() {
   const router = useRouter()
   const { user } = useAuth()
-  const [wallets, setWallets] = useState([{ currency: "KES", balance: 0}]);
+  const [wallets, setWallets] = useState([{ currency: "KES", balance: 0,provider:"NexX"}]);
   const [currentWalletIndex, setCurrentWalletIndex] = useState(0);
   const [isBalanceHidden, setIsBalanceHidden] = useState(false);
   const { pb } = usePocketBase();
@@ -45,17 +45,20 @@ export default function BalanceCard() {
           {isBalanceHidden ? "Show" : "Hide"}
         </Button>
       </View>
-      {currentWallet && !isBalanceHidden && (
+      {(currentWallet && !isBalanceHidden) ? (
         <>
           <Text variant="titleLarge">{currentWallet.currency} {formatNumberWithCommas(currentWallet.balance)}</Text>
+          <Text variant="bodyMedium">{currentWallet.provider}</Text>
           {wallets.length > 1 && (
             <View style={styles.walletNavigation}>
-              <Button onPress={handlePreviousWallet}>{"< Previous"}</Button>
-              <Button onPress={handleNextWallet}>{"Next >"}</Button>
+              {(currentWalletIndex>0)&&<Button icon={()=>{return <Icon size={15} source={"arrow-left"}/>}} onPress={handlePreviousWallet}>{`${wallets[currentWalletIndex - 1].currency}`}</Button>}
+              {(currentWalletIndex<wallets.length-1)&&<Button icon={()=>{return <Icon size={15} source={"arrow-right"}/>}} onPress={handleNextWallet}>{wallets[currentWalletIndex + 1].currency}</Button>}
             </View>
           )}
         </>
-      )}
+      ):
+        <Text variant="titleLarge">*****</Text>
+      }
     </Surface>
   );
 }
@@ -79,10 +82,11 @@ const styles = StyleSheet.create({
   balanceCard: {
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    width: '100%',
+    width: '95%',
     padding: 20,
     borderRadius: 10,
     paddingTop: 10,
+    alignSelf: 'center',
   },
   balanceHeader: {
     flexDirection: 'row',
