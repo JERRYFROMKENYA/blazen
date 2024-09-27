@@ -25,6 +25,7 @@ services:
 
   did_creator:
     build: ./tbdex_comm_server
+    restart: unless-stopped
     container_name: tbdex_comm_server
     ports:
       - "3000:3000"

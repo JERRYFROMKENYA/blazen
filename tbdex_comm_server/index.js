@@ -661,8 +661,15 @@ res.status(200).json(filteredOfferings);
       // Include filename
 
       const record = await pb.collection('files_').create(formData);
+     let fileData = []
       if (record) {
-        res.status(200).json({ message: 'files uploaded' });
+        console.log(record)
+        let i=0
+        for(const file of record.files){
+          fileData.push(pb.getFileUrl(record, record.files[0]))
+          i++
+        }
+        res.status(200).json({ files:fileData });
       } else {
         res.status(500).json({ error: 'Failed to upload file' });
       }

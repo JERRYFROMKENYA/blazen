@@ -12,6 +12,7 @@ import {
     Divider,
     PaperProvider, Menu
 } from 'react-native-paper';
+import * as FileSystem from 'expo-file-system';
 import { Modal, View } from "@/components/Themed";
 import * as DocumentPicker from 'expo-document-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -22,6 +23,7 @@ import {storeUserDID, useDidOperations} from "@/components/utils/did_operations"
 import { useLoading } from "@/components/utils/LoadingContext";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import SafeScreen from "@/components/SafeScreen/SafeScreen";
+import * as ImagePicker from 'expo-image-picker';
 
 const countryMapping = {
     "US": "United States",
@@ -165,11 +167,46 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
             formDataToSend.append('settings', JSON.stringify(formData.settings));
 
             if (passportPhoto) {
-                // formDataToSend.append('avatar',new File(
-                //     [passportPhoto],
-                //     passportPhoto.name,
-                //     { type: passportPhoto}
-                // ));
+                // const pfpForm = new FormData();
+                // const fileData = await FileSystem.readAsStringAsync(passportPhoto.uri, { encoding: FileSystem.EncodingType.Base64 });
+                // const blob = new File([fileData], passportPhoto.fileName,{ type: passportPhoto.type });
+                // const formData= new FormData();
+                // formData.append('user_id', user.id);
+                // formData.append('profilePicture', passportPhoto);
+                // const res = await fetch('http://138.197.89.72:3000/update-profile-picture', {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'multipart/form-data',
+                //         Accept: 'application/json'
+                //     },
+                //     body:formData
+                //
+                // });
+
+                const pfpForm = new FormData();
+                const fileData = await FileSystem.readAsStringAsync(passportPhoto.uri, { encoding: FileSystem.EncodingType.Base64 });
+                const blob = new Blob([fileData], { type: passportPhoto.type });
+
+                pfpForm.append('profilePicture',
+                    {
+                        uri: passportPhoto.uri,
+                        type: passportPhoto.mimeType,
+                        name: passportPhoto.fileName
+                    });
+                pfpForm.append('user_id', user.id);
+
+                const response = await fetch('http://138.197.89.72:3000/update-profile-picture', {
+                    method: 'POST',
+                    body: pfpForm,
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            Accept: 'application/json',
+                            Connection:"keep-alive"
+                        },
+                });
+                const res = await response.json()
+                console.log(res);
+
             }
             if (idPhoto) {
                 // formDataToSend.append('avatar',new File(
@@ -201,8 +238,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
             }
 
             setLoading(false);
-            signOut();
-            router.replace('/(auth)/login');
+            // signOut();
+            // router.replace('/(auth)/login');
         }
         setLoading(false);
     };
@@ -332,6 +369,20 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
 
         );
     };
+    const pickProfilePhoto=async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setPassportPhoto(result.assets[0]);
+            console.log(result.assets[0])
+            // setShowAppOptions(true);
+        } else {
+            alert('You did not select any image.');
+        }
+    }
 
     return (
         <SafeScreen>
@@ -400,7 +451,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
                                        style={styles.input} />
 
 
-                            <Button onPress={() => pickDocument(setPassportPhoto)}>Upload Passport Photo</Button>
+                            <Button onPress={async () => await pickProfilePhoto()}>Upload Passport Photo</Button>
                             {passportPhoto && <Image source={{ uri: passportPhoto.uri }} style={styles.imagePreview} />}
                             <Button onPress={() => pickDocument(setIdPhoto)}>Upload ID Photo</Button>
                             {idPhoto && <Image source={{ uri: idPhoto.uri }} style={styles.imagePreview} />}
