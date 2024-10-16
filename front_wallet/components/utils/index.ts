@@ -68,3 +68,93 @@ export  function codeToCurrency(Code:String){
 
 }
 
+
+export async function updateProfilePicture(user: any, image: any) {
+  const pfpForm = new FormData();
+  pfpForm.append('profilePicture',
+      {
+        uri: image.uri,
+        type: image.mimeType,
+        name: image.fileName
+      });
+  pfpForm.append('user_id', user.id);
+
+  const response = await fetch('http://138.197.89.72:3000/update-profile-picture', {
+    method: 'POST',
+    body: pfpForm,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      Accept: 'application/json',
+      Connection:"keep-alive"
+    },
+  });
+  const res = await response.json()
+  console.log(res);
+
+  return !!res.success;
+
+}
+
+
+export async function  updateIdDocument(user: any, image: []) {
+  const pfpForm = new FormData();
+
+  for (let i = 0; i < image.length; i++) {
+    pfpForm.append('id_document',
+        {
+          uri: image[i].uri,
+          type: image[i].mimeType,
+          name: image[i].fileName
+        });
+  }
+
+  pfpForm.append('user_id', user.id);
+
+  const response = await fetch('http://138.197.89.72:3000/id-document', {
+    method: 'POST',
+    body: pfpForm,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      Accept: 'application/json',
+      Connection:"keep-alive"
+    },
+  });
+  const res = await response.json()
+  console.log(res);
+
+  return !!res.success;
+}
+
+
+export async function  uploadFiles(user: any, files: [],description:string,name:string) {
+  const pfpForm = new FormData();
+
+  for (let i = 0; i < files.length; i++) {
+    pfpForm.append('files',
+        {
+          uri: files[i].uri,
+          type: files[i].mimeType,
+          name: files[i].fileName
+        });
+  }
+
+  pfpForm.append('user_id', user.id);
+  pfForm.append('description', description);
+  pfForm.append('name', name);
+
+
+  const response = await fetch('http://138.197.89.72:3000/files', {
+    method: 'POST',
+    body: pfpForm,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      Accept: 'application/json',
+      Connection:"keep-alive"
+    },
+  });
+  const res = await response.json()
+  console.log(res);
+
+  return res;
+}
+

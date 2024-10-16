@@ -23,7 +23,7 @@ export default function TransactionsWidget() {
       console.log(did);
 
       const fetchTransactions = async () => {
-        const result = await pb.collection('customer_quotes').getList(1, 5, {
+        const result = await pb.collection('customer_quotes').getList(1, 8, {
           filter: `rfq.metadata.from = "${did.did.uri}"`,
           sort: '-created',
           expand: 'pfi'
@@ -167,10 +167,11 @@ const styles = StyleSheet.create({
   transactionsCard: {
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    width: '100%',
+    width: '95%',
     padding: 20,
     borderRadius: 10,
     paddingTop: 10,
     marginBottom: 20,
+    alignSelf: 'center',
   },
 });

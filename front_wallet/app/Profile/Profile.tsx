@@ -27,15 +27,14 @@ export default function Profile() {
         setDid(did.did);
         console.log(did);
     }
-    const [avatar, setAvatar] = useState("https://avatars.dicebear.com/api/identicon/" +
-        user.username + ".svg");
+    const [avatar, setAvatar] = useState("https://api.dicebear.com/9.x/pixel-art/jpg?seed="+user?.username??"");
     useEffect(() => {
        getDid().then(r => r);
         if ((user as User)?.avatar) {
             setAvatar(pb.getFileUrl(user, user?.avatar));
         }
         console.log(user);
-        setName((user.first_name + " "+user.middle_name + " "+user.last_name||" "))
+        setName((user?.first_name + " "+user?.middle_name + " "+user?.last_name||" "))
         console.log(avatar);
     }, [user]);
 
@@ -68,7 +67,7 @@ export default function Profile() {
                 justifyContent:"space-between",alignItems:"center"}}>
                 <Avatar.Image size={100} source={{uri:avatar}} style={{marginBottom:20}} />
                 <Text variant={"bodySmall"}>Full Name: {name}</Text>
-                <Text variant={"displaySmall"}>{user.username}</Text>
+                <Text variant={"displaySmall"}>{user?.username??''}</Text>
                 <Text style={{alignSelf:"flex-end", justifyContent:"flex-end",marginTop:10}} variant={"bodySmall"}>Member Since:{"2024"}</Text>
             </Surface>
             <Surface elevation={2} style={{width:"100%",
@@ -137,7 +136,7 @@ export default function Profile() {
                 />
                 <Text variant={"bodySmall"}>©️ 2024 NexX, powered by tbDex</Text>
 
-                {/*<Text variant={"labelLarge"} onPress={()=>{router.push("/actions/test_screen")}}>_TEST SCREEN</Text>*/}
+                <Text variant={"labelLarge"} onPress={()=>{router.push("/actions/test_screen")}}>_TEST SCREEN</Text>
             </Surface>
 
 

@@ -9,6 +9,7 @@ import { useRef } from "react";
 import {formatNumberWithCommas} from "../utils/format";
 import {Alert} from "react-native";
 import {useLoading} from "@/components/utils/LoadingContext";
+import jwt_decode from "jwt-decode";
 
 export default function GetQuote({ paymentDetails, setShowQuote, offering, amount, setQuoteReceived, wallet }: {wallet:any, setQuoteReceived: Function,paymentDetails: any, showQuote: boolean, setShowQuote: Function, offering: any, amount: string }) {
     const router = useRouter();
@@ -22,28 +23,80 @@ export default function GetQuote({ paymentDetails, setShowQuote, offering, amoun
     const [showResponse, setShowResponse] = useState(false);
     const [rfq, setRfq] = useState({});
     const[quote,setQuote]=useState();
+    const [verificationData, setVerificationData] = useState({});
     const {setLoading} = useLoading();
 
     const toSentenceCase = (str: string) => {
         if (!str) return str;
+        if(str=="DID") return str
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    };
+
+    type VerificationField = {
+        path: string[];
+        filter: {
+            type: string;
+            const: string;
+        };
+    };
+
+    type VerificationDescriptor = {
+        id: string;
+        constraints: {
+            fields: VerificationField[];
+        };
+    };
+
+    type VerificationData = {
+        id: string;
+        format: {
+            jwt_vc: {
+                alg: string[];
+            };
+        };
+        input_descriptors: VerificationDescriptor[];
+    };
+
+    const matchFields = (decodedVC: any, fields: VerificationField[]): boolean => {
+        return fields.every((field: VerificationField) => {
+            return field.path.some((path: string) => {
+                const value = path.split('.').reduce((obj: any, key: string) => obj && obj[key], decodedVC);
+                return value === field.filter.const;
+            });
+        });
+    };
+
+    const filterVCs = (kcc: any[], verificationDescriptors: VerificationDescriptor[]) => {
+        return kcc.filter((vc: any) => {
+            const decodedVC = jwt_decode(vc.vc);
+            return verificationDescriptors.every((descriptor: VerificationDescriptor) => {
+                return matchFields(decodedVC, descriptor.constraints.fields);
+            });
+        });
     };
 
     const refreshData = async () => {
         setLoading(true);
         const kcc = await pb.collection('customer_vc').getFullList({ filter: `user = "${user.id}"`, expand: "issuer" });
-        setAllCustomerVCs(kcc);
+
+        // Ensure verificationData is an array
+        const verificationDescriptors: VerificationDescriptor[] = verificationData.input_descriptors || [];
+
+        // Filter VCs based on verificationData
+        const filteredVCs = filterVCs(kcc, verificationDescriptors);
+
+        setAllCustomerVCs(filteredVCs);
 
         const customerDid = await pb.collection('customer_did').getFirstListItem(`user = "${user.id}"`);
         setCustomerDid(customerDid);
         setLoading(false);
     };
 
-
     useEffect(() => {
+        if(allCustomerVCs.length>0) return;
+        setVerificationData(offering.data.requiredClaims);
         refreshData();
     }, [router]);
-
     const selectVC = (vc: any) => {
         setSelectedVC(vc);
     };
@@ -74,6 +127,7 @@ const fetchQuote = async () => {
         }
 
         const rfqData = await rfqResponse.json();
+        console.log("payment details:-------\n",paymentDetails,"\n-----------------");
         setRfq(rfqData);
 
         // Fetch Quote using RFQ metadata
@@ -223,20 +277,20 @@ const confirmQuote = async () => {
             {!showResponse ? (
                 allCustomerVCs.length > 0 ? (
                     <>
-                        <Text variant={"bodySmall"} style={{ marginBottom: 3 }}>Select A VC to Get A Quote</Text>
+                        <Text variant={"bodySmall"} style={{ marginBottom: 3 }}>Compatible VCs, Select A VC to get a quote:</Text>
                         {allCustomerVCs.map((vc: any) => (
-                            <Chip key={vc.id} icon="information" selected={selectedVC.id == vc.id} showSelectedCheck={true}
-                                onPress={() => selectVC(vc)}>{vc.name}</Chip>
+                            <Chip key={vc.id} icon="lock" selected={selectedVC.id == vc.id} showSelectedCheck={true} style={{margin:20}}
+                                onPress={() => selectVC(vc)}>Credential Issued By: {vc.name}</Chip>
                         ))}
                         {selectedVC.id ? (
-                            <Surface style={{ justifyContent: "center", alignItems: "flex-start", padding: 20, borderRadius: 10,marginTop:5 }}>
-                                <Text variant={"titleSmall"}>The following Information Will Be Submitted:</Text>
+                            <Surface style={{ justifyContent: "center", alignItems: "flex-start", padding: 20, borderRadius: 10,margin:20 }}>
+                                <Text variant={"titleSmall"}>The following information will be submitted:</Text>
                                 {Object.keys(selectedVC.expand.issuer.verifiables).map((key) => {
                                     return (
-                                        <Text key={key} variant={"bodyMedium"}>• {toSentenceCase(selectedVC.expand.issuer.verifiables[key])} has been verified</Text>
+                                        <Text key={key} variant={"bodyMedium"}>• {toSentenceCase(selectedVC.expand.issuer.verifiables[key])} ✅</Text>
                                     );
                                 })}
-                                <Text variant={"bodyMedium"}>The Payment Information you have submitted will also be encrypted</Text>
+                                <Text variant={"bodySmall"}>🔒 Payment Information is encrypted, end to end.</Text>
                                 <Button onPress={() => {
                                     fetchQuote();
                                 }}>Get Quote</Button>
@@ -254,6 +308,8 @@ const confirmQuote = async () => {
             ) : (
                 <>
                     <Text variant={"bodyMedium"}>Quote fetched successfully! {String(rfq?.metadata?.exchangeId)}</Text>
+
+                    {/*TODO :Make this More Data Rich*/}
                     {/*{ console.log(quote)}*/}
                     <Surface elevation={3} style={{ flexDirection:"column",width:"100%",
                         marginVertical:20,
@@ -267,7 +323,7 @@ const confirmQuote = async () => {
                         <Text variant={"bodyMedium"}>They Get: {quote[1].data.payout.currencyCode}{" "}
                             {formatNumberWithCommas(Math.round(quote[1].data.payout.amount))} </Text>
                         <Text variant={"bodyMedium"}>Total Spend: {quote[1].data.payin.currencyCode} {formatNumberWithCommas(Math.round(Number(quote[1].data.payin.amount)+ Number(quote[1].data.payin.amount*0.035)))} </Text>
-
+                        <Text variant={"bodyMedium"}>Exchange Rate: {quote[1].data.payout.currencyCode}{" "} {quote[1].data.payout.amount/quote[1].data.payin.amount}</Text>
                         <View style={{
                             flexDirection: 'row',
                             justifyContent: 'space-between',

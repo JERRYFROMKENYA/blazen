@@ -35,7 +35,10 @@ const PayinMethodMenu: React.FC<PayinMethodMenuProps> = ({ payinMethods, onSelec
             {selectedPayinMethod ? (
                 <Text variant="bodyMedium">{selectedPayinMethod.requiredPaymentDetails.title}</Text>
             ) : (
-                <Button onPress={()=>{
+                <Button
+                    style={{ margin: 20 }}
+                    mode={"contained"}
+                    onPress={()=>{
                     onSelect(payinMethods[0]);
                     if (payinMethods.length > 1) {
                         openModal();

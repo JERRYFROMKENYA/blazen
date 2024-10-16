@@ -34,6 +34,7 @@ export default function AddVerifiableCredential() {
 
     const toSentenceCase = (str: string) => {
         if (!str) return str;
+        if(str.toLowerCase()==="did") return "DID"
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     };
 
@@ -157,7 +158,7 @@ export default function AddVerifiableCredential() {
                 {Array.isArray(vcList) && vcList.map((vc) => (
                     <React.Fragment key={vc.id}>
                         <List.Item
-                            title={vc.name}
+                            title={`🔒 ${vc.name}`}
                             description={`${vc.description} \n Verifies: ${Object.keys(vc.verifiables).map((key) => (
                                 `${toSentenceCase(vc.verifiables[key])} `
                             ))}`}

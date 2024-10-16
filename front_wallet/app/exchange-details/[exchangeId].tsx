@@ -67,24 +67,27 @@ export default function ExchangeId() {
         switch (status.toLowerCase()) {
             case 'success':
                 return '#4CAF50';
+            case 'completed':
+                return '#4CAF50';
             case 'in_progress':
-                return '#4CAF50';// Green for success
+                return '#4CAF50';
             case 'pending':
                 return '#FFC107';
             case 'transfering_funds':
-                return '#FFC107';// Yellow for pending
+                return '#FFC107';
             case 'failed':
-                return '#F44336'; // Red for failed
+                return '#F44336';
+            case 'cancelled':
+                return '#F44336';
             default:
-                return '#9E9E9E'; // Grey for unknown status
+                return '#9E9E9E';
         }
-
-        // return "#9E9E9E"
     };
     const submitRating = async () => {
         setLoading(true)
         try {
-            const existingRating = await pb.collection('pfi_rating').getFirstListItem(`user="${user.id}" && exchangeId="${exchangeId}"`);
+            const existingRating = await pb.collection('pfi_rating')
+                .getFirstListItem(`user="${user.id}" && exchangeId="${exchangeId}"`);
             if (existingRating) {
                 Alert.alert("Error", "You have already rated this exchange.");
                 return;
@@ -150,6 +153,10 @@ export default function ExchangeId() {
             if (wallet_data) {
                 setWallet(wallet_data);
             }
+            else{
+                Alert.alert("Insufficient Balance","You do not have sufficient balance in your wallet to complete this transaction")
+                // await cancelQuote()
+            }
         } catch (error) {
             // console.error('Failed to fetch exchange details:', error);
         }
@@ -204,9 +211,23 @@ export default function ExchangeId() {
                 customerDid: customerDid.did,
             }),
         });
-        const quote_data = await quoteResponse.json();
-        settbdNetInfo(quote_data);
+
+        let quote_data = await quoteResponse.json();
+
+        // Find the close message, if any
+        const closeMessageIndex = quote_data.findIndex(item => item.metadata.kind === 'close');
+        if (closeMessageIndex > -1) {
+            // Extract the close message and remove it from the original position
+            const [closeMessage] = quote_data.splice(closeMessageIndex, 1);
+            // Add the close message to the front
+            quote_data = [closeMessage, ...quote_data];
+        }
+
+        // Reverse the rest of the array
+        settbdNetInfo(quote_data.reverse());
     };
+
+
 
     useEffect(() => {
         getNetInfo();
@@ -329,9 +350,17 @@ export default function ExchangeId() {
                 {exchange && (
                     <>
                         <Surface style={{ flexDirection: "column", width: "100%", marginVertical: 30, justifyContent: "center", alignItems: "center", padding: 5, borderRadius: 10 }} elevation={3}>
+                            <Text variant={"bodyLarge"} style={{fontWeight:"bold"}}>🏦 {exchange.expand.pfi.name}</Text>
+                            <Text variant={"bodyLarge"}>Transaction Status: <Text style={{
+                                marginLeft: 5,
+                                fontWeight: "bold",
+                                fontSize: 16,
+                                color: getStatusColor(exchange.status||"default"),
+                            }}>
+                                {toSentenceCase(exchange.status||"pending")}
+                            </Text></Text>
+
                             <Text variant={"bodyLarge"}>Exchange ID: {exchangeId}</Text>
-                            <Text variant={"bodyLarge"}>PFI: {exchange.expand.pfi.name}</Text>
-                            <Text variant={"bodyLarge"}>Transaction Status: {toSentenceCase(exchange.status)}</Text>
                             <Text variant={"bodyLarge"}>You're sending: {exchange.rfq.data.payin.currencyCode} {formatNumberWithCommas(exchange.rfq.data.payin.amount)}</Text>
                         </Surface>
                         {(transaction && exchange.status != "cancelled") && (
@@ -404,6 +433,18 @@ export default function ExchangeId() {
                                     }}
                                     elevation={2}
                                 >
+                                    {/* Status with color coding */}
+                                    <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
+                                        <MaterialIcons name="check-circle" size={20} color={getStatusColor(info.data.orderStatus||"default")} />
+                                        <Text style={{
+                                            marginLeft: 5,
+                                            fontWeight: "bold",
+                                            fontSize: 16,
+                                            color: getStatusColor(info.data.orderStatus||"default"),
+                                        }}>
+                                            Status: {toSentenceCase(info.data.orderStatus||"pending")}
+                                        </Text>
+                                    </View>
                                     <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
                                         <MaterialIcons name="access-time" size={20} color="#616161" />
                                         <Text style={{ marginLeft: 5, fontWeight: "bold", fontSize: 16 }}>Time:</Text>
@@ -422,18 +463,6 @@ export default function ExchangeId() {
                                     </View>
                                     <Text style={{ marginLeft: 25, fontSize: 14, color: "#757575" }}>{info.metadata.protocol}</Text>
 
-                                    {/* Status with color coding */}
-                                    <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
-                                        <MaterialIcons name="check-circle" size={20} color={getStatusColor(info.data.orderStatus||"default")} />
-                                        <Text style={{
-                                            marginLeft: 5,
-                                            fontWeight: "bold",
-                                            fontSize: 16,
-                                            color: getStatusColor(info.data.orderStatus||"default"),
-                                        }}>
-                                            Status: {toSentenceCase(info.data.orderStatus||"pending")}
-                                        </Text>
-                                    </View>
 
                                     {/* Amount Sent */}
                                     <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
