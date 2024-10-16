@@ -18,6 +18,7 @@ export default function AuthScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isOnboardingVisible, setIsOnboardingVisible] = useState(false);
+  const [error, setError] = useState("");
 
   const handlePasswordReset = async () => {
     await pb.collection('users').requestPasswordReset(resetEmail).then((res) => {
@@ -27,8 +28,10 @@ export default function AuthScreen() {
 
   const handleLogin = async () => {
     const result = await signIn(email, password);
+
     if (result && result.error) {
       console.error(result.error);
+        setError(result.error);
     } else {
       console.log("Logged in successfully");
       router.replace("/(tabs)/");
@@ -61,7 +64,9 @@ export default function AuthScreen() {
           borderRadius: 20,
           justifyContent: "space-between"
         }}>
-          <Text variant={"titleLarge"} style={{ alignSelf: "center", margin: 12, marginTop: 0 }}>{isLogin ? "Login" : "Sign Up"}</Text>
+
+          <Text variant={"titleLarge"} style={{ alignSelf: "center", margin: 7, marginTop: 0 }}>{isLogin ? "Login" : "Sign Up"}</Text>
+            {error && <Text style={{ color: "red", alignSelf: "center", marginBottom:12 }}>{String(error).split(":")[1]}</Text>}
           {isPasswordReset ? (
             <>
               <TextInput label={"Email"} onChangeText={setResetEmail} />
@@ -89,7 +94,10 @@ export default function AuthScreen() {
                 margin: 10,
                 backgroundColor: "transparent"
               }}>
-                <Button style={{ alignSelf: "flex-start" }} onPress={() => setIsLogin(!isLogin)}>
+                <Button style={{ alignSelf: "flex-start" }} onPress={() => {
+                  setError()
+                  setIsLogin(!isLogin)
+                }}>
                   {isLogin && !isPasswordReset ? "Sign Up" : "Login"}
                 </Button>
                 {isLogin && <Button style={{ alignSelf: "flex-end" }} onPress={() => setIsPasswordReset(true)}>Forgot

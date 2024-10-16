@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { StyleSheet, ScrollView, FlatList, TouchableOpacity, Alert, Image, Platform } from 'react-native';
 import {
     Portal,
@@ -24,6 +24,7 @@ import { useLoading } from "@/components/utils/LoadingContext";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import SafeScreen from "@/components/SafeScreen/SafeScreen";
 import * as ImagePicker from 'expo-image-picker';
+import {updateIdDocument, updateProfilePicture} from "@/components/utils";
 
 const countryMapping = {
     "US": "United States",
@@ -36,7 +37,7 @@ const countryMapping = {
     "NG": "Nigeria"
 };
 
-const idTypes = ["Passport", "National ID", "Driver's License", "Other"];
+const idTypes = ["Passport", "National Identification Card", "Driver's License", "Other"];
 
 interface OnboardingModalProps {
     visible: boolean;
@@ -73,6 +74,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
     const [idTypeModalVisible, setIdTypeModalVisible] = useState(false);
     const [passportPhoto, setPassportPhoto] = useState<any>(null);
     const [idPhoto, setIdPhoto] = useState<any>(null);
+    const [idBack, setIdBack] = useState<any>(null);
     const [datePickerVisible, setDatePickerVisible] = useState(false);
     const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
     const [errorMessage, setErrorMessage] = useState('');
@@ -83,6 +85,13 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
     const router = useRouter();
     const { setDHTDid } = useDidOperations();
     const { setLoading } = useLoading();
+    useEffect(() => {
+        if(!user){
+            router.replace('/(auth)/login');
+        }
+    })
+
+
 
     const steps = [
         "Welcome to the NexX! Let's get started.\n" +
@@ -144,6 +153,16 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
         if (step === 1 && !usernameAvailable) {
             return;
         }
+        if (step === 2 && (formData.street_address.length === 0 || formData.state_county.length === 0 || formData.country.length === 0)) {
+            setErrorMessage('Please fill in all fields.');
+            return;
+        }
+
+        if(step===3 && (formData.id_type.length === 0 || formData.id_number.length === 0 || !passportPhoto || !idPhoto)){
+            setErrorMessage('Please fill in all fields.');
+            return;
+        }
+
 
         if (step === 4 && formData.pin.length !== 6) {
             setErrorMessage('PIN should be 6 digits long.');
@@ -167,53 +186,26 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
             formDataToSend.append('settings', JSON.stringify(formData.settings));
 
             if (passportPhoto) {
-                // const pfpForm = new FormData();
-                // const fileData = await FileSystem.readAsStringAsync(passportPhoto.uri, { encoding: FileSystem.EncodingType.Base64 });
-                // const blob = new File([fileData], passportPhoto.fileName,{ type: passportPhoto.type });
-                // const formData= new FormData();
-                // formData.append('user_id', user.id);
-                // formData.append('profilePicture', passportPhoto);
-                // const res = await fetch('http://138.197.89.72:3000/update-profile-picture', {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'multipart/form-data',
-                //         Accept: 'application/json'
-                //     },
-                //     body:formData
-                //
-                // });
-
-                const pfpForm = new FormData();
-                const fileData = await FileSystem.readAsStringAsync(passportPhoto.uri, { encoding: FileSystem.EncodingType.Base64 });
-                const blob = new Blob([fileData], { type: passportPhoto.type });
-
-                pfpForm.append('profilePicture',
-                    {
-                        uri: passportPhoto.uri,
-                        type: passportPhoto.mimeType,
-                        name: passportPhoto.fileName
-                    });
-                pfpForm.append('user_id', user.id);
-
-                const response = await fetch('http://138.197.89.72:3000/update-profile-picture', {
-                    method: 'POST',
-                    body: pfpForm,
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                            Accept: 'application/json',
-                            Connection:"keep-alive"
-                        },
-                });
-                const res = await response.json()
-                console.log(res);
+              if (await updateProfilePicture(user, passportPhoto)) {
+                console.log('Profile picture updated');
+              }else{
+                console.log('Profile picture not updated');
+              }
 
             }
-            if (idPhoto) {
-                // formDataToSend.append('avatar',new File(
-                //     [idPhoto],
-                //     idPhoto.name,
-                //     { type: idPhoto}
-                // ));
+            if (idPhoto&&!idBack) {
+                if (await updateIdDocument(user, [idPhoto])) {
+                    console.log('ID document updated');
+                }else {
+                    console.log('ID document not updated');
+                }
+            }
+            else if (idPhoto&&idBack) {
+                if (await updateIdDocument(user, [idPhoto,idBack])) {
+                    console.log('ID document updated');
+                }else {
+                    console.log('ID document not updated');
+                }
             }
             try{
                 const createdRecord = await pb.collection('users').update(user.id, formDataToSend);
@@ -236,10 +228,11 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
             }catch (e){
 
             }
-
+            await pb.collection('users').requestVerification(resp.record.email);
+            Alert.alert("Verification","Check your email to verify your account before logging in next...")
             setLoading(false);
-            // signOut();
-            // router.replace('/(auth)/login');
+            signOut();
+            router.replace('/(auth)/login');
         }
         setLoading(false);
     };
@@ -383,17 +376,45 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
             alert('You did not select any image.');
         }
     }
+    const pickIdFront=async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setIdPhoto(result.assets[0]);
+            console.log(result.assets[0])
+            // setShowAppOptions(true);
+        } else {
+            alert('You did not select any image.');
+        }
+    }
+    const pickIdBack=async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setIdBack(result.assets[0]);
+            console.log(result.assets[0])
+            // setShowAppOptions(true);
+        } else {
+            alert('You did not select any image.');
+        }
+    }
 
     return (
         <SafeScreen>
             <Appbar.Header>
-                <Appbar.Action icon="arrow-left" onPress={() => {
+                {step>0&&<Appbar.Action icon="arrow-left" onPress={() => {
                     if (step <= 0) {
                         router.back();
                         return;
                     }
                     setStep(step - 1);
-                }} />
+                }}/>}
                 <Appbar.Content title="Welcome to NexX" />
             </Appbar.Header>
             <Surface elevation={0} style={{width:"100%",
@@ -444,17 +465,39 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
                     )}
                     {step === 3 && (
                         <Surface style={styles.modalContainer}>
+                            {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
                             <IDPicker/>
                             <TextInput mode={"outlined"} label="Identification Number"
                                        value={formData.id_number}
                                        onChangeText={(value) => handleChange('id_number', value)}
                                        style={styles.input} />
-
-
-                            <Button onPress={async () => await pickProfilePhoto()}>Upload Passport Photo</Button>
+                            <Button onPress={async () => await pickProfilePhoto()}>Upload Profile Photo</Button>
+                            {!passportPhoto && <Text>Upload a profile photo, use your best picture</Text>}
                             {passportPhoto && <Image source={{ uri: passportPhoto.uri }} style={styles.imagePreview} />}
-                            <Button onPress={() => pickDocument(setIdPhoto)}>Upload ID Photo</Button>
+
+                            {/*Upload */}
+                            {
+                                formData.id_type=="Passport"&&
+                                <Button onPress={() => pickIdFront()}>Upload Passport Bio Page</Button>
+                            }
+                            {
+                                formData.id_type=="Driver's License"&&
+                                <>
+                                    <Button onPress={() => pickIdFront()}>Upload ID Photo</Button>
+                                    <Button onPress={() => pickIdBack()}>Upload ID Back</Button>
+                                </>
+                            }
+                            {
+                                formData.id_type=="National Identification Card"&&
+                                <>
+                                    <Button onPress={() => pickIdFront()}>Upload ID Photo</Button>
+                                    <Button onPress={() => pickIdBack()}>Upload ID Back</Button>
+                                </>
+                            }
+                            <View style={{flexDirection:"row",justifyContent:"space-between",backgroundColor:"transparent"}}>
                             {idPhoto && <Image source={{ uri: idPhoto.uri }} style={styles.imagePreview} />}
+                            {idBack && <Image source={{ uri: idBack.uri }} style={styles.imagePreview} />}
+                            </View>
                             <Text onPress={showDatePicker}>{formData.date_of_birth ?new Date(formData.date_of_birth).toLocaleDateString() :"Select Date of Birth"}</Text>
                             {datePickerVisible && (
                                 <DateTimePicker

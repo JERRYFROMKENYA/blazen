@@ -43,6 +43,15 @@ function useProtectedRoute(user, isInitialized) {
         const inAuthGroup = segments[0] === '(auth)' || segments[1] === 'login';
         if (!isInitialized) return;
 
+        if (user && user.is_banned) {
+           router.replace('/(auth)/login');
+        }else
+
+        if (user && (user.settings==null||user.settings.onboarding==null||user.settings.onboarding==false)) {
+            router.replace('/(auth)/onboarding');
+
+        }
+
         if (!user && !inAuthGroup) {
             router.replace('/(auth)/login');
         }
@@ -55,6 +64,7 @@ export function AuthProvider({ children }) {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState(null);
     const [did, setDid]=useState(null);
+    const router = useRouter();
 
     useEffect(() => {
         const checkAuthStatus = async () => {
@@ -64,6 +74,7 @@ export function AuthProvider({ children }) {
                 setUser(isLoggedIn ? pb.authStore.model : null);
                 setIsInitialized(true);
             if (user) {
+
                 if(user.is_banned){
                     Alert.alert("Account Banned", "Your account has been banned. Contact support for more information")
                     await appSignOut()

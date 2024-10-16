@@ -1,0 +1,21 @@
+{
+  "name": "kyc_server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.0",
+    "image-js": "^0.35.6",
+    "mrz": "^4.2.0",
+    "multer": "^1.4.5-lts.1",
+    "opencv4nodejs-prebuilt-install": "^4.1.209",
+    "sharp": "^0.33.5",
+    "tesseract.js": "^5.1.1"
+  }
+}

@@ -47,7 +47,7 @@ export default function BalanceCard() {
       </View>
       {(currentWallet && !isBalanceHidden) ? (
         <>
-          <Text variant="titleLarge">{currentWallet.currency} {formatNumberWithCommas(currentWallet.balance)}</Text>
+          <Text variant="titleLarge">{currentWallet.currency} {formatNumberWithCommas(currentWallet?.balance??0)}</Text>
           <Text variant="bodyMedium">{currentWallet.provider}</Text>
           {wallets.length > 1 && (
             <View style={styles.walletNavigation}>

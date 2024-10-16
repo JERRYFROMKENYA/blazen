@@ -329,6 +329,10 @@ const FetchAllExchanges = async (customerDid) => {
 
   }
 
+  const AutoSelect=() =>{
+
+  }
+
 
 
   /*Functions End Here

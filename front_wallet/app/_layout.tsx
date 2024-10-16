@@ -71,16 +71,16 @@ function RootLayoutNav() {
                 {/*<Stack.Screen name="(auth)" options={{ headerShown: false }} />*/}
                 <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
                 <Stack.Screen name="(auth)/onboarding" options={{ headerShown: false }} />
-                {/*Modal is just a cool template to use-- no practical use lol*/},presentation:"modal
+                {/*Modal is just a cool template to use-- no practical use lol*/}
                 <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
                 {/*Actions*/}
-                <Stack.Screen name="actions/send_money" options={{ presentation: 'modal', headerShown:false }} />
-                <Stack.Screen name="actions/deposit_money" options={{ presentation: 'modal', headerShown:false }} />
-                <Stack.Screen name="actions/receive" options={{ presentation: 'modal', headerShown:false }} />
-                <Stack.Screen name="actions/pay" options={{ presentation: 'modal', headerShown:false }} />
-                <Stack.Screen name="actions/bill_split" options={{ presentation: 'modal', headerShown:false }} />
+                <Stack.Screen name="actions/send_money" options={{  headerShown:false }} />
+                <Stack.Screen name="actions/deposit_money" options={{ headerShown:false }} />
+                <Stack.Screen name="actions/receive" options={{  headerShown:false }} />
+                <Stack.Screen name="actions/pay" options={{  headerShown:false }} />
+                <Stack.Screen name="actions/bill_split" options={{  headerShown:false }} />
                 <Stack.Screen name="actions/save" options={{ headerShown:false }} />
-                <Stack.Screen name="actions/withdraw" options={{ presentation: 'modal', headerShown:false }} />
+                <Stack.Screen name="actions/withdraw" options={{  headerShown:false }} />
                 <Stack.Screen name="actions/test_screen" options={{ headerShown:false }} />
                 {/*  VC*/}
                 <Stack.Screen name="Credentials/add_verifiable_credentials" options={{ presentation: 'modal', headerShown:false }} />
@@ -91,21 +91,23 @@ function RootLayoutNav() {
                 {/*  Exchange Details*/}
                 <Stack.Screen name="exchange-details/[exchangeId]" options={{ headerShown: false }} />
               {/*  Bill Management*/}
-                <Stack.Screen name="split_bill/BillCreation" options={{ title: 'Create Bill',headerShown:false ,presentation:"modal"}} />
-                <Stack.Screen name="split_bill/JoinBill" options={{ title: 'Join Bill',headerShown:false,presentation:"modal" }} />
-                <Stack.Screen name="split_bill/ManageBills" options={{ title: 'Manage Bills',headerShown:false ,presentation:"modal"}} />
-                <Stack.Screen name="split_bill/BillDetails/[bill_id]" options={{ title: 'Manage Bills',headerShown:false ,presentation:"modal"}} />
+                <Stack.Screen name="split_bill/BillCreation" options={{ title: 'Create Bill',headerShown:false }} />
+                <Stack.Screen name="split_bill/JoinBill" options={{ title: 'Join Bill',headerShown:false }} />
+                <Stack.Screen name="split_bill/ManageBills" options={{ title: 'Manage Bills',headerShown:false }} />
+                <Stack.Screen name="split_bill/BillDetails/[bill_id]" options={{ title: 'Manage Bills',headerShown:false }} />
               {/*  Wallet Management*/}
-                <Stack.Screen name="Wallets/ManageWallets" options={{ title: 'Manage Wallets',headerShown:false ,presentation:"modal"}} />
-                <Stack.Screen name="Wallets/CreateWallet" options={{ title: 'Create Wallet',headerShown:false ,presentation:"modal"}} />
-                <Stack.Screen name="Wallets/[wallet_id]" options={{ title: 'Wallet Details',headerShown:false ,presentation:"modal"}} />
+                <Stack.Screen name="Wallets/ManageWallets" options={{ title: 'Manage Wallets',headerShown:false }} />
+                <Stack.Screen name="Wallets/CreateWallet" options={{ title: 'Create Wallet',headerShown:false }} />
+                <Stack.Screen name="Wallets/[wallet_id]" options={{ title: 'Wallet Details',headerShown:false }} />
               {/*  Settings*/}
-                <Stack.Screen name="Settings/Profile" options={{ title: 'Profile',headerShown:false ,presentation:"modal"}} />
-                <Stack.Screen name="Settings/Security" options={{ title: 'Security',headerShown:false ,presentation:"modal"}} />
-                <Stack.Screen name="Settings/Password" options={{ title: 'Password',headerShown:false ,presentation:"modal"}} />
-                <Stack.Screen name="Settings/Support" options={{ title: 'Support',headerShown:false ,presentation:"modal"}} />
+                <Stack.Screen name="Settings/Profile" options={{ title: 'Profile',headerShown:false }} />
+                <Stack.Screen name="Settings/Security" options={{ title: 'Security',headerShown:false }} />
+                <Stack.Screen name="Settings/Password" options={{ title: 'Password',headerShown:false }} />
+                <Stack.Screen name="Settings/Support" options={{ title: 'Support',headerShown:false }} />
               {/*  Coin Exchange*/}
                 <Stack.Screen name={"actions/coin_exchange"} options={{ headerShown: false }} />
+              {/*  PFI details*/}
+                <Stack.Screen name="pfi-details/[pfiId]" options={{ headerShown: false ,presentation:"modal"}} />
               </Stack>
             </PaperProvider>
           </AuthProvider>

@@ -38,4 +38,16 @@ services:
       - blazen_network
 
 
-
+  internal_pfi:
+    build: ./internal_pfi
+    restart: unless-stopped
+    container_name: internal_pfi
+    ports:
+      - "3001:3001"
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+    environment:
+      - POCKETBASE_URL=http://pocketbase:8090
+    networks:
+      - blazen_network

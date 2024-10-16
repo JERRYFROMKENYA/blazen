@@ -39,7 +39,7 @@ export default function Home() {
       user && (<View style={styles.container}>
     <SafeScreen onRefresh={handleRefresh}>
       {!IsiOS&&<Appbar.Header style={styles.header}>
-        <Text variant={"displaySmall"} style={styles.greeting}>
+        <Text variant={"headlineMedium"} style={styles.greeting}>
           Hi, {name}
         </Text>
         <View style={styles.avatarContainer}>
@@ -51,7 +51,7 @@ export default function Home() {
         </View>
       </Appbar.Header>}
       {IsiOS&&<View style={styles.header}>
-        <Text variant={"displaySmall"} style={styles.greeting}>
+        <Text variant={"headlineMedium"} style={styles.greeting}>
           Hi, {name}
         </Text>
         <View style={styles.avatarContainer}>

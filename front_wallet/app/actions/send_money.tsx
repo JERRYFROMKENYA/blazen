@@ -50,6 +50,7 @@ export default function SendMoney() {
   const [receivedQuote, setReceivedQuote] = useState(false);
   const { setLoading } = useLoading();
   const [averageRatings, setAverageRatings] = useState({});
+  const [averageRatingsCount, setAverageRatingsCount] = useState({});
   const [walletModalVisible, setWalletModalVisible] = useState(false);
   const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
   const openWalletModal = () => setWalletModalVisible(true);
@@ -228,13 +229,27 @@ const renderStars = (rating) => {
             acc[rating.expand.pfi.did].count += 1;
             return acc;
         }, {});
+      const pfiRatingsCount = ratings.reduce((acc, rating) => {
+
+        if (!acc[rating.pfi]) {
+          acc[rating.expand.pfi.did] = { total: 0, count: 0 };
+        }
+        // acc[id]=rating.expand.did
+        acc[rating.expand.pfi.did].total += rating.rating_count;
+        acc[rating.expand.pfi.did].count += 1;
+        return acc;
+      }, {});
 
 
         const averageRatings = Object.keys(pfiRatings).reduce((acc, pfi) => {
             acc[pfi] = pfiRatings[pfi].total / pfiRatings[pfi].count;
             return acc;
         }, {});
-
+      const averageRatingsCount = Object.keys(pfiRatings).reduce((acc, pfi) => {
+        acc[pfi] = pfiRatingsCount[pfi].total / pfiRatings[pfi].count;
+        return acc;
+      }, {});
+      setAverageRatingsCount(averageRatingsCount);
         setAverageRatings(averageRatings);
     } catch (error) {
         // console.error('Error fetching average ratings:', error);
@@ -303,18 +318,20 @@ const renderStars = (rating) => {
                 <ScrollView>
                   {filteredPfis.map(pfi => (
                       <Card key={pfi.id} style={styles.card} onPress={() => handlePfiSelect(pfi)}>
+
                         <Card.Content style={{justifyContent:"space-around"}}>
                           <View style={{flexDirection:"row", justifyContent:"space-between",
                             alignItems:"center",
                             backgroundColor:"transparent"}}>
                             <Text style={{fontWeight:"bold", fontSize:20,flex:1}}>🏦 {pfi.name}</Text>
-                          <Button style={{alignSelf:"flex-end", marginRight:0}} children={""} icon={()=>{return <Icon source={"information"} size={20}/>}}></Button>
+                          <Button style={{alignSelf:"flex-end", marginRight:0}} children={""} onPress={()=>{router.push(`/pfi-details/${pfi.from}`)}} icon={()=>{return <Icon source={"information"} size={20}/>}}></Button>
                           </View>
 
                           <Text>{pfi.description}</Text>
                           <Text>1 {walletInUse.currency} = {pfi.payoutUnitsPerPayinUnit} {selectedOffering.split(":")[1]}</Text>
                           <Text variant={"bodySmall"}>{"Kindly note these ratings are based on users who have used this PFI"}</Text>
                           {renderStars(averageRatings[pfi.from] || 0)}
+                          <Text variant={"bodySmall"}> {`(${averageRatingsCount[pfi.from] || 0} ${averageRatingsCount[pfi.from]==1?"review":"reviews"}) `}</Text>
                         </Card.Content>
                       </Card>
                   ))}
@@ -336,6 +353,7 @@ const renderStars = (rating) => {
                     <Text>{selectedPfi.payoutMethods.map(method => method.requiredPaymentDetails.title).join(', ')}</Text>
                     <Text variant={"bodySmall"}>{"Kindly note these ratings are based on users who have used this PFI"}</Text>
                     {renderStars(averageRatings[selectedPfi.from] || 0)}
+                    <Text variant={"bodySmall"}> {`(${averageRatingsCount[selectedPfi.from] || 0} ${averageRatingsCount[selectedPfi.from]==1?"review":"reviews"}) `}</Text>
                   </View>
 
                   <PayinMethodMenu
