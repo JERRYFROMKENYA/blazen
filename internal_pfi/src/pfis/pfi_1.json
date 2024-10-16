@@ -1,45 +1,52 @@
 {
-  "uri": "did:dht:1cxuwoca5gay5zxoro8q3xdqbeazghrtzqgqf97ogwt1ciutbago",
+  "uri": "did:dht:q9h7xfknqqb6xfr5nsgcgadxs717f7pkr6um6fybtbj4tg7incxo",
   "document": {
-    "id": "did:dht:1cxuwoca5gay5zxoro8q3xdqbeazghrtzqgqf97ogwt1ciutbago",
+    "id": "did:dht:q9h7xfknqqb6xfr5nsgcgadxs717f7pkr6um6fybtbj4tg7incxo",
     "verificationMethod": [
       {
-        "id": "did:dht:1cxuwoca5gay5zxoro8q3xdqbeazghrtzqgqf97ogwt1ciutbago#0",
+        "id": "did:dht:q9h7xfknqqb6xfr5nsgcgadxs717f7pkr6um6fybtbj4tg7incxo#0",
         "type": "JsonWebKey",
-        "controller": "did:dht:1cxuwoca5gay5zxoro8q3xdqbeazghrtzqgqf97ogwt1ciutbago",
+        "controller": "did:dht:q9h7xfknqqb6xfr5nsgcgadxs717f7pkr6um6fybtbj4tg7incxo",
         "publicKeyJwk": {
           "crv": "Ed25519",
           "kty": "OKP",
-          "x": "kx86QZjZsA3d8CQO7LxuCjFzcJG7jOL_sDUjJlZxDg0",
-          "kid": "eCT8JTDIKr9_oMxtmVI8IJZKvPLiQGNJu_TiSbXI-wk",
+          "x": "d_nXlUJzg-eUmxWMw2Bvt2XS9aonpr8UAYhTqJu1Ex8",
+          "kid": "8nHiOyK3xRLYyY-Tnc6NLPX1XDUEnaBQe5qWHWffJXo",
           "alg": "EdDSA"
         }
       }
     ],
     "authentication": [
-      "did:dht:1cxuwoca5gay5zxoro8q3xdqbeazghrtzqgqf97ogwt1ciutbago#0"
+      "did:dht:q9h7xfknqqb6xfr5nsgcgadxs717f7pkr6um6fybtbj4tg7incxo#0"
     ],
     "assertionMethod": [
-      "did:dht:1cxuwoca5gay5zxoro8q3xdqbeazghrtzqgqf97ogwt1ciutbago#0"
+      "did:dht:q9h7xfknqqb6xfr5nsgcgadxs717f7pkr6um6fybtbj4tg7incxo#0"
     ],
     "capabilityDelegation": [
-      "did:dht:1cxuwoca5gay5zxoro8q3xdqbeazghrtzqgqf97ogwt1ciutbago#0"
+      "did:dht:q9h7xfknqqb6xfr5nsgcgadxs717f7pkr6um6fybtbj4tg7incxo#0"
     ],
     "capabilityInvocation": [
-      "did:dht:1cxuwoca5gay5zxoro8q3xdqbeazghrtzqgqf97ogwt1ciutbago#0"
+      "did:dht:q9h7xfknqqb6xfr5nsgcgadxs717f7pkr6um6fybtbj4tg7incxo#0"
+    ],
+    "service": [
+      {
+        "id": "did:dht:q9h7xfknqqb6xfr5nsgcgadxs717f7pkr6um6fybtbj4tg7incxo#pfi",
+        "type": "PFI",
+        "serviceEndpoint": "http://138.197.89.72:3001/"
+      }
     ]
   },
   "metadata": {
     "published": true,
-    "versionId": "1729084957"
+    "versionId": "1729103246"
   },
   "privateKeys": [
     {
       "crv": "Ed25519",
-      "d": "J37HMK0TztQ0A3hm39mJ15SycC0MHYj3LBgF9vvh9oI",
+      "d": "-46ccGoq8II-n5mjQEuElZt9qB_ZRVXfvOb1Q4aCbEM",
       "kty": "OKP",
-      "x": "kx86QZjZsA3d8CQO7LxuCjFzcJG7jOL_sDUjJlZxDg0",
-      "kid": "eCT8JTDIKr9_oMxtmVI8IJZKvPLiQGNJu_TiSbXI-wk",
+      "x": "d_nXlUJzg-eUmxWMw2Bvt2XS9aonpr8UAYhTqJu1Ex8",
+      "kid": "8nHiOyK3xRLYyY-Tnc6NLPX1XDUEnaBQe5qWHWffJXo",
       "alg": "EdDSA"
     }
   ]
