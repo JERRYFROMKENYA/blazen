@@ -51,3 +51,6 @@ services:
       - POCKETBASE_URL=http://pocketbase:8090
     networks:
       - blazen_network
+
+
+
