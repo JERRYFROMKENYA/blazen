@@ -35,16 +35,17 @@ declare module '$env/static/private' {
 	export const CommonProgramW6432: string;
 	export const COMPUTERNAME: string;
 	export const ComSpec: string;
+	export const CONDA_BAT: string;
+	export const CONDA_EXE: string;
+	export const CONDA_SHLVL: string;
 	export const DEBUG_COLORS: string;
 	export const DriverData: string;
-	export const EFC_8584: string;
 	export const FORCE_COLOR: string;
-	export const FPS_BROWSER_APP_PROFILE_STRING: string;
-	export const FPS_BROWSER_USER_PROFILE_STRING: string;
 	export const GOPATH: string;
 	export const HOMEDRIVE: string;
 	export const HOMEPATH: string;
 	export const IDEA_INITIAL_DIRECTORY: string;
+	export const intellij_args: string;
 	export const JAVA_HOME: string;
 	export const LOCALAPPDATA: string;
 	export const LOGONSERVER: string;
@@ -65,6 +66,7 @@ declare module '$env/static/private' {
 	export const ProgramData: string;
 	export const ProgramFiles: string;
 	export const ProgramW6432: string;
+	export const PROMPT: string;
 	export const PSModulePath: string;
 	export const PUBLIC: string;
 	export const SESSIONNAME: string;
@@ -79,6 +81,9 @@ declare module '$env/static/private' {
 	export const VBOX_HWVIRTEX_IGNORE_SVM_IN_USE: string;
 	export const VBOX_MSI_INSTALL_PATH: string;
 	export const windir: string;
+	export const WSLENV: string;
+	export const WT_PROFILE_ID: string;
+	export const WT_SESSION: string;
 }
 
 /**
@@ -119,16 +124,17 @@ declare module '$env/dynamic/private' {
 		CommonProgramW6432: string;
 		COMPUTERNAME: string;
 		ComSpec: string;
+		CONDA_BAT: string;
+		CONDA_EXE: string;
+		CONDA_SHLVL: string;
 		DEBUG_COLORS: string;
 		DriverData: string;
-		EFC_8584: string;
 		FORCE_COLOR: string;
-		FPS_BROWSER_APP_PROFILE_STRING: string;
-		FPS_BROWSER_USER_PROFILE_STRING: string;
 		GOPATH: string;
 		HOMEDRIVE: string;
 		HOMEPATH: string;
 		IDEA_INITIAL_DIRECTORY: string;
+		intellij_args: string;
 		JAVA_HOME: string;
 		LOCALAPPDATA: string;
 		LOGONSERVER: string;
@@ -149,6 +155,7 @@ declare module '$env/dynamic/private' {
 		ProgramData: string;
 		ProgramFiles: string;
 		ProgramW6432: string;
+		PROMPT: string;
 		PSModulePath: string;
 		PUBLIC: string;
 		SESSIONNAME: string;
@@ -163,6 +170,9 @@ declare module '$env/dynamic/private' {
 		VBOX_HWVIRTEX_IGNORE_SVM_IN_USE: string;
 		VBOX_MSI_INSTALL_PATH: string;
 		windir: string;
+		WSLENV: string;
+		WT_PROFILE_ID: string;
+		WT_SESSION: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
 	}
