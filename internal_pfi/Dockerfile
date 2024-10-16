@@ -17,5 +17,6 @@ COPY . .
 EXPOSE 4000
 EXPOSE 9000
 
+RUN npm run clean
 # Define the command to run the app
 CMD ["npm","run","server"]
