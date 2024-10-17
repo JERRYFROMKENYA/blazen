@@ -805,7 +805,7 @@ async function createRandomOffering(index: number): Promise<Offering> {
 }
 
 // Initialize an array of hardcoded offerings
-const hardcodedOfferings: Offering[] = await Promise.all(Array.from({ length: 10 }, (_, i) => createRandomOffering(i)))
+const hardcodedOfferings: Offering[] = await Promise.all(Array.from({ length: 11 }, (_, i) => createRandomOffering(i)))
 
 export class HardcodedOfferingRepository implements OfferingsApi {
   pfi: BearerDid
