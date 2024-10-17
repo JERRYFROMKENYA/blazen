@@ -1,52 +1,52 @@
 {
-  "uri": "did:dht:zijhjyuqxr6aasmospeo95o386sbi63yopwgs8t5bqytgytqopcy",
+  "uri": "did:dht:m5kt4s9c78yt5eqzd7yijyqhfm465pcwzetkbx4hhcar3sthyyyy",
   "document": {
-    "id": "did:dht:zijhjyuqxr6aasmospeo95o386sbi63yopwgs8t5bqytgytqopcy",
+    "id": "did:dht:m5kt4s9c78yt5eqzd7yijyqhfm465pcwzetkbx4hhcar3sthyyyy",
     "verificationMethod": [
       {
-        "id": "did:dht:zijhjyuqxr6aasmospeo95o386sbi63yopwgs8t5bqytgytqopcy#0",
+        "id": "did:dht:m5kt4s9c78yt5eqzd7yijyqhfm465pcwzetkbx4hhcar3sthyyyy#0",
         "type": "JsonWebKey",
-        "controller": "did:dht:zijhjyuqxr6aasmospeo95o386sbi63yopwgs8t5bqytgytqopcy",
+        "controller": "did:dht:m5kt4s9c78yt5eqzd7yijyqhfm465pcwzetkbx4hhcar3sthyyyy",
         "publicKeyJwk": {
           "crv": "Ed25519",
           "kty": "OKP",
-          "x": "vVPEgm55PYxZcLNRD-4ZP6wa-yCDaGseOwuBEwIug1g",
-          "kid": "kfVCpt1fop5kzMLUJWcjib_9niObboLkwMRBWgw8daA",
+          "x": "XtUdW-zpwR2h1x9BVIHcKvXttZS6IqC_XOMwTNo8AAA",
+          "kid": "Yn3khqzQAWxJalYloaxGWFBE-_2CATrU0n39i2a5zck",
           "alg": "EdDSA"
         }
       }
     ],
     "authentication": [
-      "did:dht:zijhjyuqxr6aasmospeo95o386sbi63yopwgs8t5bqytgytqopcy#0"
+      "did:dht:m5kt4s9c78yt5eqzd7yijyqhfm465pcwzetkbx4hhcar3sthyyyy#0"
     ],
     "assertionMethod": [
-      "did:dht:zijhjyuqxr6aasmospeo95o386sbi63yopwgs8t5bqytgytqopcy#0"
+      "did:dht:m5kt4s9c78yt5eqzd7yijyqhfm465pcwzetkbx4hhcar3sthyyyy#0"
     ],
     "capabilityDelegation": [
-      "did:dht:zijhjyuqxr6aasmospeo95o386sbi63yopwgs8t5bqytgytqopcy#0"
+      "did:dht:m5kt4s9c78yt5eqzd7yijyqhfm465pcwzetkbx4hhcar3sthyyyy#0"
     ],
     "capabilityInvocation": [
-      "did:dht:zijhjyuqxr6aasmospeo95o386sbi63yopwgs8t5bqytgytqopcy#0"
+      "did:dht:m5kt4s9c78yt5eqzd7yijyqhfm465pcwzetkbx4hhcar3sthyyyy#0"
     ],
     "service": [
       {
-        "id": "did:dht:zijhjyuqxr6aasmospeo95o386sbi63yopwgs8t5bqytgytqopcy#pfi",
+        "id": "did:dht:m5kt4s9c78yt5eqzd7yijyqhfm465pcwzetkbx4hhcar3sthyyyy#pfi",
         "type": "PFI",
-        "serviceEndpoint": "http://138.197.89.72:3001"
+        "serviceEndpoint": "http://internal_pfi:3001"
       }
     ]
   },
   "metadata": {
     "published": true,
-    "versionId": "1729147069"
+    "versionId": "1729150798"
   },
   "privateKeys": [
     {
       "crv": "Ed25519",
-      "d": "mj-4zysG5LwcHJ9MlPZ5kOvtZ0D_MoD0Xu7dD3nbjO8",
+      "d": "BzPXftV2xelHmzS1D0Am69H7dg7jClUobIJcnZV2Na0",
       "kty": "OKP",
-      "x": "vVPEgm55PYxZcLNRD-4ZP6wa-yCDaGseOwuBEwIug1g",
-      "kid": "kfVCpt1fop5kzMLUJWcjib_9niObboLkwMRBWgw8daA",
+      "x": "XtUdW-zpwR2h1x9BVIHcKvXttZS6IqC_XOMwTNo8AAA",
+      "kid": "Yn3khqzQAWxJalYloaxGWFBE-_2CATrU0n39i2a5zck",
       "alg": "EdDSA"
     }
   ]
