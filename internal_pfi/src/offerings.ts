@@ -783,7 +783,7 @@ async function createRandomOffering(index: number): Promise<Offering> {
       from: config.pfiDid[customPFIIndex].uri,  // Alternates between two URIs
       protocol: '1.0'
     },
-    data: customOfferings[index].data //chooseRandomOfferingData(customPFIIndex),
+    data: customOfferings //chooseRandomOfferingData(customPFIIndex),
   })
 
   try {
