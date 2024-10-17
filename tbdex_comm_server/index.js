@@ -67,7 +67,7 @@ app.use(cors({
           services: [{
             id: 'pfi',
             type: 'PFI',
-            serviceEndpoint: 'http://internal_pfi:3001'
+            serviceEndpoint: 'http://internal_pfi:4000'
           }]
         }
       })

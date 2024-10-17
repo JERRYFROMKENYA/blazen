@@ -43,7 +43,7 @@ services:
     restart: unless-stopped
     container_name: internal_pfi
     ports:
-      - "3001:4000"
+      - "4000:4000"
       - "9000:9000"
     depends_on:
       pocketbase:
