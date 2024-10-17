@@ -554,7 +554,6 @@ export const offeringDataCHFToCHF: OfferingData = {
     ],
   },
 }
-
 export const offeringDataSGDToSGD: OfferingData = {
   description: `Send SGD to a NexX User`,
   payoutUnitsPerPayinUnit: '1',
@@ -622,7 +621,6 @@ export const offeringDataSGDToSGD: OfferingData = {
     ],
   },
 }
-
 export const offeringDataHKDToHKD: OfferingData = {
   description: `Send HKD to a NexX User`,
   payoutUnitsPerPayinUnit: '1',
@@ -690,18 +688,86 @@ export const offeringDataHKDToHKD: OfferingData = {
     ],
   },
 }
+export const offeringDataKESToKES: OfferingData = {
+  description: `Send KES to a NexX User`,
+  payoutUnitsPerPayinUnit: '1',
+  payout: {
+    currencyCode: 'KES',
+    methods: [
+      {
+        kind: 'NexX Wallet',
+        estimatedSettlementTime: 80, // 80 seconds
+        requiredPaymentDetails: {
+          '$schema': 'http://json-schema.org/draft-07/schema#',
+          'title': 'NexX Username',
+          'type': 'object',
+          'required': ['address'],
+          'additionalProperties': false,
+          'properties': {
+            'address': {
+              'title': 'NexX Username',
+              'description': 'NexX Username to send KES to',
+              'type': 'string'
+            },
+          }
+        }
+      },
+    ],
+  },
+  payin: {
+    currencyCode: 'KES',
+    methods: [
+      {
+        kind: 'STORED_BALANCE',
+        requiredPaymentDetails: {},
+      },
+    ],
+  },
+  requiredClaims: {
+    id: '16ce4004c-3c38-4853-968b-e411bafcd954',
+    format: {
+      jwt_vc: {
+        alg: ['ES256K', 'EdDSA']
+      }
+    },
+    input_descriptors: [
+      {
+        id: 'jjdb9b7c-5754-4f46-b63b-590bada959e9',
+        constraints: {
+          fields: [
+            {
+              path: ['$.type[*]'],
+              filter: {
+                type: 'string',
+                const: 'KnownCustomerCredential',
+              },
+            },
+            {
+              path: ['$.issuer'],
+              filter: {
+                type: 'string',
+                const: issuer,
+              },
+            },
+          ],
+        },
+      },
+    ],
+  },
+}
 
 const customOfferings = [
-  { data: { ...offeringDataUSDToUSD } },
-  { data: { ...offeringDataEURToEUR } },
-  { data: { ...offeringDataGBPToGBP } },
-  { data: { ...offeringDataJPYToJPY } },
-  { data: { ...offeringDataCADToCAD } },
-  { data: { ...offeringDataAUDToAUD } },
-  { data: { ...offeringDataNZDToNZD } },
-  { data: { ...offeringDataCHFToCHF } },
-  { data: { ...offeringDataSGDToSGD } },
-  { data: { ...offeringDataHKDToHKD } },
+  { ...offeringDataUSDToUSD } ,
+  { ...offeringDataEURToEUR } ,
+  {  ...offeringDataGBPToGBP } ,
+  {  ...offeringDataJPYToJPY } ,
+  {  ...offeringDataCADToCAD  },
+  {  ...offeringDataAUDToAUD  },
+  { ...offeringDataNZDToNZD  },
+  {  ...offeringDataCHFToCHF  },
+  {  ...offeringDataSGDToSGD  },
+  {  ...offeringDataHKDToHKD  },
+  {  ...offeringDataKESToKES  }
 ]
 
 
