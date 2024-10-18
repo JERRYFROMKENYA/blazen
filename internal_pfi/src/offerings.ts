@@ -1,15 +1,11 @@
 import { OfferingsApi, Offering, OfferingData } from '@tbdex/http-server'
 import { config } from './config.js'
-// import fs from 'fs/promises'
 import { PresentationExchange } from '@web5/credentials'
 import { issuerDid } from './credential-issuer.js'
 import { BearerDid } from '@web5/dids'
 
 // load issuer's did from a file called issuer-did.txt
 const issuer = issuerDid
-
-
-
 
 export const offeringDataUSDToUSD: OfferingData = {
   description: `Send USD to a NexX User`,
@@ -24,10 +20,10 @@ export const offeringDataUSDToUSD: OfferingData = {
           '$schema': 'http://json-schema.org/draft-07/schema#',
           'title': 'NexX Username',
           'type': 'object',
-          'required': ['address'],
+          'required': ['username'],
           'additionalProperties': false,
           'properties': {
-            'address': {
+            'username': {
               'title': 'NexX Username',
               'description': 'NexX Username to send USD to',
               'type': 'string'
@@ -78,7 +74,6 @@ export const offeringDataUSDToUSD: OfferingData = {
     ],
   },
 }
-
 export const offeringDataEURToEUR: OfferingData = {
   description: `Send EUR to a NexX User`,
   payoutUnitsPerPayinUnit: '1',
@@ -92,10 +87,10 @@ export const offeringDataEURToEUR: OfferingData = {
           '$schema': 'http://json-schema.org/draft-07/schema#',
           'title': 'NexX Username',
           'type': 'object',
-          'required': ['address'],
+          'required': ['username'],
           'additionalProperties': false,
           'properties': {
-            'address': {
+            'username': {
               'title': 'NexX Username',
               'description': 'NexX Username to send EUR to',
               'type': 'string'
@@ -146,7 +141,6 @@ export const offeringDataEURToEUR: OfferingData = {
     ],
   },
 }
-
 export const offeringDataGBPToGBP: OfferingData = {
   description: `Send GBP to a NexX User`,
   payoutUnitsPerPayinUnit: '1',
@@ -160,10 +154,10 @@ export const offeringDataGBPToGBP: OfferingData = {
           '$schema': 'http://json-schema.org/draft-07/schema#',
           'title': 'NexX Username',
           'type': 'object',
-          'required': ['address'],
+          'required': ['username'],
           'additionalProperties': false,
           'properties': {
-            'address': {
+            'username': {
               'title': 'NexX Username',
               'description': 'NexX Username to send GBP to',
               'type': 'string'
@@ -214,7 +208,6 @@ export const offeringDataGBPToGBP: OfferingData = {
     ],
   },
 }
-
 export const offeringDataJPYToJPY: OfferingData = {
   description: `Send JPY to a NexX User`,
   payoutUnitsPerPayinUnit: '1',
@@ -228,10 +221,10 @@ export const offeringDataJPYToJPY: OfferingData = {
           '$schema': 'http://json-schema.org/draft-07/schema#',
           'title': 'NexX Username',
           'type': 'object',
-          'required': ['address'],
+          'required': ['username'],
           'additionalProperties': false,
           'properties': {
-            'address': {
+            'username': {
               'title': 'NexX Username',
               'description': 'NexX Username to send JPY to',
               'type': 'string'
@@ -282,7 +275,6 @@ export const offeringDataJPYToJPY: OfferingData = {
     ],
   },
 }
-
 export const offeringDataCADToCAD: OfferingData = {
   description: `Send CAD to a NexX User`,
   payoutUnitsPerPayinUnit: '1',
@@ -296,10 +288,10 @@ export const offeringDataCADToCAD: OfferingData = {
           '$schema': 'http://json-schema.org/draft-07/schema#',
           'title': 'NexX Username',
           'type': 'object',
-          'required': ['address'],
+          'required': ['username'],
           'additionalProperties': false,
           'properties': {
-            'address': {
+            'username': {
               'title': 'NexX Username',
               'description': 'NexX Username to send CAD to',
               'type': 'string'
@@ -350,7 +342,6 @@ export const offeringDataCADToCAD: OfferingData = {
     ],
   },
 }
-
 export const offeringDataAUDToAUD: OfferingData = {
   description: `Send AUD to a NexX User`,
   payoutUnitsPerPayinUnit: '1',
@@ -364,10 +355,10 @@ export const offeringDataAUDToAUD: OfferingData = {
           '$schema': 'http://json-schema.org/draft-07/schema#',
           'title': 'NexX Username',
           'type': 'object',
-          'required': ['address'],
+          'required': ['username'],
           'additionalProperties': false,
           'properties': {
-            'address': {
+            'username': {
               'title': 'NexX Username',
               'description': 'NexX Username to send AUD to',
               'type': 'string'
@@ -418,7 +409,6 @@ export const offeringDataAUDToAUD: OfferingData = {
     ],
   },
 }
-
 export const offeringDataNZDToNZD: OfferingData = {
   description: `Send NZD to a NexX User`,
   payoutUnitsPerPayinUnit: '1',
@@ -432,10 +422,10 @@ export const offeringDataNZDToNZD: OfferingData = {
           '$schema': 'http://json-schema.org/draft-07/schema#',
           'title': 'NexX Username',
           'type': 'object',
-          'required': ['address'],
+          'required': ['username'],
           'additionalProperties': false,
           'properties': {
-            'address': {
+            'username': {
               'title': 'NexX Username',
               'description': 'NexX Username to send NZD to',
               'type': 'string'
@@ -486,7 +476,6 @@ export const offeringDataNZDToNZD: OfferingData = {
     ],
   },
 }
-
 export const offeringDataCHFToCHF: OfferingData = {
   description: `Send CHF to a NexX User`,
   payoutUnitsPerPayinUnit: '1',
@@ -500,10 +489,10 @@ export const offeringDataCHFToCHF: OfferingData = {
           '$schema': 'http://json-schema.org/draft-07/schema#',
           'title': 'NexX Username',
           'type': 'object',
-          'required': ['address'],
+          'required': ['username'],
           'additionalProperties': false,
           'properties': {
-            'address': {
+            'username': {
               'title': 'NexX Username',
               'description': 'NexX Username to send CHF to',
               'type': 'string'
@@ -567,10 +556,10 @@ export const offeringDataSGDToSGD: OfferingData = {
           '$schema': 'http://json-schema.org/draft-07/schema#',
           'title': 'NexX Username',
           'type': 'object',
-          'required': ['address'],
+          'required': ['username'],
           'additionalProperties': false,
           'properties': {
-            'address': {
+            'username': {
               'title': 'NexX Username',
               'description': 'NexX Username to send SGD to',
               'type': 'string'
@@ -634,10 +623,10 @@ export const offeringDataHKDToHKD: OfferingData = {
           '$schema': 'http://json-schema.org/draft-07/schema#',
           'title': 'NexX Username',
           'type': 'object',
-          'required': ['address'],
+          'required': ['username'],
           'additionalProperties': false,
           'properties': {
-            'address': {
+            'username': {
               'title': 'NexX Username',
               'description': 'NexX Username to send HKD to',
               'type': 'string'
@@ -701,10 +690,10 @@ export const offeringDataKESToKES: OfferingData = {
           '$schema': 'http://json-schema.org/draft-07/schema#',
           'title': 'NexX Username',
           'type': 'object',
-          'required': ['address'],
+          'required': ['username'],
           'additionalProperties': false,
           'properties': {
-            'address': {
+            'username': {
               'title': 'NexX Username',
               'description': 'NexX Username to send KES to',
               'type': 'string'
@@ -716,6 +705,73 @@ export const offeringDataKESToKES: OfferingData = {
   },
   payin: {
     currencyCode: 'KES',
+    methods: [
+      {
+        kind: 'STORED_BALANCE',
+        requiredPaymentDetails: {},
+      },
+    ],
+  },
+  requiredClaims: {
+    id: '16ce4004c-3c38-4853-968b-e411bafcd954',
+    format: {
+      jwt_vc: {
+        alg: ['ES256K', 'EdDSA']
+      }
+    },
+    input_descriptors: [
+      {
+        id: 'jjdb9b7c-5754-4f46-b63b-590bada959e9',
+        constraints: {
+          fields: [
+            {
+              path: ['$.type[*]'],
+              filter: {
+                type: 'string',
+                const: 'KnownCustomerCredential',
+              },
+            },
+            {
+              path: ['$.issuer'],
+              filter: {
+                type: 'string',
+                const: issuer,
+              },
+            },
+          ],
+        },
+      },
+    ],
+  },
+}
+export const offeringDataNGNToNGN: OfferingData = {
+  description: `Send KES to a NexX User`,
+  payoutUnitsPerPayinUnit: '1',
+  payout: {
+    currencyCode: 'KES',
+    methods: [
+      {
+        kind: 'NexX Wallet',
+        estimatedSettlementTime: 80, // 80 seconds
+        requiredPaymentDetails: {
+          '$schema': 'http://json-schema.org/draft-07/schema#',
+          'title': 'NexX Username',
+          'type': 'object',
+          'required': ['username'],
+          'additionalProperties': false,
+          'properties': {
+            'username': {
+              'title': 'NexX Username',
+              'description': 'NexX Username to send KES to',
+              'type': 'string'
+            },
+          }
+        }
+      },
+    ],
+  },
+  payin: {
+    currencyCode: 'NGN',
     methods: [
       {
         kind: 'STORED_BALANCE',
@@ -767,7 +823,8 @@ const customOfferings = [
   {  ...offeringDataCHFToCHF  },
   {  ...offeringDataSGDToSGD  },
   {  ...offeringDataHKDToHKD  },
-  {  ...offeringDataKESToKES  }
+  {  ...offeringDataKESToKES  },
+  { ...offeringDataNGNToNGN   }
 ]
 
 
@@ -805,7 +862,7 @@ async function createRandomOffering(index: number): Promise<Offering> {
 }
 
 // Initialize an array of hardcoded offerings
-const hardcodedOfferings: Offering[] = await Promise.all(Array.from({ length: 11 }, (_, i) => createRandomOffering(i)))
+const hardcodedOfferings: Offering[] = await Promise.all(Array.from({ length: customOfferings.length }, (_, i) => createRandomOffering(i)))
 
 export class HardcodedOfferingRepository implements OfferingsApi {
   pfi: BearerDid

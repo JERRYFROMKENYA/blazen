@@ -175,6 +175,7 @@ const confirmQuote = async () => {
             exchangeId: rfq.metadata.exchangeId,
             pfiUri: rfq.metadata.to,
             customerDid: customerDid.did,
+            wallet: wallet.id
         }),
     });
     //
@@ -197,12 +198,8 @@ const confirmQuote = async () => {
         };
 
         const record = await pb.collection('transaction').create(data);
-        const wallet_data = await pb.collection('wallet').getFirstListItem(`id = "${wallet.id}"`);
-        const current_amount=wallet_data.balance;
-        const new_amount=Number(current_amount)-(Number(quote[1].data.payin.amount)+Math.round(Number(quote[1].data.payin.amount*0.035)));
-        const new_amount_record=await pb.collection('wallet').update(wallet.id,{balance:new_amount});
 
-        if(record&&new_amount_record){
+        if(record){
             console.log("Transaction record created successfully");
             Alert.alert("Order Confirmed","Your order has been confirmed successfully");
         }else{

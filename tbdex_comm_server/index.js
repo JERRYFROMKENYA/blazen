@@ -119,6 +119,20 @@ app.use(cors({
     // Update currencies logic here
   };
 
+  //Intra-network send money
+
+  const SendMoney = async (sendTo, getFrom, amount)=>{
+    //verify
+
+    //deduct
+
+    //add money deduction
+
+    //notify
+
+    //finish
+  }
+
   // Create Exchange
   const CreateExchange = async (offering, amount, payoutPaymentDetails, customerCredentials, cDid, payinPaymentDetails) => {
     const customerDid = await DidDht.import({ portableDid: cDid })
@@ -129,9 +143,17 @@ app.use(cors({
       presentationDefinition: offering.data.requiredClaims
     });
 
-   // Fetch the first list item from the collection
-    const payinMethodItem = await pb.collection("internal_payment_methods").getFirstListItem(`name="${offering.data.payin.methods[0].kind}"`);
-    const payinMethod = payinMethodItem.payload;
+
+     if(offering.data.payin.methods[0].kind==="STORED_BALANCE"){
+       const username = payoutPaymentDetails
+
+     }
+     else{
+       // Fetch the first list item from the collection
+       const payinMethodItem = await pb.collection("internal_payment_methods").getFirstListItem(`name="${offering.data.payin.methods[0].kind}"`);
+       const payinMethod = payinMethodItem.payload;
+     }
+
 
 
     const rfq = Rfq.create({
@@ -317,7 +339,7 @@ const FetchAllExchanges = async (customerDid) => {
 
 
 
-  const AddOrder = async (exchangeId,custDid,  pfiUri) => {
+  const AddOrder = async (exchangeId,custDid,  pfiUri, wallet) => {
     const customerDid = await DidDht.import({ portableDid: custDid })
     const order = Order.create({
       metadata: {
@@ -334,6 +356,7 @@ const FetchAllExchanges = async (customerDid) => {
       // Use cDidString in the query
       const quote_item= await pb.collection('customer_quotes').getFirstListItem(`exchangeId= "${exchangeId}"`);
       const quote_id = quote_item.id;
+      const quote = quote_item.rfq
       const data = {
         "reason": "success",
         "status": "completed"
@@ -341,7 +364,20 @@ const FetchAllExchanges = async (customerDid) => {
 
       const record = await pb.collection('customer_quotes').update(quote_id, data);
       if(record) console.log('Record updated successfully:');
+      const wallet_data = await pb.collection('wallet').getFirstListItem(`id = "${wallet}"`);
+      const current_amount=wallet_data.balance;
+      if (current_amount < (Number(quote.data.payin.amount)+Math.round(Number(quote.data.payin.amount*0.035)))) throw new Error("Insufficient Balance")
+      const new_amount=Number(current_amount)-(Number(quote.data.payin.amount)+Math.round(Number(quote.data.payin.amount*0.035)));
+      const new_amount_record=await pb.collection('wallet').update(wallet,{balance:new_amount});
+
+
+      if (new_amount_record){
         return order;
+      }
+      else {
+        throw ("Unable to update record")
+      }
+
     }catch (e) {
         throw new Error('Failed to submit order: ' + e.message);
     }
@@ -582,15 +618,15 @@ res.status(200).json(filteredOfferings);
 
   app.post('/order', async (req, res) => {
 
-    const { customerDid, pfiUri, exchangeId } = req.body;
+    const { customerDid, pfiUri, exchangeId, wallet } = req.body;
 
 
-    if (!pfiUri || !customerDid ||!exchangeId) {
-      return res.status(400).json({ error: 'All fields (pfiUri, customerDid, exchangeId) are required' });
+    if (!pfiUri || !customerDid ||!exchangeId || !wallet) {
+      return res.status(400).json({ error: 'All fields (pfiUri, customerDid, exchangeId, wallet) are required' });
     }
 
     try {
-      const order = await AddOrder(exchangeId, customerDid, pfiUri);
+      const order = await AddOrder(exchangeId, customerDid, pfiUri, wallet);
       console.log('Order:', order);
       res.status(200).json(order);
     } catch (err) {
