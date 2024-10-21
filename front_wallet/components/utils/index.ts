@@ -54,17 +54,53 @@ export async function submitImportedDID(user: any, pb: any, didJson: any) {
 
 
 export  function codeToCurrency(Code:String){
-  return  Code.trim().replace("USDC","USD Coin")
-      .replace("GHS","Ghananian Cedis")
-      .replace("NGN","Nigerian Naira")
-      .replace("KES","Kenyan Shilling")
-      .replace("USD","US Dollar")
-      .replace("EUR","Euro")
-      .replace("GBP","Great Britain Pound")
-      .replace("BTC","Bitcoin")
-      .replace("GB","Great Britain Pound")
-      .replace("MXN","Mexican Peso")
-      .replace("AUD","Australian Dollar")
+  let curr1, curr2;
+  if(Code.includes("to")){
+    curr1=Code.split("to")[0].trim().replaceAll("USDC","USD Coin")
+        .replaceAll("GHS","Ghananian Cedis")
+        .replaceAll("NGN","Nigerian Naira")
+        .replaceAll("KES","Kenyan Shillings")
+        .replaceAll("USD","US Dollars")
+        .replaceAll("EUR","Euro")
+        .replaceAll("GBP","Great Britain Pounds")
+        .replaceAll("BTC","Bitcoin")
+        .replaceAll("GB","Great Britain Pounds")
+        .replaceAll("MXN","Mexican Pesos")
+        .replaceAll("AUD","Australian Dollars")
+        .replaceAll("SGD","Singaporean Dollars")
+        .replaceAll("HKD","Hong Kong Dollar")
+  }else if(Code.includes(":")){
+    curr2=Code.split(":")[1].trim().replaceAll("USDC","USD Coin")
+        .replaceAll("GHS","Ghananian Cedis")
+        .replaceAll("NGN","Nigerian Naira")
+        .replaceAll("KES","Kenyan Shillings")
+        .replaceAll("USD","US Dollars")
+        .replaceAll("EUR","Euro")
+        .replaceAll("GBP","Great Britain Pounds")
+        .replaceAll("BTC","Bitcoin")
+        .replaceAll("GB","Great Britain Pounds")
+        .replaceAll("MXN","Mexican Pesos")
+        .replaceAll("AUD","Australian Dollars")
+        .replaceAll("SGD","Singaporean Dollars")
+        .replaceAll("HKD","Hong Kong Dollar")
+  }
+  const currency =Code.trim().replaceAll("USDC","USD Coin")
+      .replaceAll("GHS","Ghananian Cedis")
+      .replaceAll("NGN","Nigerian Naira")
+      .replaceAll("KES","Kenyan Shillings")
+      .replaceAll("USD","US Dollars")
+      .replaceAll("EUR","Euro")
+      .replaceAll("GBP","Great Britain Pounds")
+      .replaceAll("BTC","Bitcoin")
+      .replaceAll("GB","Great Britain Pounds")
+      .replaceAll("MXN","Mexican Pesos")
+      .replaceAll("AUD","Australian Dollars")
+      .replaceAll("SGD","Singaporean Dollars")
+      .replaceAll("HKD","Hong Kong Dollars")
+
+  const regex = /^(.*) to \1$/; // Matches the same currency code on both sides
+  if (regex.test(Code.toString()))  {return (`Send ${curr1} to a NexX User`)}
+  return  currency
 
 }
 
@@ -126,21 +162,19 @@ export async function  updateIdDocument(user: any, image: []) {
 }
 
 
-export async function  uploadFiles(user: any, files: [],description:string,name:string) {
+export async function  uploadFiles(user: any, files: File[],description:string,name:string) {
   const pfpForm = new FormData();
-
-  for (let i = 0; i < files.length; i++) {
-    pfpForm.append('files',
-        {
-          uri: files[i].uri,
-          type: files[i].mimeType,
-          name: files[i].fileName
-        });
-  }
-
   pfpForm.append('user_id', user.id);
-  pfForm.append('description', description);
-  pfForm.append('name', name);
+  pfpForm.append('description', description);
+  pfpForm.append('name', name);
+  for (let i = 0; i < files.length; i++) {
+    // const blob =new Blob([await files[i].arrayBuffer()])
+    pfpForm.append('files',
+        files[i],
+        files[i].name
+        );
+    console.log("FILES",files[i])
+  }
 
 
   const response = await fetch('http://138.197.89.72:3000/files', {
@@ -152,8 +186,10 @@ export async function  uploadFiles(user: any, files: [],description:string,name:
       Connection:"keep-alive"
     },
   });
+
   const res = await response.json()
-  console.log(res);
+  console.log(res.files);
+
 
   return res;
 }

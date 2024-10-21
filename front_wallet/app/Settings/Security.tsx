@@ -12,8 +12,8 @@ const SecurityScreen = () => {
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [isPinSet, setIsPinSet] = useState(false);
-const [confirmPIN, setConfirmPIN] = useState('');
-const router =useRouter()
+  const [confirmPIN, setConfirmPIN] = useState('');
+  const router =useRouter()
   useEffect(() => {
     // Check if the user already has a PIN set
     const checkPin = async () => {
@@ -25,6 +25,7 @@ const router =useRouter()
   }, [pb, user.id]);
 
   const handleSetPin = async () => {
+    if (!pin) Alert.alert("Error","Nothing has been entered!");
       if(pin!==confirmPIN) {
           Alert.alert("Error", "PINs do not match");
           return;
@@ -32,7 +33,7 @@ const router =useRouter()
     setLoading(true);
     await pb.collection('users').update(user.id, { pin });
     setLoading(false);
-    Alert.alert('Success', 'PIN has been set successfully');
+    Alert.alert('Success', 'PIN has been set successfully',[{text:"OK",onPress:()=>router.back()}]);
   };
 
   return (
@@ -53,6 +54,7 @@ const router =useRouter()
           keyboardType="numeric"
           maxLength={6}
           style={styles.input}
+          mode={"outlined"}
         />
           <TextInput
               label="Confirm 6-digit PIN"
@@ -62,6 +64,7 @@ const router =useRouter()
               keyboardType="numeric"
               maxLength={6}
               style={styles.input}
+              mode={"outlined"}
           />
         <Button mode="contained" onPress={handleSetPin} loading={loading} style={styles.button}>
           {isPinSet ? 'Change PIN' : 'Set PIN'}
@@ -74,6 +77,7 @@ const router =useRouter()
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+
   },
   infoText: {
     fontSize: 16,
@@ -81,10 +85,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   input: {
-    marginBottom: 20,
+    marginBottom: 20,width: "90%",
+    alignSelf:"center"
   },
   button: {
     marginTop: 10,
+    width: "90%",
+    alignSelf:"center"
   },
 });
 

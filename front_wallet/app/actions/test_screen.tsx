@@ -45,6 +45,7 @@ export default function TabTwoScreen() {
             <Text onPress={() => { setJWKDid().then(r => console.log(r)) }} style={styles.title}>Test JWT</Text>
             <Text onPress={() => { handleGenerateVC().then(r => console.log(r)) }} style={styles.title}>Test VC</Text>
             <Text onPress={()=>{router.push("/(auth)/onboarding")}} style={styles.title}>Show Onboarding</Text>
+            <Text onPress={()=>{router.push("/EnterPIN/EnterPIN")}} style={styles.title}>Show PIN Entry</Text>
             <Text onPress={() => { createWallet(user, pb, 0, user.id, "fiat", "KES").then(r => console.log(r)) }} style={styles.title}>Create Wallet</Text>
             <Text onPress={async () => {
                 await signOut();

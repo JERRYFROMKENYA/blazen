@@ -50,7 +50,7 @@ export default function Transactions() {
             console.log("completed: ", completedTransactions);
         }
 
-        fetchTransactions()
+        await fetchTransactions()
     }
 
 
@@ -81,20 +81,11 @@ export default function Transactions() {
 
 
 
-    const exportDidToJson = async () => {
-        const fileUri = FileSystem.documentDirectory + 'portable_did.json';
-        await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(did), { encoding: FileSystem.EncodingType.UTF8 });
-        alert(`DID exported to ${FileSystem.documentDirectory}/portable_did.json`);
-    };
+
 
     const handleLearnMore = () => {
         Linking.openURL('https://tbdex.io/trust-compliance');
     };
-    const handleSignOut =()=>{
-        // sign out
-        signOut();
-        router.replace('/(auth)/login')
-    }
 
     return (
         <View style={{height:"100%"}}>
@@ -102,7 +93,8 @@ export default function Transactions() {
                 <Appbar.Content title="Transactions" />
             </Appbar.Header>
             <SafeScreen onRefresh={()=>{refreshTransactions()}}>
-                <Surface elevation={2} style={{width:"100%",
+                <Surface elevation={2} style={{width:"90%",
+                    alignSelf:"center",
                     padding:30,
                     marginBottom:10,
                     marginTop:10,
@@ -117,13 +109,14 @@ export default function Transactions() {
                     <Text variant={"bodySmall"}>This DID is currently associated with the following transactions</Text>
                 </Surface>
 
-                <Surface elevation={0} style={{width:"100%",
+                <Surface elevation={0} style={{width:"90%",
+                    alignSelf:"center",
                     marginBottom:10,
                     flexDirection:"column",borderRadius:5,
                     justifyContent:"space-between",alignItems:"center"}}>
                     <Text variant={"bodySmall"} style={{marginBottom:10}}>Showing Transactions Done On The TBDEX Network on the NexX App</Text>
-                    <List.AccordionGroup >
-                        <View style={{width:"100%",backgroundColor:"transparent"}}>
+                    <List.AccordionGroup>
+                        <View style={{width:"100%",borderTopRightRadius:50,borderTopLeftRadius:50,backgroundColor:"transparent"}}>
                             <List.Accordion title="Completed" id="3">
                                 {
                                     completedTransactions.map((t: any) => {
@@ -134,8 +127,8 @@ export default function Transactions() {
                                                 style={{}}
                                                 title={t.expand.pfi.name}
                                                 onPress={()=>{go_to_details(t.exchangeId)}}
-                                                description={`Amount: ${t.rfq.data.payin.currencyCode} ${formatNumberWithCommas(t.rfq.data.payin.amount)}\n Date: ${t.updated}`}
-                                                left={props => <List.Icon {...props} icon="check" />}
+                                                description={`Amount: ${t.rfq.data.payin.currencyCode} ${formatNumberWithCommas(t.rfq.data.payin.amount)}\n Date: ${new Date(t.updated).toLocaleString()}`}
+                                                left={props => <List.Icon {...props} icon="check-circle" color={"green"}  />}
                                             />
                                         )
                                     })
@@ -155,8 +148,8 @@ export default function Transactions() {
                                                 style={{}}
                                                 title={t.expand.pfi.name}
                                                 onPress={()=>{go_to_details(t.exchangeId)}}
-                                                description={`Amount: ${t.rfq.data.payin.currencyCode} ${formatNumberWithCommas(t.rfq.data.payin.amount)}\n Date: ${t.updated}`}
-                                                left={props => <List.Icon {...props} icon="exclamation" />}
+                                                description={`Amount: ${t.rfq.data.payin.currencyCode} ${formatNumberWithCommas(t.rfq.data.payin.amount)}\n Date: ${new Date(t.updated).toLocaleString()}`}
+                                                left={props => <List.Icon {...props} color={"yellow"} icon="clock-time-three" />}
                                             />
                                         )
                                     })
@@ -176,8 +169,8 @@ export default function Transactions() {
                                                 style={{}}
                                                 title={t.expand.pfi.name}
                                                 onPress={()=>{go_to_details(t.exchangeId)}}
-                                                description={`Amount: ${t.rfq.data.payin.currencyCode} ${formatNumberWithCommas(t.rfq.data.payin.amount)}\n Date: ${t.updated}`}
-                                                left={props => <List.Icon {...props} icon="close" />}
+                                                description={`Amount: ${t.rfq.data.payin.currencyCode} ${formatNumberWithCommas(t.rfq.data.payin.amount)}\n Date: ${new Date(t.updated).toLocaleString()}`}
+                                                left={props => <List.Icon {...props} icon="close-circle" color={"red"} />}
                                             />
                                         )
                                     })

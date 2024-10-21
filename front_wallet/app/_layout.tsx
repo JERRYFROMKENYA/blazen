@@ -12,6 +12,7 @@ import React from 'react';
 import { PocketBaseProvider } from '@/components/Services/Pocketbase';
 import { AuthProvider } from '@/app/(auth)/auth';
 import {LoadingProvider} from "@/components/utils/LoadingContext";
+import {fetchDHT} from "@/components/utils/did_operations";
 
 
 
@@ -25,6 +26,7 @@ export const unstable_settings = {
 
 SplashScreen.preventAutoHideAsync();
 
+
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -36,6 +38,7 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
+
     if (loaded) {
       SplashScreen.hideAsync();
     }
@@ -108,6 +111,8 @@ function RootLayoutNav() {
                 <Stack.Screen name={"actions/coin_exchange"} options={{ headerShown: false }} />
               {/*  PFI details*/}
                 <Stack.Screen name="pfi-details/[pfiId]" options={{ headerShown: false ,presentation:"modal"}} />
+                {/*PIN auth*/}
+                <Stack.Screen name="EnterPIN/EnterPIN" options={{ headerShown:false ,presentation:"modal"}} />
               </Stack>
             </PaperProvider>
           </AuthProvider>

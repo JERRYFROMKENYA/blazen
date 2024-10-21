@@ -69,11 +69,12 @@ const fetchQuote = async () => {
             body: JSON.stringify(bodyData),
         });
 
-        if (!rfqResponse.ok) {
-            throw new Error(`HTTP error! 1 status: ${rfqResponse.status}`);
-        }
+
 
         const rfqData = await rfqResponse.json();
+        if (!rfqResponse.ok) {
+            throw new Error(`HTTP error! 1 status: ${JSON.stringify(rfqData)}`);
+        }
         setRfq(rfqData);
 
         // Fetch Quote using RFQ metadata
@@ -92,11 +93,12 @@ const fetchQuote = async () => {
 
 
 
-        if (!quoteResponse.ok) {
-            throw new Error(`HTTP error! 2 status: ${quoteResponse.status}`);
-        }
+
 
         const quoteData = await quoteResponse.json();
+        if (!quoteResponse.ok) {
+            throw new Error(`HTTP error! 2 status: ${quoteData}`);
+        }
         setQuote(quoteData);
         setShowResponse(true);
         console.log(rfqData);
@@ -272,7 +274,7 @@ const confirmQuote = async () => {
                                 })}
                                 <Text variant={"bodyMedium"}>The Payment Information you have submitted will also be encrypted</Text>
                                 <Button onPress={() => {
-                                    fetchQuote();
+                                    fetchQuote().then(r => {});
                                 }}>Get Quote</Button>
                             </Surface>
                         ) : <></>}

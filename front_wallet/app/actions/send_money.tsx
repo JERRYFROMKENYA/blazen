@@ -440,18 +440,18 @@ const renderStars = (rating) => {
 }
 
 
-const privacyShieldImage: ImageSourcePropType = require('@/assets/images/privacy_shield.png');
+const privacyShieldImage: ImageSourcePropType = require('@/assets/images/send_money.png');
 
 const ExplanationCard = () => {
   const [hidden, setHidden] = React.useState(false);
   console.log(hidden)
   return (
       !hidden && (
-          <Card style={{ marginBottom: 150 }}>
-            {/*<Card.Cover style={{ width: "100%" }} source={privacyShieldImage} />*/}
+          <Card style={{ marginBottom: 150, width: "95%", alignSelf:"center"  }}>
+            <Card.Cover style={{ width: "100%" }} source={privacyShieldImage} />
             <Card.Content>
               <Text variant="bodyMedium" style={{ marginBottom: 5, marginTop: 5 }}>
-                {"Send Money?"}
+                {"Send Money"}
               </Text>
               <Text variant="bodySmall">
                 {"NexX is based on a sophisticated privacy first network called tbDEX," +
@@ -463,15 +463,7 @@ const ExplanationCard = () => {
                     "Remember different payment methods vary by the currency and the PFI."}
               </Text>
             </Card.Content>
-            <Card.Actions>
-              <Button
-                  style={{ alignSelf: "flex-end" }}
-                  icon={() => <Icon size={20} source={"close"} />}
-                  onPress={() => setHidden(!hidden)}
-              >
-                {"Close"}
-              </Button>
-            </Card.Actions>
+
 
           </Card>
       )

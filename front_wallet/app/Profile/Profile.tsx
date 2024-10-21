@@ -2,12 +2,14 @@ import SafeScreen from "@/components/SafeScreen/SafeScreen";
 import React, {useState} from "react";
 import {Appbar, Avatar, Text, Surface, Button, List} from "react-native-paper";
 import {View} from "@/components/Themed";
-import {TouchableOpacity, Linking, Image} from "react-native";
+import {TouchableOpacity, Linking, Image, Alert} from "react-native";
 import {useAuth} from "@/app/(auth)/auth";
 import {useEffect} from "react";
 import {usePocketBase} from "@/components/Services/Pocketbase";
-import * as FileSystem from 'expo-file-system';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system'
 import {useRouter} from "expo-router";
+import {uploadFiles} from "@/components/utils";
 
 
 interface User {
@@ -41,16 +43,22 @@ export default function Profile() {
     const exportDidToJson = async () => {
         const fileUri = FileSystem.documentDirectory + 'portable_did.json';
         await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(did), { encoding: FileSystem.EncodingType.UTF8 });
-        alert(`DID exported to ${FileSystem.documentDirectory}/portable_did.json`);
+        const file = FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.UTF8 });
+        await uploadFiles(user,[file],"did","did")
+        Alert.alert(`DID exported to ${FileSystem.documentDirectory}/portable_did.json`);
     };
 
     const handleLearnMore = () => {
-        Linking.openURL('https://example.com/learn-more');
+        Linking.openURL('https://www.tbdex.io/trust-compliance#:~:text=Decentralized%20Identifiers%20(DIDs)' +
+            '%20and%20Verifiable,verification%20without%20a%20centralized%20intermediary.');
     };
     const handleSignOut =()=>{
         // sign out
         signOut();
         router.replace('/(auth)/login')
+    }
+    const changeProfilePicture=()=>{
+
     }
 
     return (
@@ -70,9 +78,10 @@ export default function Profile() {
                 <Text variant={"displaySmall"}>{user?.username??''}</Text>
                 <Text style={{alignSelf:"flex-end", justifyContent:"flex-end",marginTop:10}} variant={"bodySmall"}>Member Since:{"2024"}</Text>
             </Surface>
-            <Surface elevation={2} style={{width:"100%",
+            <Surface elevation={2} style={{width:"95%",
                 padding:30,
                 marginBottom:10,
+                alignSelf:"center",
                 flexDirection:"column",borderRadius:20,
                 justifyContent:"space-between",alignItems:"center"}}>
                 <Text variant={"titleSmall"}>DID: Decentralized Identifier</Text>
@@ -83,10 +92,11 @@ export default function Profile() {
                 </View>
             </Surface>
 
-            <Surface elevation={1} style={{width:"100%",
+            <Surface elevation={1} style={{width:"95%",
                 padding:5,
                 marginBottom:10,
-                flexDirection:"column",borderRadius:5,
+                alignSelf:"center",
+                flexDirection:"column",borderRadius:20,
                 justifyContent:"space-between",alignItems:"center"}}>
                 <List.Item
                     title="Profile"
@@ -117,18 +127,20 @@ export default function Profile() {
 
             </Surface>
 
-            <Surface elevation={3} style={{width:"100%",
+            <Surface elevation={3} style={{width:"95%",
                 padding:30,
                 marginBottom:10,
                 flexDirection:"column",borderRadius:20,
+                alignSelf:"center",
                 justifyContent:"space-between",alignItems:"center"}}>
                 <Button mode={"outlined"} onPress={handleSignOut}>Sign Out</Button>
 
             </Surface>
-            <Surface elevation={0} style={{width:"100%",
+            <Surface elevation={0} style={{width:"90%",
                 padding:5,
                 marginBottom:150,
                 flexDirection:"column",borderRadius:20,
+                alignSelf:"center",
                 justifyContent:"space-between",alignItems:"center"}}>
                 <Image
                 source={require('@/assets/images/adaptive-icon.png')}

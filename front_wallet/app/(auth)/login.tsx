@@ -76,7 +76,7 @@ export default function AuthScreen() {
             </>
           ) : (
             <>
-              <TextInput label={"Email"} onChangeText={setEmail} />
+              <TextInput label={"Email"} onChangeText={(e)=>setEmail(e.trim())} />
               <View style={{ height: 10, backgroundColor: "transparent" }}></View>
               <TextInput secureTextEntry label={"Password"} onChangeText={setPassword} />
               {!isLogin && (

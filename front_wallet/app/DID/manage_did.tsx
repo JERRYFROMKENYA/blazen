@@ -10,6 +10,8 @@ import { useAuth } from "@/app/(auth)/auth";
 import { usePocketBase } from "@/components/Services/Pocketbase";
 import { fetchDHT, storeUserDID } from "@/components/utils/did_operations";
 import QRCode from "react-native-qrcode-svg";
+import {uploadFiles} from "@/components/utils";
+// require("dotenv").config();
 
 const privacyShieldImage: ImageSourcePropType = require('@/assets/images/tech_woman.png');
 
@@ -25,8 +27,8 @@ const ExplanationCard = () => {
     console.log(hidden)
     return (
         !hidden && (
-            <Card style={{ marginVertical: 10 }}>
-                <Card.Cover style={{ width: "100%" }} source={privacyShieldImage} />
+            <Card style={{ marginVertical: 10, width:"95%", alignSelf:"center" }}>
+
                 <Card.Content>
                     <Text variant="bodyMedium" style={{ marginBottom: 5, marginTop: 5 }}>
                         {"What is a Decentralized Identifier?"}
@@ -38,16 +40,7 @@ const ExplanationCard = () => {
                             " and be granted access to information you wish to share."}
                     </Text>
                 </Card.Content>
-                <Card.Actions>
-                    <Button
-                        style={{ alignSelf: "flex-end" }}
-                        icon={() => <Icon size={20} source={"close"} />}
-                        onPress={() => setHidden(!hidden)}
-                    >
-                        {"Close"}
-                    </Button>
-                </Card.Actions>
-
+                <Card.Cover style={{ width: "100%" , marginTop:10}} source={privacyShieldImage} />
             </Card>
         )
     );
@@ -74,23 +67,57 @@ export default function ManageDid() {
         console.log(user);
     }, [user]);
 
+    // const exportDidToJson = async () => {
+    //     if (!did) return;
+    //
+    //     try {
+    //         await Share.share({
+    //             title: 'Exported DID',
+    //             message: `
+    //             **Be careful with this information. Anyone with this DID can impersonate you.**
+    //             -----START DID-----
+    //             ${JSON.stringify(did.did)}
+    //             -----END DID-----
+    //             **Be careful with this information. Anyone with this DID can impersonate you.**
+    //
+    //             `,
+    //         });
+    //     } catch (error) {
+    //         alert('Failed to export the DID.');
+    //     }
+    // };
     const exportDidToJson = async () => {
-        if (!did) return;
-
         try {
-            await Share.share({
-                title: 'Exported DID',
-                message: `
-                **Be careful with this information. Anyone with this DID can impersonate you.**
-                -----START DID-----
-                ${JSON.stringify(did.did)}
-                -----END DID-----
-                **Be careful with this information. Anyone with this DID can impersonate you.**
-                
-                `,
-            });
+            // Define file path
+            const fileUri = FileSystem.documentDirectory + 'portable_did.json';
+
+            // Write DID data to the file
+            await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(did.did), { encoding: FileSystem.EncodingType.UTF8 });
+
+            // Read the file as a URI (don't use readAsStringAsync, it's not necessary for file uploads)
+            const file = {
+                uri: fileUri,                // File URI
+                name: 'portable_did.json',    // Name of the file
+                type: 'application/json',     // MIME type of the file
+            };
+
+            // Upload the file using the uploadFiles function
+            const file_name= await uploadFiles(user, [file], "DID export", "portable_did")
+                // .files[0].replace("pocketbase",process.env.POCKETBASE_URL as string);
+            // console.log("file_name:",file_name);
+            const url = file_name.files[0].replace("pocketbase","138.197.89.72");
+            // Alert user of success
+            Alert.alert( "Success",
+                "DID successfully exported and uploaded as a file.",
+                [
+                    { text: "OK", onPress: () => {
+                        Linking.openURL(url);
+                        } }
+                ]
+            );
         } catch (error) {
-            alert('Failed to export the DID.');
+            console.error('Error exporting DID:', error);
+            Alert.alert('Error', 'Failed to export DID');
         }
     };
 
@@ -148,13 +175,15 @@ export default function ManageDid() {
                     <Appbar.Action icon={"qrcode"} onPress={() => { setQrModalVisible(true) }} />
                 </Appbar.Header>
                 <SafeScreen onRefresh={() => { }}>
-                    <ExplanationCard />
+
                     <Surface elevation={2} style={{
-                        width: "100%",
+                        width: "95%",
                         padding: 30,
                         marginBottom: 10,
                         flexDirection: "column", borderRadius: 20,
-                        justifyContent: "space-between", alignItems: "center"
+                        justifyContent: "space-between", alignItems: "center",
+                        marginTop:20,
+                        alignSelf:"center"
                     }}>
                         <Text variant={"titleSmall"}>DID: Decentralized Identifier</Text>
                         <Text variant={"titleSmall"} style={{ margin: 5 }}> {uri || "loading ..."}</Text>
@@ -163,6 +192,7 @@ export default function ManageDid() {
                             <Text style={{ alignSelf: "flex-end", color: "gray" }} variant={"titleSmall"} onPress={handleRegenerate}>Regenerate</Text>
                         </View>
                     </Surface>
+                    <ExplanationCard />
                     <Portal>
                         <Modal visible={qrModalVisible} onDismiss={() => setQrModalVisible(false)} contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}>
                             <Surface style={{ padding: 20, alignItems: 'center' }}>

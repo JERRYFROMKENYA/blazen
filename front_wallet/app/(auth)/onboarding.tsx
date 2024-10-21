@@ -228,8 +228,14 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
             }catch (e){
 
             }
-            await pb.collection('users').requestVerification(resp.record.email);
-            Alert.alert("Verification","Check your email to verify your account before logging in next...")
+            try{
+                await pb.collection('users').requestVerification(resp.record.email);
+                Alert.alert("Verification","Check your email to verify your account before logging in next...")
+            }
+            catch (e) {
+
+            }
+
             setLoading(false);
             signOut();
             router.replace('/(auth)/login');
@@ -319,7 +325,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
                     <Menu
                         visible={visible}
                         onDismiss={closeMenu}
-                        anchor={<Button onPress={openMenu}>{formData.id_type==''? "Identification Type":formData.id_type}</Button>}>
+                        anchor={<Button mode={"outlined"} onPress={openMenu}>{formData.id_type==''? " Select Your Identification Type":formData.id_type}</Button>}>
 
                         {idTypes.map((item) => {return(<>
                             <Menu.Item onPress={() => {
@@ -344,9 +350,10 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
 
 
             <Menu
+                style={{width:"90%", height:30}}
                 visible={visible}
                 onDismiss={closeMenu}
-                anchor={(formData.country=='')? <Button  style={{alignSelf:"center"}}  onPress={openMenu}> Tap to select a country</Button>:
+                anchor={(formData.country=='')? <Button   mode={"outlined"} children={"Select A Country"}    onPress={openMenu}/>:
                         (<Text variant={"bodyLarge"} style={{alignSelf:"center"}}  onPress={openMenu}>{countryMapping[formData.country]}</Text>)
                     }>
 
@@ -471,7 +478,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
                                        value={formData.id_number}
                                        onChangeText={(value) => handleChange('id_number', value)}
                                        style={styles.input} />
-                            <Button onPress={async () => await pickProfilePhoto()}>Upload Profile Photo</Button>
+                            <Button mode={"outlined"} onPress={async () => await pickProfilePhoto()}>Upload Profile Photo</Button>
                             {!passportPhoto && <Text>Upload a profile photo, use your best picture</Text>}
                             {passportPhoto && <Image source={{ uri: passportPhoto.uri }} style={styles.imagePreview} />}
 
@@ -498,7 +505,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ visible, onDismiss })
                             {idPhoto && <Image source={{ uri: idPhoto.uri }} style={styles.imagePreview} />}
                             {idBack && <Image source={{ uri: idBack.uri }} style={styles.imagePreview} />}
                             </View>
-                            <Text onPress={showDatePicker}>{formData.date_of_birth ?new Date(formData.date_of_birth).toLocaleDateString() :"Select Date of Birth"}</Text>
+                            <Button mode={"outlined"} onPress={showDatePicker}>{formData.date_of_birth ? `Date Of Birth : ${new Date(formData.date_of_birth).toLocaleDateString()}` :"Select Date of Birth"}</Button>
                             {datePickerVisible && (
                                 <DateTimePicker
                                     value={formData.date_of_birth ? new Date(formData.date_of_birth) : new Date()}

@@ -10,8 +10,8 @@ const ExplanationCard = () => {
     console.log(hidden)
     return (
         !hidden && (
-            <Card style={{ marginVertical: 10 }}>
-                <Card.Cover style={{ width: "100%" }} source={privacyShieldImage} />
+            <Card style={{ marginVertical: 10, width:"95%", alignSelf:"center" }}>
+
                 <Card.Content>
                     <Text variant="bodyMedium" style={{ marginBottom: 5, marginTop: 5 }}>
                         {"What is a Verifiable Credential?"}
@@ -22,15 +22,8 @@ const ExplanationCard = () => {
                         "qualifications to anyone who needs to know."}
                     </Text>
                 </Card.Content>
-                <Card.Actions>
-                    <Button
-                        style={{ alignSelf: "flex-end" }}
-                        icon={() => <Icon size={20} source={"close"} />}
-                        onPress={() => setHidden(!hidden)}
-                    >
-                        {"Close"}
-                    </Button>
-                </Card.Actions>
+                <Card.Cover style={{ marginTop:20,width: "100%" }} source={privacyShieldImage} />
+
 
             </Card>
         )

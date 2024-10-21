@@ -143,15 +143,15 @@ app.use(cors({
       presentationDefinition: offering.data.requiredClaims
     });
 
-
+    let payinMethod
      if(offering.data.payin.methods[0].kind==="STORED_BALANCE"){
-       const username = payoutPaymentDetails
+        payinMethod=payinPaymentDetails
 
      }
      else{
        // Fetch the first list item from the collection
        const payinMethodItem = await pb.collection("internal_payment_methods").getFirstListItem(`name="${offering.data.payin.methods[0].kind}"`);
-       const payinMethod = payinMethodItem.payload;
+       payinMethod = payinMethodItem.payload;
      }
 
 
@@ -384,8 +384,36 @@ const FetchAllExchanges = async (customerDid) => {
 
   }
 
-  const AutoSelect=() =>{
+  const GetOfferings=async (offering) => {
+    const offerings = await fetchOfferings();
+    const [payinCurrency, payoutCurrency] = offering.split(':');
+    console.log('Selected currencies:', payinCurrency, payoutCurrency);
+    console.log(offering)
 
+    const filteredOfferings = await Promise.all(
+        offerings
+            .filter(offering =>
+                offering.data.payin.currencyCode === payinCurrency &&
+                offering.data.payout.currencyCode === payoutCurrency
+            )
+            .map(async offering => {
+              const pfi = await pb.collection('pfi').getFirstListItem(`did= "${offering.metadata.from}"`);
+              return {
+                name: pfi.name,
+                from: offering.metadata.from,
+                offeringId: offering.metadata.id,
+                description: offering.data.description,
+                payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
+                payinCurrency: offering.data.payin.currencyCode,
+                payoutCurrency: offering.data.payout.currencyCode,
+                payinMethods: offering.data.payin.methods,
+                payoutMethods: offering.data.payout.methods,
+                requiredClaims: offering.data.requiredClaims,
+                offering
+              };
+            })
+    );
+    return filteredOfferings
   }
 
 
@@ -502,6 +530,52 @@ const filteredOfferings = await Promise.all(
 
 console.log('Filtered offerings:', filteredOfferings);
 res.status(200).json(filteredOfferings);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/create-offering-comparisons', async (req, res) => {
+    const dids = await fetchMockDids();
+    const didArray = Object.values(dids);
+    let pairings = new Set();  // Use a Set to ensure uniqueness automatically
+    let current_offering=[];
+// Loop through the DID array
+    for (let did of didArray) {
+      // Loop through the offerings of each DID
+      for (let key in did.offerings) {
+        // Add the offering to the set (Set automatically handles uniqueness)
+        pairings.add(did.offerings[key]);
+      }
+    }
+
+// Convert the Set back to an array (if needed)
+    pairings = Array.from(pairings);
+
+    console.log(pairings);
+    // console.log(dids)
+    try {
+
+      for (let pair of pairings) {
+        console.log(pair)
+        const filteredOfferings = await GetOfferings(pair)
+        // current_offering.push(filteredOfferings);
+        const data = {
+          "offering": filteredOfferings,
+          "pairing": pair
+        };
+        try{
+          const record = await pb.collection('offering_data').create(data);
+        }catch (e) {
+          console.log(e)
+        }
+
+      }
+
+
+
+      // console.log('Filtered offerings:', filteredOfferings);
+      res.status(200).json({message:"success"});
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
