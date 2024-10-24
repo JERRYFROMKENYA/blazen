@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import SafeScreen from '@/components/SafeScreen/SafeScreen';
 import { BalanceCard, QuickActions, TransactionsWidget } from "@/components/Home";
-import {Platform, View, StyleSheet, Image, TouchableOpacity } from "react-native";
-import {Appbar, Text } from "react-native-paper";
+import {Platform, View, StyleSheet, Image, TouchableOpacity, ImageSourcePropType} from "react-native";
+import {Appbar, Button, Card, Text} from "react-native-paper";
 import { useAuth } from "@/app/(auth)/auth";
 import PocketBase from "pocketbase";
 import { useRouter } from "expo-router";
@@ -21,6 +21,48 @@ export default function Home() {
   const [name, setName] = useState("loading...");
   const [avatar, setAvatar] = useState("https://api.dicebear.com/9.x/pixel-art/jpg?seed="+user.username);
   const { setLoading } = useLoading();
+
+  const ChartWidget=()=>{
+    return(
+        <>
+
+        </>
+    )
+  }
+
+
+
+  const PFIExplanation = () => {
+    const privacyShieldImage: ImageSourcePropType = require('@/assets/images/pfi.png');
+    const [hidden, setHidden] = React.useState(false);
+    console.log(hidden)
+    return (
+        !hidden && (
+            <Card style={{ marginVertical: 10, width:"95%", alignSelf:"center" }}>
+
+              <Card.Content>
+                <Text variant="bodyMedium" style={{ marginBottom: 5, marginTop: 5 }}>
+                  {"What is a PFI?"}
+                </Text>
+                <Text variant="bodySmall">
+                  {"PFIs are Participating Financial Institutions that offer liquidity on a tbDEX network.\n" +
+                      "\n" +
+                      "PFIs make themselves known to Wallet applications and" +
+                      " engage in verifying necessary information for" +
+                      " transaction completion with Verifiable Credential Issuers."}
+                </Text>
+              </Card.Content>
+              {/*<Card.Cover style={{ marginTop:20,width: "100%" }} source={privacyShieldImage} />*/}
+                <Card.Actions>
+                  <Button onPress={()=>{router.push("/all-pfis/all-pfis")}} mode={"text"}>See PFIs on NexX {'→'}</Button>
+                </Card.Actions>
+
+            </Card>
+        )
+    );
+  };
+
+
   useEffect(() => {
     setLoading(true);
     setName((user as User)?.username ?? "");
@@ -69,6 +111,9 @@ export default function Home() {
       {/* Start Action Tray */}
       <QuickActions/>
       {/* End Action Tray */}
+      {/*PFI Explanation*/}
+      <PFIExplanation/>
+      {/*End*/}
       {/* Start Activity Tray */}
       <TransactionsWidget/>
       {/* End Activity Tray */}

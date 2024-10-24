@@ -113,6 +113,8 @@ function RootLayoutNav() {
                 <Stack.Screen name="pfi-details/[pfiId]" options={{ headerShown: false ,presentation:"modal"}} />
                 {/*PIN auth*/}
                 <Stack.Screen name="EnterPIN/EnterPIN" options={{ headerShown:false ,presentation:"modal"}} />
+                {/*All PFIS*/}
+                <Stack.Screen name="all-pfis/all-pfis" options={{ headerShown: false }} />
               </Stack>
             </PaperProvider>
           </AuthProvider>

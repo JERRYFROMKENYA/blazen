@@ -49,22 +49,35 @@ export default function TransactionsWidget() {
         </View>
         <View style={styles.balanceHeader}>
           <Chip
-            style={styles.chip}
-            icon="check-decagram-outline"
-            selected={filter === "completed"}
-            showSelectedCheck={true}
-            onPress={() => setFilter("completed")}
+              style={styles.chip}
+              icon="filter-outline"
+              selected={filter === "all"}
+              showSelectedCheck={true}
+              onPress={() => setFilter("all")}
+              showSelectedOverlay={filter === "all"}
+
           >
-            Success
+            {(filter === "all")?"All Transactions":""}
           </Chip>
           <Chip
             style={styles.chip}
-            icon="alert-decagram"
+            icon="check-circle"
+            selected={filter === "completed"}
+            showSelectedCheck={true}
+            onPress={() => setFilter("completed")}
+            showSelectedOverlay={filter === "completed"}
+          >
+            {(filter === "completed")?"Success":""}
+          </Chip>
+          <Chip
+            style={styles.chip}
+            icon="clock-time-three"
             selected={filter === "pending"}
             showSelectedCheck={true}
             onPress={() => setFilter("pending")}
+            showSelectedOverlay={filter === "pending"}
           >
-            Pending
+            {(filter === "pending")?"Pending":""}
           </Chip>
           <Chip
             style={styles.chip}
@@ -72,18 +85,11 @@ export default function TransactionsWidget() {
             selected={filter === "cancelled"}
             showSelectedCheck={true}
             onPress={() => setFilter("cancelled")}
+            showSelectedOverlay={filter === "cancelled"}
           >
-            Failed
+            {(filter === "cancelled")?"Failed":""}
           </Chip>
-          <Chip
-            style={styles.chip}
-            icon="filter-outline"
-            selected={filter === "all"}
-            showSelectedCheck={true}
-            onPress={() => setFilter("all")}
-          >
-            All
-          </Chip>
+
         </View>
         <List.Section>
           {filteredTransactions.length === 0 ? (
@@ -95,7 +101,7 @@ export default function TransactionsWidget() {
                 key={transaction.id}
                 title={transaction.expand.pfi.name}
                 description={`Amount: ${transaction.rfq.data.payin.currencyCode} ${transaction.rfq.data.payin.amount}\nDate: ${new Date(transaction.created).toLocaleString()}`}
-                left={props => <List.Icon {...props} icon={transaction.status === 'completed' ? 'check' : transaction.status === 'pending' ? 'alert' : 'close'} />}
+                left={props => <List.Icon {...props} color={transaction.status === 'completed' ? 'green' : transaction.status === 'pending' ? 'yellow' : 'red'} icon={transaction.status === 'completed' ? 'check-circle' : transaction.status === 'pending' ? 'clock-time-three' : 'close-circle'} />}
               />
             ))
           )}

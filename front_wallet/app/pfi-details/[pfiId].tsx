@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {Appbar, Avatar, Button, Card, Icon, Surface, Text} from "react-native-paper";
+import {Appbar, Avatar, Button, Card, DataTable, Icon, Surface, Text} from "react-native-paper";
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import SafeScreen from "@/components/SafeScreen/SafeScreen";
 import { usePocketBase } from "@/components/Services/Pocketbase";
@@ -7,7 +7,8 @@ import {StyleSheet, ScrollView, ImageSourcePropType, Image} from "react-native";
 import { useLoading } from "../../components/utils/LoadingContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import { View } from "@/components/Themed";
-import {codeToCurrency} from "../../components/utils";
+import {codeToCurrency, ConvertCurrency, getReadableTime} from "../../components/utils";
+import {BarChart, LineChart, PopulationPyramid} from "react-native-gifted-charts";
 
 interface Comment {
   did: string;
@@ -27,7 +28,7 @@ interface Pfi {
 
 interface Rating {
   rating: number;
-  rating_count: number;
+  rating_count: number|"Not Rated Yet";
 }
 const pfiImage: ImageSourcePropType = require('@/assets/images/pfi.png');
 const ExplanationCard = () => {
@@ -87,6 +88,13 @@ export default function PfiId() {
   const [pfi, setPfi] = useState<Pfi>({});
   const [pfiComments, setPfiComments] = useState<Comment[]>([]);
   const [rating, setRating] = useState<Rating>({ rating: 0, rating_count: 0 });
+  const [exchangeRates, setExchangeRates] = useState<any>()
+    const [averageTime, setAverageTime]=useState<Number|String>(0);
+    const [offeringList, setOfferingList]=useState<any>()
+    const[comparisonData, setComparisonData]=useState<any>()
+    const [marketData, setMarketData]=useState<any>()
+
+
 
   const getUserDid = async (comment: Comment) => {
     const user = comment.expand.user;
@@ -104,104 +112,214 @@ export default function PfiId() {
     }
   };
 
-  const getPfi = async () => {
-    setPfi({});
-    setPfiComments([]);
-    const pfiRecord = await pb.collection('pfi').getFirstListItem(`did="${pfiId}"`);
-    setPfi(pfiRecord);
-    const pfiRecordComment = await pb.collection('pfi_rating').getFullList({
-      filter: `pfi="${pfiRecord.id}"`,
-      expand: "user"
-    });
-    const rating = await pb.collection("pfi_average_rating").getFirstListItem(`pfi="${pfiRecord.id}"`);
-    setRating(rating);
 
-    const commentsWithDid = await Promise.all(pfiRecordComment.map(getUserDid));
-    setPfiComments(commentsWithDid);
-  };
+    const getPfi = async () => {
+        setPfi({});
+        setPfiComments([]);
+        try {
+            // Fetching PFI Record
+            const pfiRecord = await pb.collection('pfi').getFirstListItem(`did="${pfiId}"`);
+            setPfi(pfiRecord);
 
-  useEffect(() => {
+            // Fetching PFI Rating and Comments
+            try{
+                const pfiRecordComment = await pb.collection('pfi_rating').getFullList({
+                    filter: `pfi="${pfiRecord.id}"`,
+                    expand: "user",
+                });
+                // Fetching comments with DID
+                const commentsWithDid = await Promise.all(pfiRecordComment.map(getUserDid));
+                setPfiComments(commentsWithDid);
+            }
+            catch (e) {
+
+            }
+            try{
+                const rating = await pb.collection("pfi_average_rating").getFirstListItem(`pfi="${pfiRecord.id}"`);
+                setRating(rating);
+            }
+            catch (e) {
+                setRating({ rating: 5, rating_count: "Not Rated Yet" });
+            }
+
+
+
+
+            // Fetching Exchange Rates
+            const exchangeRates = await pb.collection('pfi_stats_per_pairing').getFullList({
+                filter: `pfi_name="${pfiRecord.name}"`,
+                sort: '-created',
+            });
+
+            setExchangeRates(exchangeRates);
+            setAverageTime(getReadableTime(exchangeRates[0].avg_estimated_settlement_time));
+
+            // Process Offerings and Set Comparison Data
+            let pfiData = [];
+            if (pfiRecord.offerings) {
+                for (const offer of Object.values(pfiRecord.offerings)) {
+                    try {
+                        const marketValue = exchangeRates.filter((t: any) => t.pairing === offer)[0]?.payout_per_unit;
+                        const pfiValue = await ConvertCurrency(offer.split(":")[0], offer.split(":")[1]);
+
+                        // Push comparison data
+                        pfiData.push({
+                            left: marketValue,
+                            right: pfiValue,
+                            leftBarLabel: "Market",
+                            rightBarLabel: "PFI",
+                            currency: offer,
+                            key: offer,  // Assign a unique key based on the offering
+                        });
+                    } catch (e) {
+                        console.error(`Error processing offering ${offer}`, e);
+                    }
+                }
+            }
+            setComparisonData(pfiData);  // Set processed comparison data
+        } catch (e) {
+            console.error('Error fetching PFI data:', e);
+        }
+    };
+
+
+
+
+    useEffect(() => {
     setLoading(true);
     getPfi().then(() => {
-      setLoading(false);
+
+
     }).finally(() => {
+
       setLoading(false);
     });
+
+
+
   }, [router, pfiId]);
 
-  return (
-    <View style={styles.container}>
-      <Appbar.Header>
-        <Appbar.BackAction onPress={() => { router.back() }} />
-        <Appbar.Content title={pfi.name !== undefined ? `🏦 ${pfi.name}` : ""} />
-      </Appbar.Header>
-      <SafeScreen onRefresh={() => { setLoading(true); getPfi().then(() => setLoading(false)) }}>
-        <ScrollView contentContainerStyle={styles.scrollView}>
-          <Surface style={styles.pfiContainer} elevation={3}>
-            <Text variant={"titleMedium"} style={styles.pfiName}>
-              {pfi.name || "⏳"}
-            </Text>
+
+  const PFIAnalytics=()=>{
+      return(
+          <>
+              {comparisonData&&<Surface style={styles.pfiContainer} elevation={3}>
+                  <Text variant={"titleMedium"} style={styles.pfiName}>
+                      PFI Performance Against Market
+                  </Text>
+
+                  {comparisonData.map((data, index) => (
+                      <PopulationPyramid
+                          key={index} // Use the array index as a unique key
+                          height={15}
+                          width={350}
+                          barLabelColor={"white"}
+                          xAxisLabelColor={"white"}
+                          data={[data]}
+                      />
+                  ))}
+
+                  <DataTable>
+                      <DataTable.Header>
+                          <DataTable.Title numeric>Currency</DataTable.Title>
+                          <DataTable.Title numeric>Market</DataTable.Title>
+                          <DataTable.Title numeric>{pfi.name}</DataTable.Title>
+                      </DataTable.Header>
+
+                      {comparisonData.map((item) => (
+                          <DataTable.Row key={item.key}>
+                              <DataTable.Cell >{item.currency.replace(":"," to ")}</DataTable.Cell>
+                              <DataTable.Cell numeric>{item.right}</DataTable.Cell>
+                              <DataTable.Cell numeric>{item.left}</DataTable.Cell>
+                          </DataTable.Row>
+                      ))}
+
+
+                  </DataTable>
+
+
+              </Surface>}
+          </>
+      )
+  }
+
+
+
+
+  return <View style={styles.container}>
+    <Appbar.Header>
+      <Appbar.BackAction onPress={() => { router.back() }} />
+      <Appbar.Content title={pfi.name !== undefined ? `🏦 ${pfi.name}` : ""} />
+    </Appbar.Header>
+    <SafeScreen onRefresh={() => { setLoading(true); getPfi().then(() => setLoading(false)) }}>
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        <Surface style={styles.pfiContainer} elevation={3}>
+          <Text variant={"titleMedium"} style={styles.pfiName}>
+            {pfi.name || "⏳"}
+          </Text>
+          <View style={styles.ratingContainer}>
+            {renderStars(rating.rating)}
+            <Text style={styles.ratingCount}>({rating.rating_count})</Text>
+          </View>
             <View style={styles.ratingContainer}>
-              {renderStars(rating.rating)}
-              <Text style={styles.ratingCount}>({rating.rating_count})</Text>
+                <Text style={styles.ratingCount} variant={"bodySmall"}>{pfi.description}</Text>
             </View>
-            <Text style={styles.pfiId}>
-              DID: {pfiId}
+            <Text style={styles.pfiId} variant={"bodySmall"}>
+                Settlement Time: {averageTime}
             </Text>
-          </Surface>
-            <Surface style={styles.pfiContainer} elevation={3}>
-                <Text variant={"titleMedium"} style={styles.pfiName}>
-                    Offerings
-                </Text>
-                <View style={styles.ratingContainer}>
+          <Text style={styles.pfiId} variant={"bodySmall"}>
+            DID: {pfiId}
+          </Text>
+        </Surface>
 
-
-                    {pfi.offerings &&
-                        
-                        Object.values(pfi.offerings).map((offering, index) => {
-                            return (
-
-                            <Text key={index}
-                                  style={styles.ratingCount}> • {codeToCurrency(offering.replace(':', ' to '))}  </Text>
-
-
-                            )
-                        })
-                    }
-                </View>
-
-            </Surface>
-          <Surface style={styles.commentsContainer} elevation={3}>
+          <Surface style={styles.pfiContainer} elevation={3}>
               <Text variant={"titleMedium"} style={styles.pfiName}>
-                  Comments
+                  Offerings
               </Text>
-            {pfiComments.length === 0 ? <Text>No comments yet</Text> :
-              pfiComments.map((comment, index) => {
-                return (
-                  <Surface key={index} style={styles.comment} elevation={1}>
-                    <Text style={styles.commentText}>
-                        Comment: {comment.comment}
-                    </Text>
-                    <View style={styles.commentRating}>
-                      {renderStars(comment.rating)}
-                    </View>
-                      <View style={{flexDirection:"row", backgroundColor:"transparent"}}>
-                          {/*<Avatar.Image size={20} source={()=>(<Image source={{uri: "https://api.dicebear.com/9.x/pixel-art/png?seed=" + comment.did}}/>)} style={{marginBottom:20}} />*/}
-                          <Text variant={"bodySmall"} style={styles.commentDid}>
-                              {comment.did}
-                          </Text>
-                      </View>
+              <View style={styles.ratingContainer}>
 
-                  </Surface>
-                )
-              })
-            }
+
+                  {pfi.offerings && exchangeRates&&
+
+                      Object.values(pfi.offerings).map((offering, index) => {
+
+                          // const rate = exchangeRates.filter()
+                          return <Text key={index}
+                                style={styles.ratingCount}> • {codeToCurrency(offering.replace(':', ' to '))} {"\n"}( {`1 ${offering.split(":")[0]} = ${exchangeRates.filter((t: any) => t.pairing === offering && t.pfi_name===pfi.name)[0]?.payout_per_unit} ${offering.split(":")[1]}` })  </Text>
+                      })
+                  }
+              </View>
+
           </Surface>
-            <ExplanationCard/>
-        </ScrollView>
-      </SafeScreen>
-    </View>
-  );
+          <PFIAnalytics/>
+        <Surface style={styles.commentsContainer} elevation={3}>
+            <Text variant={"titleMedium"} style={styles.pfiName}>
+                Comments
+            </Text>
+          {pfiComments.length === 0 ? <Text>No comments yet</Text> :
+            pfiComments.map((comment, index) => {
+              return <Surface key={index} style={styles.comment} elevation={1}>
+                  <Text style={styles.commentText}>
+                      Comment: {comment.comment}
+                  </Text>
+                  <View style={styles.commentRating}>
+                    {renderStars(comment.rating)}
+                  </View>
+                    <View style={{flexDirection:"row", backgroundColor:"transparent"}}>
+                        {/*<Avatar.Image size={20} source={()=>(<Image source={{uri: "https://api.dicebear.com/9.x/pixel-art/png?seed=" + comment.did}}/>)} style={{marginBottom:20}} />*/}
+                        <Text variant={"bodySmall"} style={styles.commentDid}>
+                            {comment.did}
+                        </Text>
+                    </View>
+
+                </Surface>
+            })
+          }
+        </Surface>
+          <ExplanationCard/>
+      </ScrollView>
+    </SafeScreen>
+  </View>;
 }
 
 const styles = StyleSheet.create({
@@ -240,6 +358,7 @@ const styles = StyleSheet.create({
   },
   pfiId: {
     fontSize: 16,
+      margin:5
     // color: '#757575',
   },
   commentsContainer: {

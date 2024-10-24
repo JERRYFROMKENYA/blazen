@@ -1,6 +1,7 @@
 // `components/utils/index.ts`
 
-import { checkExistingVC, storeCustomerVC } from "@/components/utils/vc_operations";
+import {checkExistingVC} from "@/components/utils/vc_operations";
+import {Converter} from "easy-currencies";
 
 // Get and return VC for the logged-in user
 export async function getVCForLoggedInUser(user: any, pb: any) {
@@ -194,3 +195,29 @@ export async function  uploadFiles(user: any, files: File[],description:string,n
   return res;
 }
 
+export function getReadableTime(seconds:any) {
+  // Calculate hours, minutes, and remaining seconds
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = Math.floor(seconds) % 60;
+
+  // Create a readable string format
+  let timeString = '';
+  if (hours > 0) {
+    timeString += hours + ' hour' + (hours > 1 ? 's' : '') ;
+  }
+  if (minutes > 0) {
+    timeString +=   ', '+minutes + ' minute' + (minutes > 1 ? 's' : '') ;
+  }
+  if(remainingSeconds>0){
+    timeString +=', '+ remainingSeconds + ' second' + (remainingSeconds > 1 ? 's' : '');
+  }
+
+
+  // Set the readable time
+  return timeString;
+}
+export async function ConvertCurrency(from:string,to:string){
+  const converter = new Converter();
+  return await converter.convert(1, from, to)
+}

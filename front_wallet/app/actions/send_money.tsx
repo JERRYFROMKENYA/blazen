@@ -10,7 +10,7 @@ import {
   FlatList,
   TouchableOpacity, ImageSourcePropType,
 } from 'react-native';
-import {Text, TextInput, Button, Menu, Provider, Card, Appbar, Icon, Chip} from 'react-native-paper';
+import {Text, TextInput, Button, Menu, Provider, Card, Appbar, Icon, Chip, Divider} from 'react-native-paper';
 import {  View,Modal } from '@/components/Themed';
 import { useAuth } from "@/app/(auth)/auth";
 import { usePocketBase } from "@/components/Services/Pocketbase";
@@ -74,6 +74,35 @@ export default function SendMoney() {
   const onSelectPayinMethod=(method:any)=>{
     setSelectedPayinMethod(method);
   }
+  const PFIExplanation = () => {
+    const privacyShieldImage: ImageSourcePropType = require('@/assets/images/pfi.png');
+    const [hidden, setHidden] = React.useState(false);
+    console.log(hidden)
+    return (
+        !hidden && (
+            <Card style={{ marginVertical: 10, width:"95%", alignSelf:"center" }}>
+
+              <Card.Content>
+                <Text variant="bodyMedium" style={{ marginBottom: 5, marginTop: 5 }}>
+                  {"What is a PFI?"}
+                </Text>
+                <Text variant="bodySmall">
+                  {"PFIs are Participating Financial Institutions that offer liquidity on a tbDEX network.\n" +
+                      "\n" +
+                      "PFIs make themselves known to Wallet applications and" +
+                      " engage in verifying necessary information for" +
+                      " transaction completion with Verifiable Credential Issuers."}
+                </Text>
+              </Card.Content>
+              {/*<Card.Cover style={{ marginTop:20,width: "100%" }} source={privacyShieldImage} />*/}
+              <Card.Actions>
+                <Button onPress={()=>{router.push("/all-pfis/all-pfis")}} mode={"text"}>See PFIs on NexX {'→'}</Button>
+              </Card.Actions>
+
+            </Card>
+        )
+    );
+  };
 
 
 
@@ -316,25 +345,36 @@ const renderStars = (rating) => {
             {/*Load The PFIs*/}
             {(!selectedPfi && selectedOffering && filteredPfis.length > 0 && !showQuote)&& (
                 <ScrollView>
-                  {filteredPfis.map(pfi => (
-                      <Card key={pfi.id} style={styles.card} onPress={() => handlePfiSelect(pfi)}>
+                  {filteredPfis.map(pfi => {
 
-                        <Card.Content style={{justifyContent:"space-around"}}>
-                          <View style={{flexDirection:"row", justifyContent:"space-between",
-                            alignItems:"center",
-                            backgroundColor:"transparent"}}>
-                            <Text style={{fontWeight:"bold", fontSize:20,flex:1}}>🏦 {pfi.name}</Text>
-                          <Button style={{alignSelf:"flex-end", marginRight:0}} children={""} onPress={()=>{router.push(`/pfi-details/${pfi.from}`)}} icon={()=>{return <Icon source={"information"} size={20}/>}}></Button>
-                          </View>
+                    return (
+                        <Card key={pfi.id} style={styles.card} onPress={() => handlePfiSelect(pfi)}>
 
-                          <Text>{pfi.description}</Text>
-                          <Text>1 {walletInUse.currency} = {pfi.payoutUnitsPerPayinUnit} {selectedOffering.split(":")[1]}</Text>
-                          <Text variant={"bodySmall"}>{"Kindly note these ratings are based on users who have used this PFI"}</Text>
-                          {renderStars(averageRatings[pfi.from] || 0)}
-                          <Text variant={"bodySmall"}> {`(${averageRatingsCount[pfi.from] || 0} ${averageRatingsCount[pfi.from]==1?"review":"reviews"}) `}</Text>
-                        </Card.Content>
-                      </Card>
-                  ))}
+                          <Card.Content style={{justifyContent: "space-around"}}>
+                            <View style={{
+                              flexDirection: "row", justifyContent: "space-between",
+                              alignItems: "center",
+                              backgroundColor: "transparent"
+                            }}>
+                              <Text style={{fontWeight: "bold", fontSize: 20, flex: 1}}>🏦 {pfi.name}</Text>
+                              <Button style={{alignSelf: "flex-end", marginRight: 0}} children={""} onPress={() => {
+                                router.push(`/pfi-details/${pfi.from}`)
+                              }} icon={() => {
+                                return <Icon source={"information"} size={20}/>
+                              }}></Button>
+                            </View>
+
+                            <Text>{pfi.description}</Text>
+                            <Text>1 {walletInUse.currency} = {pfi.payoutUnitsPerPayinUnit} {selectedOffering.split(":")[1]}</Text>
+                            <Text
+                                variant={"bodySmall"}>{"Kindly note these ratings are based on users who have used this PFI"}</Text>
+                            {renderStars(averageRatings[pfi.from] || 0)}
+                            <Text
+                                variant={"bodySmall"}> {`(${averageRatingsCount[pfi.from] || 0} ${averageRatingsCount[pfi.from] == 1 ? "review" : "reviews"}) `}</Text>
+                          </Card.Content>
+                        </Card>
+                    )
+                  })}
                 </ScrollView>
             )}
 
@@ -389,19 +429,8 @@ const renderStars = (rating) => {
 
             {/*TODO 4: */}
             {!selectedPfi&&<>
-              <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)"/>
-              <Text style={styles.title}>All Available Conversions:</Text>
-              <View style={{
-                flexWrap: "wrap",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 50
-              }}>
-                {allAvailableOfferings.map((offering, index) => (
-                    <Text key={index}> • {codeToCurrency(offering.replace(':', ' to '))} </Text>
-                ))}
-              </View>
+              <Divider style={{marginTop:100,marginBottom:5}} bold/>
+              <PFIExplanation/>
             </>}
 
             <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
