@@ -66,26 +66,6 @@ export default function ManageDid() {
         getDid().then(r => r);
         console.log(user);
     }, [user]);
-
-    // const exportDidToJson = async () => {
-    //     if (!did) return;
-    //
-    //     try {
-    //         await Share.share({
-    //             title: 'Exported DID',
-    //             message: `
-    //             **Be careful with this information. Anyone with this DID can impersonate you.**
-    //             -----START DID-----
-    //             ${JSON.stringify(did.did)}
-    //             -----END DID-----
-    //             **Be careful with this information. Anyone with this DID can impersonate you.**
-    //
-    //             `,
-    //         });
-    //     } catch (error) {
-    //         alert('Failed to export the DID.');
-    //     }
-    // };
     const exportDidToJson = async () => {
         try {
             // Define file path
