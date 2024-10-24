@@ -29,7 +29,7 @@ export default function Transactions() {
     const [completedTransactions, setCompletedTransactions] = React.useState([]);
     const [pendingTransactions, setPendingTransactions] = React.useState([]);
     const [failedTransactions, setFailedTransactions] = React.useState([]);
-    const [completed, setCompleted]=useState(0)
+    const [completed, setCompleted]=useState(1)
     const [pending, setPending] = React.useState(0)
     const [failed, setFailed] = React.useState(0)
     const {setLoading} = useLoading();
