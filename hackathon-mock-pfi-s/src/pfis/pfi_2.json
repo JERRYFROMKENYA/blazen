@@ -1,0 +1,53 @@
+{
+  "uri": "did:dht:z8ninw9a57rs5844ctmmet6i159zib43fkygozpbj8fxjhttfpdy",
+  "document": {
+    "id": "did:dht:z8ninw9a57rs5844ctmmet6i159zib43fkygozpbj8fxjhttfpdy",
+    "verificationMethod": [
+      {
+        "id": "did:dht:z8ninw9a57rs5844ctmmet6i159zib43fkygozpbj8fxjhttfpdy#0",
+        "type": "JsonWebKey",
+        "controller": "did:dht:z8ninw9a57rs5844ctmmet6i159zib43fkygozpbj8fxjhttfpdy",
+        "publicKeyJwk": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "ucVRU_jfSW2fWmRWtEfVlv96h1kqgGhdoUnK9PIxK0Y",
+          "kid": "RqzbEbS0Df5VXkR5skb3er1EVe7nfF40qrudA8UfOpk",
+          "alg": "EdDSA"
+        }
+      }
+    ],
+    "authentication": [
+      "did:dht:z8ninw9a57rs5844ctmmet6i159zib43fkygozpbj8fxjhttfpdy#0"
+    ],
+    "assertionMethod": [
+      "did:dht:z8ninw9a57rs5844ctmmet6i159zib43fkygozpbj8fxjhttfpdy#0"
+    ],
+    "capabilityDelegation": [
+      "did:dht:z8ninw9a57rs5844ctmmet6i159zib43fkygozpbj8fxjhttfpdy#0"
+    ],
+    "capabilityInvocation": [
+      "did:dht:z8ninw9a57rs5844ctmmet6i159zib43fkygozpbj8fxjhttfpdy#0"
+    ],
+    "service": [
+      {
+        "id": "did:dht:z8ninw9a57rs5844ctmmet6i159zib43fkygozpbj8fxjhttfpdy#pfi",
+        "type": "PFI",
+        "serviceEndpoint": "http://hackthon_mock_pfis:5000"
+      }
+    ]
+  },
+  "metadata": {
+    "published": true,
+    "versionId": "1731836098"
+  },
+  "privateKeys": [
+    {
+      "crv": "Ed25519",
+      "d": "YoDH3WOIZtbMmbBFNw3_r0aF9tCIW4MKTYl2D8hS2_I",
+      "kty": "OKP",
+      "x": "ucVRU_jfSW2fWmRWtEfVlv96h1kqgGhdoUnK9PIxK0Y",
+      "kid": "RqzbEbS0Df5VXkR5skb3er1EVe7nfF40qrudA8UfOpk",
+      "alg": "EdDSA"
+    }
+  ]
+}

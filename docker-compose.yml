@@ -50,7 +50,7 @@ services:
     networks:
       - blazen_network
   hackthon_mock_pfis:
-    build: ./hackathon-mock-pfis
+    build: ./hackathon-mock-pfi-s
     restart: unless-stopped
     container_name: internal_pfi
     ports:
