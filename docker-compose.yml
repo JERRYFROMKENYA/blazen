@@ -49,10 +49,10 @@ services:
       - POCKETBASE_URL=http://pocketbase:8090
     networks:
       - blazen_network
-  hackthon_mock_pfis:
+  hackathon_mock_pfis:
     build: ./hackathon-mock-pfi-s
     restart: unless-stopped
-    container_name: hackathon_mock_pfis
+    container_name: hackthon_mock_pfis #sorry about the typo
     ports:
       - "6000:6000"
       - "5000:5000"
