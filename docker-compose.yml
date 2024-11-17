@@ -52,7 +52,7 @@ services:
   hackthon_mock_pfis:
     build: ./hackathon-mock-pfi-s
     restart: unless-stopped
-    container_name: internal_pfi
+    container_name: hackathon_mock_pfis
     ports:
       - "6000:6000"
       - "5000:5000"
