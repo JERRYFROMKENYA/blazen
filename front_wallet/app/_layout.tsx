@@ -13,6 +13,7 @@ import { PocketBaseProvider } from '@/components/Services/Pocketbase';
 import { AuthProvider } from '@/app/(auth)/auth';
 import {LoadingProvider} from "@/components/utils/LoadingContext";
 import {fetchDHT} from "@/components/utils/did_operations";
+import {Platform} from "react-native";
 
 
 
@@ -31,6 +32,13 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
+    PoppinsRegular: require('../assets/fonts/Poppins/Poppins-Regular.ttf'),
+    PoppinsBold: require('../assets/fonts/Poppins/Poppins-Bold.ttf'),
+    PoppinsMedium: require('../assets/fonts/Poppins/Poppins-Medium.ttf'),
+    PoppinsLight: require('../assets/fonts/Poppins/Poppins-Light.ttf'),
+    PoppinsSemiBold: require('../assets/fonts/Poppins/Poppins-SemiBold.ttf'),
+    PoppinsExtraBold: require('../assets/fonts/Poppins/Poppins-ExtraBold.ttf'),
+    PoppinsThin: require('../assets/fonts/Poppins/Poppins-Thin.ttf'),
   });
 
   useEffect(() => {
@@ -55,6 +63,24 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+
+
+
+  const fontConfig = {
+    customVariant: {
+      fontFamily: Platform.select({
+        web: 'PoppinsRegular, "Helvetica Neue", Helvetica, Arial, sans-serif',
+        ios: 'PoppinsRegular',
+        default: 'PoppinsRegular',
+      }),
+      fontWeight: '400',
+      letterSpacing: 0.5,
+      lineHeight: 22,
+      fontSize: 20,
+    }
+  };
+
+
 
 
   return (
@@ -115,6 +141,8 @@ function RootLayoutNav() {
                 <Stack.Screen name="EnterPIN/EnterPIN" options={{ headerShown:false ,presentation:"modal"}} />
                 {/*All PFIS*/}
                 <Stack.Screen name="all-pfis/all-pfis" options={{ headerShown: false }} />
+                {/*  Notifications Test*/}
+                <Stack.Screen name="Notifications/test" options={{ headerShown: false }} />
               </Stack>
             </PaperProvider>
           </AuthProvider>

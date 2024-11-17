@@ -24,7 +24,7 @@ const SupportScreen = () => {
         />
         <ScrollView contentContainerStyle={styles.scrollView}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>What is TBDex</Text>
+            <Text style={styles.sectionTitle}>What is tbDEX</Text>
             <Text style={styles.sectionContent}>
               tbDEX is an open source liquidity and trust protocol that facilitates secure transactions between wallet applications and liquidity providers.
             </Text>

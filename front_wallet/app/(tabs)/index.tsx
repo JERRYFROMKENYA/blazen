@@ -7,6 +7,7 @@ import { useAuth } from "@/app/(auth)/auth";
 import PocketBase from "pocketbase";
 import { useRouter } from "expo-router";
 import {useLoading} from "@/components/utils/LoadingContext";
+import WalletCards from "@/components/Home/WalletCards/WalletCards";
 
 interface User {
   name: string;
@@ -104,7 +105,6 @@ export default function Home() {
           </TouchableOpacity>
         </View>
       </View>}
-
       {/* Start Balance Card */}
       <BalanceCard/>
       {/* End Balance Card */}
