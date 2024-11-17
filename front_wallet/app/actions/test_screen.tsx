@@ -47,6 +47,7 @@ export default function TabTwoScreen() {
             <Text onPress={()=>{router.push("/(auth)/onboarding")}} style={styles.title}>Show Onboarding</Text>
             <Text onPress={()=>{router.push("/EnterPIN/EnterPIN")}} style={styles.title}>Show PIN Entry</Text>
             <Text onPress={()=>{router.push("/all-pfis/all-pfis")}} style={styles.title}>Show All PFIs</Text>
+            <Text onPress={()=>{router.push("/Notifications/test")}} style={styles.title}>Show Notifications</Text>
             <Text onPress={() => { createWallet(user, pb, 0, user.id, "fiat", "KES").then(r => console.log(r)) }} style={styles.title}>Create Wallet</Text>
             <Text onPress={async () => {
                 await signOut();

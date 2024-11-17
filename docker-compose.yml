@@ -22,7 +22,6 @@ services:
       retries: 5
     networks:
       - blazen_network
-
   did_creator:
     build: ./tbdex_comm_server
     restart: unless-stopped
@@ -36,8 +35,6 @@ services:
       - POCKETBASE_URL=http://pocketbase:8090
     networks:
       - blazen_network
-
-
   internal_pfi:
     build: ./internal_pfi
     restart: unless-stopped
@@ -52,6 +49,22 @@ services:
       - POCKETBASE_URL=http://pocketbase:8090
     networks:
       - blazen_network
-
+  hackthon_mock_pfis:
+    build: ./internal_pfi
+    restart: unless-stopped
+    container_name: internal_pfi
+    ports:
+      - "6000:6000"
+      - "5000:5000"
+      - "8000:8000"
+      - "8080:8080"
+      - "9090:9090"
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+    environment:
+      - POCKETBASE_URL=http://pocketbase:8090
+    networks:
+      - blazen_network
 
 

@@ -146,7 +146,7 @@ export default function Profile() {
                 source={require('@/assets/images/adaptive-icon.png')}
                 style={{ width: 200, height: 50, marginBottom: 20 }}
                 />
-                <Text variant={"bodySmall"}>©️ 2024 NexX, powered by tbDex</Text>
+                <Text variant={"bodySmall"}>©️ 2024 NexX, powered by Web 5</Text>
 
                 <Text variant={"labelLarge"} onPress={()=>{router.push("/actions/test_screen")}}>_TEST SCREEN</Text>
             </Surface>

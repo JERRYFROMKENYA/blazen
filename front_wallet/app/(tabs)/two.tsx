@@ -301,7 +301,7 @@ export default function Transactions() {
                     marginBottom:150,
                     flexDirection:"column",borderRadius:20,
                     justifyContent:"space-between",alignItems:"center"}}>
-                    <Text variant={"bodySmall"}>©️ 2024 NexX, powered by tbDex</Text>
+                    <Text variant={"bodySmall"}>©️ 2024 NexX, powered by Web5</Text>
                 </Surface>
 
             </SafeScreen>

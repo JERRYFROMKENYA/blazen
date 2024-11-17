@@ -67,7 +67,7 @@ app.use(cors({
           services: [{
             id: 'pfi',
             type: 'PFI',
-            serviceEndpoint: 'http://internal_pfi:4000'
+            serviceEndpoint: 'http://hackthon_mock_pfis:9090'
           }]
         }
       })
@@ -250,12 +250,17 @@ app.use(cors({
 
   const FetchExchange = async (customerDid, pfiUri, exId) => {
     const custDid = await DidDht.import({ portableDid: customerDid })
+    console.log(
+        {customerDid, pfiUri, exId}
+    )
     try {
       const exchange = await TbdexHttpClient.getExchange({
         pfiDid:pfiUri,
         did:custDid,
         exchangeId:exId
       });
+
+      console.log(exchange)
 
       return exchange;
     }catch (e) {
@@ -498,7 +503,6 @@ const FetchAllExchanges = async (customerDid) => {
     if (!offering) {
       return res.status(400).json({ error: 'Offering is required' });
     }
-
     try {
      const offerings = await fetchOfferings();
 const [payinCurrency, payoutCurrency] = offering.split(':');
