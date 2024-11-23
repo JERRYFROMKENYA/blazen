@@ -156,286 +156,272 @@ app.use(cors({
 
   // Create Exchange
   const CreateExchange = async (offering, amount, payoutPaymentDetails, customerCredentials, cDid, payinPaymentDetails) => {
-    const customerDid = await DidDht.import({ portableDid: cDid })
-    console.log(customerDid)
-    const selectedCredentials = PresentationExchange.selectCredentials({
-      vcJwts: customerCredentials,
-      requiredClaims: offering.data.requiredClaims,
-      presentationDefinition: offering.data.requiredClaims
-    });
+  const customerDid = await DidDht.import({ portableDid: cDid });
+  console.log(customerDid);
 
-    let payinMethod
-    if(offering.data.payin.methods[0].kind==="STORED_BALANCE"){
-      payinMethod=payinPaymentDetails
+  const selectedCredentials = PresentationExchange.selectCredentials({
+    vcJwts: customerCredentials,
+    requiredClaims: offering.data.requiredClaims,
+    presentationDefinition: offering.data.requiredClaims
+  });
 
-    }
-    else{
-      // Fetch the first list item from the collection
-      const payinMethodItem = await pb.collection("internal_payment_methods").getFirstListItem(`name="${offering.data.payin.methods[0].kind}"`);
-      payinMethod = payinMethodItem.payload;
-    }
+  let payinMethod;
+  if (offering.data.payin.methods[0].kind === "STORED_BALANCE") {
+    payinMethod = payinPaymentDetails;
+  } else {
+    const payinMethodItem = await pb.collection("internal_payment_methods").getFirstListItem(`name="${offering.data.payin.methods[0].kind}"`);
+    payinMethod = payinMethodItem.payload;
+  }
 
-
-
-    const rfq = Rfq.create({
-      metadata: {
-        from: customerDid.uri,
-        to: offering.metadata.from,
-        protocol: '1.0'
-
+  const rfq = Rfq.create({
+    metadata: {
+      from: customerDid.uri,
+      to: offering.metadata.from,
+      protocol: '1.0'
+    },
+    data: {
+      offeringId: offering.metadata.id,
+      payin: {
+        amount: amount.toString(),
+        currencyCode: offering.data.payin.currencyCode,
+        kind: offering.data.payin.methods[0].kind,
+        paymentDetails: payinMethod,
       },
-      data: {
-        offeringId: offering.metadata.id,
-        payin: {
-          amount: amount.toString(),
-          currencyCode: offering.data.payin.currencyCode,
-          kind: offering.data.payin.methods[0].kind,
-          paymentDetails: payinMethod,
-        },
-        payout: {
-          kind: offering.data.payout.methods[0].kind,
-          paymentDetails: payoutPaymentDetails,
-        },
+      payout: {
+        kind: offering.data.payout.methods[0].kind,
+        paymentDetails: payoutPaymentDetails,
+      },
+      claims: selectedCredentials
+    }
+  });
 
-        claims: selectedCredentials
-      }
-    });
-    console.log(
-        {
-          kind: offering.data.payin.methods[0].kind,
-          paymentDetails: payinMethod,
-        }
+  console.log({
+    kind: offering.data.payin.methods[0].kind,
+    paymentDetails: payinMethod,
+  });
 
-    )
+  try {
+    await rfq.verifyOfferingRequirements(offering);
+  } catch (e) {
+    throw new Error('Offering requirements not met', e);
+  }
 
-    try {
-      await rfq.verifyOfferingRequirements(offering);
-    } catch (e) {
-      throw new Error ('Offering requirements not met', e)
-      // console.log('Offering requirements not met', e);
+  await rfq.sign(customerDid);
+  console.log('RFQ:', rfq);
+
+  try {
+    await TbdexHttpClient.createExchange(rfq);
+
+    if (rfq) {
+      const [cust_did_item, pfi_did_item] = await Promise.all([
+        pb.collection('customer_did').getFirstListItem(`did.uri="${cDid.uri}"`),
+        pb.collection('pfi').getFirstListItem(`did="${offering.metadata.from}"`)
+      ]);
+
+      const data = {
+        did: cust_did_item.id,
+        pfi: pfi_did_item.id,
+        rfq,
+        exchangeId: rfq.metadata.exchangeId,
+        reason: "pending",
+        status: "pending"
+      };
+
+      const record = await pb.collection('customer_quotes').create(data);
+      if (record) console.log('Record created successfully:');
     }
 
-    await rfq.sign(customerDid);
-
-    console.log('RFQ:', rfq);
-
-
-    try {
-      await TbdexHttpClient.createExchange(rfq);
-      if(rfq){
-        const cust_did_item = await pb.collection('customer_did').getFirstListItem(`did.uri="${cDid.uri}"`);
-        const cust_did = cust_did_item.id;
-        const pfi_did_item = await pb.collection('pfi').getFirstListItem(`did= "${offering.metadata.from}"`);
-        const pfi_did = pfi_did_item.id;
-
-        const data = {
-          "did": cust_did,
-          "pfi": pfi_did,
-          rfq,
-          "exchangeId": rfq.metadata.exchangeId,
-          "reason": "pending",
-          "status": "pending"
-        };
-
-        const record = await pb.collection('customer_quotes').create(data);
-        if(record) console.log('Record created successfully:');
-      }
-      return rfq;
-    } catch (error) {
-      console.error('Failed to create exchange:', error);
-      // return ('Failed to create exchange:', error)
-      throw new Error('Failed to create exchange: ' + error.message);
-    }
-  };
-
+    return rfq;
+  } catch (error) {
+    console.error('Failed to create exchange:', error);
+    throw new Error('Failed to create exchange: ' + error.message);
+  }
+};
 
 
   //fetch exchanges
 
-  const FetchExchanges = async (customerDid, pfiUri) => {
-    const custDid = await DidDht.import({ portableDid: customerDid })
-    try {
-      const exchanges = await TbdexHttpClient.getExchanges({
-        pfiDid:pfiUri,
-        did:custDid,
-      });
-      // const mappedExchanges =formatMessages(exchanges)
-      return exchanges;
-    }catch (e) {
-      throw new Error('Failed to fetch exchanges: ' + e.message);
-    }
-
+ const FetchExchanges = async (customerDid, pfiUri) => {
+  const custDid = await DidDht.import({ portableDid: customerDid });
+  try {
+    const exchanges = await Promise.all([
+      TbdexHttpClient.getExchanges({
+        pfiDid: pfiUri,
+        did: custDid,
+      })
+    ]);
+    return exchanges.flat();
+  } catch (e) {
+    throw new Error('Failed to fetch exchanges: ' + e.message);
   }
+};
 
 
 
   const FetchExchange = async (customerDid, pfiUri, exId) => {
-    const custDid = await DidDht.import({ portableDid: customerDid })
-    try {
-      const exchange = await TbdexHttpClient.getExchange({
-        pfiDid:pfiUri,
-        did:custDid,
-        exchangeId:exId
-      });
+  const custDid = await DidDht.import({ portableDid: customerDid });
+  try {
+    const exchange = await TbdexHttpClient.getExchange({
+      pfiDid: pfiUri,
+      did: custDid,
+      exchangeId: exId
+    });
 
-      return exchange;
-    }catch (e) {
-      throw new Error('Failed to fetch exchanges: ' + e.message);
-    }
-
+    return exchange;
+  } catch (e) {
+    throw new Error('Failed to fetch exchanges: ' + e.message);
   }
+};
 
   const FetchAllExchanges = async (customerDid) => {
-    const custDid = await DidDht.import({ portableDid: customerDid });
-    const pfis = await pb.collection('pfi').getFullList();
-    const exchanges = [];
+  const custDid = await DidDht.import({ portableDid: customerDid });
+  const pfis = await pb.collection('pfi').getFullList();
 
-    try {
-      for (const pfi of pfis) {
-        const pfiUri = pfi.did;
-        const pfiName = pfi.name;
-        const pfiExchanges = await TbdexHttpClient.getExchanges({
-          pfiDid: pfiUri,
-          did: custDid,
-        });
-
-        // Add PFI name to each exchange
-        const modifiedExchanges = pfiExchanges.map(exchange => ({
-          ...exchange,
-          name: pfiName,
-        }));
-
-        exchanges.push(...modifiedExchanges);
-      }
-
-      return exchanges;
-    } catch (e) {
-      throw new Error('Failed to fetch exchanges: ' + e.message);
-    }
-  };
-
-
-
-
-
-
-  const AddClose = async (exchangeId, custDid, pfiUri,reason) => {
-    const customerDid = await DidDht.import({ portableDid: custDid })
-    try {
-      const close = Close.create({
-        metadata: {
-          from: customerDid.uri,
-          to: pfiUri,
-          protocol: '1.0',
-          exchangeId: exchangeId
-        },
-        data:{
-          reason
-        }
+  try {
+    const exchangesPromises = pfis.map(async (pfi) => {
+      const pfiUri = pfi.did;
+      const pfiName = pfi.name;
+      const pfiExchanges = await TbdexHttpClient.getExchanges({
+        pfiDid: pfiUri,
+        did: custDid,
       });
 
+      // Add PFI name to each exchange
+      return pfiExchanges.map(exchange => ({
+        ...exchange,
+        name: pfiName,
+      }));
+    });
 
-
-      await close.sign(customerDid);
-
-
-
-      await TbdexHttpClient.submitClose(close);
-      const quote_item= await pb.collection('customer_quotes').getFirstListItem(`exchangeId= "${exchangeId}"`);
-      const quote_id = quote_item.id;
-      const data = {
-        "reason": reason,
-        "status": "cancelled"
-      };
-
-      const record = await pb.collection('customer_quotes').update(quote_id, data);
-      if(record) console.log('Record updated successfully:');
-
-
-      return close;
-    } catch (e) {
-      throw new Error('Failed to close exchange: ' + e.message);
-    }
+    const allExchanges = (await Promise.all(exchangesPromises)).flat();
+    return allExchanges;
+  } catch (e) {
+    throw new Error('Failed to fetch exchanges: ' + e.message);
   }
+};
 
 
 
-  const AddOrder = async (exchangeId,custDid,  pfiUri, wallet) => {
-    const customerDid = await DidDht.import({ portableDid: custDid })
-    const order = Order.create({
+
+
+
+const AddClose = async (exchangeId, custDid, pfiUri, reason) => {
+  const customerDid = await DidDht.import({ portableDid: custDid });
+  try {
+    const close = Close.create({
       metadata: {
         from: customerDid.uri,
         to: pfiUri,
         protocol: '1.0',
         exchangeId: exchangeId
+      },
+      data: {
+        reason
       }
     });
 
-    await order.sign(customerDid);
-    try{
-      await TbdexHttpClient.submitOrder(order);
-      // Use cDidString in the query
-      const quote_item= await pb.collection('customer_quotes').getFirstListItem(`exchangeId= "${exchangeId}"`);
-      const quote_id = quote_item.id;
-      const quote = quote_item.rfq
-      const data = {
-        "reason": "success",
-        "status": "completed"
-      };
+    await close.sign(customerDid);
 
-      const record = await pb.collection('customer_quotes').update(quote_id, data);
-      if(record) console.log('Record updated successfully:');
-      const wallet_data = await pb.collection('wallet').getFirstListItem(`id = "${wallet}"`);
-      const current_amount=wallet_data.balance;
-      if (current_amount < (Number(quote.data.payin.amount)+Math.round(Number(quote.data.payin.amount*0.035)))) throw new Error("Insufficient Balance")
-      const new_amount=Number(current_amount)-(Number(quote.data.payin.amount)+Math.round(Number(quote.data.payin.amount*0.035)));
-      const new_amount_record=await pb.collection('wallet').update(wallet,{balance:new_amount});
+    await TbdexHttpClient.submitClose(close);
+
+    const quote_item = await pb.collection('customer_quotes').getFirstListItem(`exchangeId= "${exchangeId}"`);
+    const quote_id = quote_item.id;
+    const data = {
+      "reason": reason,
+      "status": "cancelled"
+    };
+
+    const [record] = await Promise.all([
+      pb.collection('customer_quotes').update(quote_id, data)
+    ]);
+
+    if (record) console.log('Record updated successfully:');
+
+    return close;
+  } catch (e) {
+    throw new Error('Failed to close exchange: ' + e.message);
+  }
+};
 
 
-      if (new_amount_record){
-        return order;
-      }
-      else {
-        throw ("Unable to update record")
-      }
 
-    }catch (e) {
-      throw new Error('Failed to submit order: ' + e.message);
+  const AddOrder = async (exchangeId, custDid, pfiUri, wallet) => {
+  const customerDid = await DidDht.import({ portableDid: custDid });
+  const order = Order.create({
+    metadata: {
+      from: customerDid.uri,
+      to: pfiUri,
+      protocol: '1.0',
+      exchangeId: exchangeId
     }
+  });
 
+  await order.sign(customerDid);
+  try {
+    await TbdexHttpClient.submitOrder(order);
+
+    const [quote_item, wallet_data] = await Promise.all([
+      pb.collection('customer_quotes').getFirstListItem(`exchangeId= "${exchangeId}"`),
+      pb.collection('wallet').getFirstListItem(`id = "${wallet}"`)
+    ]);
+
+    const quote_id = quote_item.id;
+    const quote = quote_item.rfq;
+    const current_amount = wallet_data.balance;
+    const total_amount = Number(quote.data.payin.amount) + Math.round(Number(quote.data.payin.amount * 0.035));
+
+    if (current_amount < total_amount) throw new Error("Insufficient Balance");
+
+    const new_amount = current_amount - total_amount;
+
+    const [record, new_amount_record] = await Promise.all([
+      pb.collection('customer_quotes').update(quote_id, { reason: "success", status: "completed" }),
+      pb.collection('wallet').update(wallet, { balance: new_amount })
+    ]);
+
+    if (record && new_amount_record) {
+      console.log('Record updated successfully:');
+      return order;
+    } else {
+      throw new Error("Unable to update record");
+    }
+  } catch (e) {
+    throw new Error('Failed to submit order: ' + e.message);
   }
+};
 
-  const GetOfferings=async (offering) => {
-    const offerings = await fetchOfferings();
-    const [payinCurrency, payoutCurrency] = offering.split(':');
-    console.log('Selected currencies:', payinCurrency, payoutCurrency);
-    console.log(offering)
+  const GetOfferings = async (offering) => {
+  const offerings = await fetchOfferings();
+  const [payinCurrency, payoutCurrency] = offering.split(':');
+  console.log('Selected currencies:', payinCurrency, payoutCurrency);
+  console.log(offering);
 
-    const filteredOfferings = await Promise.all(
-        offerings
-            .filter(offering =>
-                offering.data.payin.currencyCode === payinCurrency &&
-                offering.data.payout.currencyCode === payoutCurrency
-            )
-            .map(async offering => {
-              const pfi = await pb.collection('pfi').getFirstListItem(`did= "${offering.metadata.from}"`);
-              return {
-                name: pfi.name,
-                from: offering.metadata.from,
-                offeringId: offering.metadata.id,
-                description: offering.data.description,
-                payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
-                payinCurrency: offering.data.payin.currencyCode,
-                payoutCurrency: offering.data.payout.currencyCode,
-                payinMethods: offering.data.payin.methods,
-                payoutMethods: offering.data.payout.methods,
-                requiredClaims: offering.data.requiredClaims,
-                offering
-              };
-            })
-    );
-    return filteredOfferings
-  }
+  const filteredOfferings = await Promise.all(
+    offerings
+      .filter(offering =>
+        offering.data.payin.currencyCode === payinCurrency &&
+        offering.data.payout.currencyCode === payoutCurrency
+      )
+      .map(async offering => {
+        const pfi = await pb.collection('pfi').getFirstListItem(`did= "${offering.metadata.from}"`);
+        return {
+          name: pfi.name,
+          from: offering.metadata.from,
+          offeringId: offering.metadata.id,
+          description: offering.data.description,
+          payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
+          payinCurrency: offering.data.payin.currencyCode,
+          payoutCurrency: offering.data.payout.currencyCode,
+          payinMethods: offering.data.payin.methods,
+          payoutMethods: offering.data.payout.methods,
+          requiredClaims: offering.data.requiredClaims,
+          offering
+        };
+      })
+  );
+
+  return filteredOfferings;
+};
 
 
 
@@ -603,27 +589,22 @@ app.use(cors({
   });
 
   // Endpoint to fetch Create Exchange
-  app.post('/offerings', async (req, res) => {
-    const { offering,
-      amount,
-      payoutPaymentDetails,
-      customerCredentials,
-      customerDid,
-      payinPaymentDetails } = req.body;
+app.post('/offerings', async (req, res) => {
+  const { offering, amount, payoutPaymentDetails, customerCredentials, customerDid, payinPaymentDetails } = req.body;
 
-    if (!offering || !amount || !payoutPaymentDetails || !customerCredentials || !customerDid) {
-      return res.status(400).json({ error: 'All fields (offering, amount, payoutPaymentDetails, customerCredentials, customerDid) are required' });
-    }
+  if (!offering || !amount || !payoutPaymentDetails || !customerCredentials || !customerDid) {
+    return res.status(400).json({ error: 'All fields (offering, amount, payoutPaymentDetails, customerCredentials, customerDid) are required' });
+  }
 
-    try {
-      const exchange = await CreateExchange(offering, amount, payoutPaymentDetails, customerCredentials, customerDid, payinPaymentDetails);
-      console.log('Exchange:', exchange);
-      res.status(200).json(exchange);
-    } catch (err) {
-      console.log(err)
-      res.status(500).json({ "error-offerings": err });
-    }
-  });
+  try {
+    const exchange = await CreateExchange(offering, amount, payoutPaymentDetails, customerCredentials, customerDid, payinPaymentDetails);
+    console.log('Exchange:', exchange);
+    res.status(200).json(exchange);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ "error-offerings": err });
+  }
+});
 
 
 
