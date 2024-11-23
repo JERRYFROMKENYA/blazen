@@ -80,56 +80,60 @@ app.use(cors({
 
   // Function to fetch mock DIDs from PocketBase
   const fetchMockDids = async (offering) => {
-    try {
-      let records = [];
-      if(offering){
-        records = await pb.collection('pfi').getList(1, 50, {
-          filter: `offerings ?~ "${offering}"`,
-        });
-        records =records.items
-      }else{
-        records = await pb.collection('pfi').getFullList();
-      }
-
-      return records.reduce((acc, record) => {
-        acc[record.id] = {
-          did: record.did,
-          name: record.name,
-          description: record.description,
-          offerings: record.offerings,
-        };
-        return acc;
-      }, {});
-    } catch (error) {
-      throw new Error('Failed to fetch mock DIDs: ' + error.message);
+  try {
+    let records = [];
+    if (offering) {
+      records = await pb.collection('pfi').getList(1, 10, {
+        filter: `offerings ?~ "${offering}"`,
+      });
+      records = records.items;
+    } else {
+      records = await pb.collection('pfi').getFullList();
     }
-  };
+
+    const dids = await Promise.all(records.map(async (record) => {
+      return {
+        id: record.id,
+        did: record.did,
+        name: record.name,
+        description: record.description,
+        offerings: record.offerings,
+      };
+    }));
+
+    return dids.reduce((acc, did) => {
+      acc[did.id] = did;
+      return acc;
+    }, {});
+  } catch (error) {
+    throw new Error('Failed to fetch mock DIDs: ' + error.message);
+  }
+};
 
   // Function to fetch offerings from tbDex SDK
   const fetchOfferings = async (offering) => {
-    try {
-      const allOfferings = [];
-      let mockDids = [];
-      if (offering){
-        mockDids = await fetchMockDids(offering);
-      }
-      else
-      {
-        mockDids = await fetchMockDids();
-      }
-
-      console.log('Mock DIDs:', mockDids);
-      for (const pfi of Object.values(mockDids)) {
-        const pfiUri = pfi.did;
-        const offerings = await TbdexHttpClient.getOfferings({ pfiDid: pfiUri });
-        allOfferings.push(...offerings);
-      }
-      return allOfferings;
-    } catch (error) {
-      console.error('Failed to fetch offerings:', error);
-      throw error;
+  try {
+    let mockDids = [];
+    if (offering) {
+      mockDids = await fetchMockDids(offering);
+    } else {
+      mockDids = await fetchMockDids();
     }
-  };
+
+    console.log('Mock DIDs:', mockDids);
+
+    const offeringsPromises = Object.values(mockDids).map(async (pfi) => {
+      const pfiUri = pfi.did;
+      return TbdexHttpClient.getOfferings({ pfiDid: pfiUri });
+    });
+
+    const allOfferings = (await Promise.all(offeringsPromises)).flat();
+    return allOfferings;
+  } catch (error) {
+    console.error('Failed to fetch offerings:', error);
+    throw error;
+  }
+};
 
   // Function to update currencies (implementation not provided)
   const updateCurrencies = () => {
