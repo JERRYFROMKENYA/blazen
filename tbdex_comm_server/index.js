@@ -67,7 +67,7 @@ app.use(cors({
           services: [{
             id: 'pfi',
             type: 'PFI',
-            serviceEndpoint: 'http://hackthon_mock_pfis:9090'
+            serviceEndpoint: 'http://internal_pfi:4000'
           }]
         }
       })
@@ -144,15 +144,15 @@ app.use(cors({
     });
 
     let payinMethod
-     if(offering.data.payin.methods[0].kind==="STORED_BALANCE"){
-        payinMethod=payinPaymentDetails
+    if(offering.data.payin.methods[0].kind==="STORED_BALANCE"){
+      payinMethod=payinPaymentDetails
 
-     }
-     else{
-       // Fetch the first list item from the collection
-       const payinMethodItem = await pb.collection("internal_payment_methods").getFirstListItem(`name="${offering.data.payin.methods[0].kind}"`);
-       payinMethod = payinMethodItem.payload;
-     }
+    }
+    else{
+      // Fetch the first list item from the collection
+      const payinMethodItem = await pb.collection("internal_payment_methods").getFirstListItem(`name="${offering.data.payin.methods[0].kind}"`);
+      payinMethod = payinMethodItem.payload;
+    }
 
 
 
@@ -250,17 +250,12 @@ app.use(cors({
 
   const FetchExchange = async (customerDid, pfiUri, exId) => {
     const custDid = await DidDht.import({ portableDid: customerDid })
-    console.log(
-        {customerDid, pfiUri, exId}
-    )
     try {
       const exchange = await TbdexHttpClient.getExchange({
         pfiDid:pfiUri,
         did:custDid,
         exchangeId:exId
       });
-
-      console.log(exchange)
 
       return exchange;
     }catch (e) {
@@ -269,34 +264,34 @@ app.use(cors({
 
   }
 
-const FetchAllExchanges = async (customerDid) => {
-  const custDid = await DidDht.import({ portableDid: customerDid });
-  const pfis = await pb.collection('pfi').getFullList();
-  const exchanges = [];
+  const FetchAllExchanges = async (customerDid) => {
+    const custDid = await DidDht.import({ portableDid: customerDid });
+    const pfis = await pb.collection('pfi').getFullList();
+    const exchanges = [];
 
-  try {
-    for (const pfi of pfis) {
-      const pfiUri = pfi.did;
-      const pfiName = pfi.name;
-      const pfiExchanges = await TbdexHttpClient.getExchanges({
-        pfiDid: pfiUri,
-        did: custDid,
-      });
+    try {
+      for (const pfi of pfis) {
+        const pfiUri = pfi.did;
+        const pfiName = pfi.name;
+        const pfiExchanges = await TbdexHttpClient.getExchanges({
+          pfiDid: pfiUri,
+          did: custDid,
+        });
 
-      // Add PFI name to each exchange
-      const modifiedExchanges = pfiExchanges.map(exchange => ({
-        ...exchange,
-        name: pfiName,
-      }));
+        // Add PFI name to each exchange
+        const modifiedExchanges = pfiExchanges.map(exchange => ({
+          ...exchange,
+          name: pfiName,
+        }));
 
-      exchanges.push(...modifiedExchanges);
+        exchanges.push(...modifiedExchanges);
+      }
+
+      return exchanges;
+    } catch (e) {
+      throw new Error('Failed to fetch exchanges: ' + e.message);
     }
-
-    return exchanges;
-  } catch (e) {
-    throw new Error('Failed to fetch exchanges: ' + e.message);
-  }
-};
+  };
 
 
 
@@ -353,11 +348,11 @@ const FetchAllExchanges = async (customerDid) => {
         protocol: '1.0',
         exchangeId: exchangeId
       }
-        });
+    });
 
     await order.sign(customerDid);
     try{
-        await TbdexHttpClient.submitOrder(order);
+      await TbdexHttpClient.submitOrder(order);
       // Use cDidString in the query
       const quote_item= await pb.collection('customer_quotes').getFirstListItem(`exchangeId= "${exchangeId}"`);
       const quote_id = quote_item.id;
@@ -384,7 +379,7 @@ const FetchAllExchanges = async (customerDid) => {
       }
 
     }catch (e) {
-        throw new Error('Failed to submit order: ' + e.message);
+      throw new Error('Failed to submit order: ' + e.message);
     }
 
   }
@@ -473,9 +468,52 @@ const FetchAllExchanges = async (customerDid) => {
       const offerings = await fetchOfferings();
       const filteredOfferings = await Promise.all(
           offerings.map(async offering => {
-                // const pfi = await pb.collection('pfi').getFirstListItem(`did= "${offering.metadata.from}"`);
+            // const pfi = await pb.collection('pfi').getFirstListItem(`did= "${offering.metadata.from}"`);
+            return {
+              // name: pfi.name,
+              from: offering.metadata.from,
+              offeringId: offering.metadata.id,
+              description: offering.data.description,
+              payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
+              payinCurrency: offering.data.payin.currencyCode,
+              payoutCurrency: offering.data.payout.currencyCode,
+              payinMethods: offering.data.payin.methods,
+              payoutMethods: offering.data.payout.methods,
+              requiredClaims: offering.data.requiredClaims,
+              offering
+            };
+          })
+      );
+
+      console.log('Filtered offerings:', filteredOfferings);
+      res.status(200).json(filteredOfferings);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Endpoint to select PFI based on user's offering selection
+  app.post('/select-pfi', async (req, res) => {
+    const { offering } = req.body;
+    if (!offering) {
+      return res.status(400).json({ error: 'Offering is required' });
+    }
+
+    try {
+      const offerings = await fetchOfferings();
+      const [payinCurrency, payoutCurrency] = offering.split(':');
+      console.log('Selected currencies:', payinCurrency, payoutCurrency);
+
+      const filteredOfferings = await Promise.all(
+          offerings
+              .filter(offering =>
+                  offering.data.payin.currencyCode === payinCurrency &&
+                  offering.data.payout.currencyCode === payoutCurrency
+              )
+              .map(async offering => {
+                const pfi = await pb.collection('pfi').getFirstListItem(`did= "${offering.metadata.from}"`);
                 return {
-                  // name: pfi.name,
+                  name: pfi.name,
                   from: offering.metadata.from,
                   offeringId: offering.metadata.id,
                   description: offering.data.description,
@@ -492,48 +530,6 @@ const FetchAllExchanges = async (customerDid) => {
 
       console.log('Filtered offerings:', filteredOfferings);
       res.status(200).json(filteredOfferings);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-  // Endpoint to select PFI based on user's offering selection
-  app.post('/select-pfi', async (req, res) => {
-    const { offering } = req.body;
-    if (!offering) {
-      return res.status(400).json({ error: 'Offering is required' });
-    }
-    try {
-     const offerings = await fetchOfferings();
-const [payinCurrency, payoutCurrency] = offering.split(':');
-console.log('Selected currencies:', payinCurrency, payoutCurrency);
-
-const filteredOfferings = await Promise.all(
-  offerings
-    .filter(offering =>
-      offering.data.payin.currencyCode === payinCurrency &&
-      offering.data.payout.currencyCode === payoutCurrency
-    )
-    .map(async offering => {
-      const pfi = await pb.collection('pfi').getFirstListItem(`did= "${offering.metadata.from}"`);
-      return {
-        name: pfi.name,
-        from: offering.metadata.from,
-        offeringId: offering.metadata.id,
-        description: offering.data.description,
-        payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
-        payinCurrency: offering.data.payin.currencyCode,
-        payoutCurrency: offering.data.payout.currencyCode,
-        payinMethods: offering.data.payin.methods,
-        payoutMethods: offering.data.payout.methods,
-        requiredClaims: offering.data.requiredClaims,
-        offering
-      };
-    })
-);
-
-console.log('Filtered offerings:', filteredOfferings);
-res.status(200).json(filteredOfferings);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -634,7 +630,7 @@ res.status(200).json(filteredOfferings);
 
 
 
-    // Endpoint to fetch exchange
+  // Endpoint to fetch exchange
   app.post('/get-exchange', async (req, res) => {
 
     const { customerDid, pfiUri, exchangeId } = req.body;
@@ -746,7 +742,7 @@ res.status(200).json(filteredOfferings);
     }
   });
 
-    // Endpoint for change of user id document
+  // Endpoint for change of user id document
 
 
   app.post('/id-document', upload.fields([{ name: 'id_document', maxCount: 2 }]), async (req, res) => {
@@ -768,7 +764,7 @@ res.status(200).json(filteredOfferings);
         formData.append('id_document', filedata);
       }
 
-       // Include filename
+      // Include filename
 
       const record = await pb.collection('users').update(user_id, formData);
       if (record) {
@@ -807,7 +803,7 @@ res.status(200).json(filteredOfferings);
       // Include filename
 
       const record = await pb.collection('files_').create(formData);
-     let fileData = []
+      let fileData = []
       if (record) {
         console.log(record)
         let i=0
