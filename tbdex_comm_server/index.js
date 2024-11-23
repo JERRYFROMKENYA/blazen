@@ -79,9 +79,18 @@ app.use(cors({
   }
 
   // Function to fetch mock DIDs from PocketBase
-  const fetchMockDids = async () => {
+  const fetchMockDids = async (offering) => {
     try {
-      const records = await pb.collection('pfi').getFullList();
+      let records = [];
+      if(offering){
+        records = await pb.collection('pfi').getList(1, 50, {
+          filter: `offerings ?~ "${offering}"`,
+        });
+        records =records.items
+      }else{
+        records = await pb.collection('pfi').getFullList();
+      }
+
       return records.reduce((acc, record) => {
         acc[record.id] = {
           did: record.did,
@@ -97,10 +106,18 @@ app.use(cors({
   };
 
   // Function to fetch offerings from tbDex SDK
-  const fetchOfferings = async () => {
+  const fetchOfferings = async (offering) => {
     try {
       const allOfferings = [];
-      const mockDids = await fetchMockDids();
+      let mockDids = [];
+      if (offering){
+        mockDids = await fetchMockDids(offering);
+      }
+      else
+      {
+        mockDids = await fetchMockDids();
+      }
+
       console.log('Mock DIDs:', mockDids);
       for (const pfi of Object.values(mockDids)) {
         const pfiUri = pfi.did;
@@ -500,7 +517,7 @@ app.use(cors({
     }
 
     try {
-      const offerings = await fetchOfferings();
+      const offerings = await fetchOfferings(offering);
       const [payinCurrency, payoutCurrency] = offering.split(':');
       console.log('Selected currencies:', payinCurrency, payoutCurrency);
 
